@@ -17,19 +17,19 @@ namespace jmg
 		void cascadeDraw(int origx, int origy, bool parentNeedsIt = false);
 		bool cascadeHandleEvent(const ALLEGRO_EVENT& event);
 
-		Base * parent;
-		std::vector<Base*> children;
+		Base * mParent;
+		std::vector<Base*> mChildren;
+		bool mNeedsRedraw;
 
 	protected:
 		virtual void draw(int origx, int origy);
 		virtual bool handleEvent(const ALLEGRO_EVENT& event);
-
-		bool needsRedraw;
 	public:
-		int relx;
-		int rely;
+		int mRelx;
+		int mRely;
+		ALLEGRO_COLOR mColor;
 
-		Base();
+		Base(int relx=0, int rely=0, ALLEGRO_COLOR color=al_map_rgb(255,255,255));
 
 		void addChild(Base* child);
 		void remove();
@@ -40,12 +40,11 @@ namespace jmg
 		int calcOrigX() const;
 		int calcOrigY() const;
 
-		void moved();
+		void needsRedraw(int depth = 0);
 	};
 
 	class WallPaper : public Base{
 	public:
-		ALLEGRO_COLOR color;
 		WallPaper(const ALLEGRO_COLOR& color);
 		void draw(int, int);
 	};
@@ -54,8 +53,8 @@ namespace jmg
 	public:
 		Rectangle();
 		Rectangle(int w, int h);
-		int width;
-		int height;
+		int mWidth;
+		int mHeight;
 	};
 
 	class InteractiveRectangle : public virtual Rectangle, public virtual Base {
@@ -68,12 +67,12 @@ namespace jmg
 
 	class Moveable : public InteractiveRectangle {
 	private:
-		bool held;
-		int dx;
-		int dy;
+		bool mHeld;
+		int mDx;
+		int mDy;
 	public:
-		Base * target;
-		unsigned int button;
+		Base * mTarget;
+		unsigned int mButton;
 
 		Moveable();
 		Moveable(int w, int h);
@@ -86,8 +85,7 @@ namespace jmg
 		DrawableRectangle(int w, int h);
 		void draw(int origx, int origy);
 
-		ALLEGRO_COLOR color;
-		unsigned char outline;
+		unsigned char mOutline;
 	};
 
 	class MoveableRectangle : public Moveable, public DrawableRectangle {
@@ -97,8 +95,8 @@ namespace jmg
 
 	class Button : public DrawableRectangle {
 	private:
-		bool hovering;
-		bool clicking;
+		bool mHovering;
+		bool mClicking;
 
 	public:
 		Button();
@@ -107,27 +105,27 @@ namespace jmg
 		void draw(int origx, int origy);
 		bool handleEvent(const ALLEGRO_EVENT& event);
 
-		void(*callback)(void*);
-		void* args;
+		void(*mCallback)(void*);
+		void* mCallbackArgs;
 	};
 
 	class Label : public Base {
 	public:
-		std::string value;
-		ALLEGRO_COLOR color;
-		ALLEGRO_FONT* font;
+		std::string mValue;
+		ALLEGRO_FONT* mFont;
+		Rectangle* mLimits;
+
+		int calcMaxWidth();
+
 		Label(const char* val = "");
 
 		void draw(int origx, int origy);
 	};
 
 	class Text : public Label {
-	private:
-		int tx;
-		int ty;
-
-		int textPos;
 	public:
+		int mTextPos;
+
 		Text(const char* val = "");
 
 		void draw(int origx, int origy);
@@ -136,9 +134,9 @@ namespace jmg
 
 	class Window : public DrawableRectangle {
 	private:
-		MoveableRectangle mover;
-		Button btnClose;
-		Label caption;
+		MoveableRectangle mMover;
+		Button mBtnClose;
+		Label mCaption;
 	public:
 		Window(int w, int h, const char* caption = "Window");
 		bool handleEvent(const ALLEGRO_EVENT& event);
@@ -146,7 +144,7 @@ namespace jmg
 		void close();
 	};
 
-	ALLEGRO_FONT* FetchDefaultFont();
+	ALLEGRO_FONT* fetchDefaultFont();
 }
 
 #endif

@@ -25,17 +25,23 @@ int main(int nbarg, char ** args)
 
 	ALLEGRO_EVENT event;
 
-	jmg::WallPaper wp(al_map_rgb(255, 255, 255));
+	jmg::WallPaper wp(al_map_rgb(200, 200, 200));
 	jmg::Window win(200,250,"Salut les gens");
-	jmg::MoveableRectangle mr(100, 100);
-	jmg::Text text("Salut je teste ma vie genre lol ouais trop bien\n tavu ouech genre vazi quoi");
+	jmg::Text text("Salut je teste ma vie\ngenre lol ouais trop bien tavu ouech genre vazi quoi              _._._._._._._._._            ");
+	jmg::MoveableRectangle mr(200,350);
 	mr.addChild(&text);
-
-	win.color.g = 0;
-	win.outline = 1;
-
-	mr.addChild(&win);
+	text.mLimits = &mr;
 	wp.addChild(&mr);
+
+	win.mColor.g = 0;
+	win.mOutline = 1;
+	win.mRelx = 300;
+	win.mRely = 150;
+
+	text.mRelx = 20;
+	text.mRely = 20;
+
+	wp.addChild(&win);
 
 
 	bool quitApp = false;
@@ -52,7 +58,7 @@ int main(int nbarg, char ** args)
 		}
 	}
 
-	al_destroy_font(jmg::FetchDefaultFont());
+	al_destroy_font(jmg::fetchDefaultFont());
 	al_destroy_display(display);
 
 	al_shutdown_primitives_addon();

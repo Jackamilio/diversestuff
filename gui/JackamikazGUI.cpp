@@ -5,9 +5,9 @@
 
 void jmg::Base::redraw(int origx, int origy)
 {
-	if (needsRedraw) {
+	if (mNeedsRedraw) {
 		draw(origx, origy);
-		needsRedraw = false;
+		mNeedsRedraw = false;
 	}
 }
 
@@ -15,7 +15,7 @@ void jmg::Base::draw(int origx, int origy)
 {
 }
 
-jmg::Base::Base() : parent(NULL), needsRedraw(true), relx(0), rely(0)
+jmg::Base::Base(int relx, int rely, ALLEGRO_COLOR color) : mParent(NULL), mNeedsRedraw(true), mRelx(relx), mRely(rely), mColor(color)
 {
 }
 
@@ -27,77 +27,80 @@ bool jmg::Base::handleEvent(const ALLEGRO_EVENT & event)
 void jmg::Base::addChild(Base * child)
 {
 	if (child) {
-		children.push_back(child);
-		child->parent = this;
+		mChildren.push_back(child);
+		child->mParent = this;
 	}
 }
 
 void jmg::Base::remove()
 {
-	if (parent)
+	if (mParent)
 	{
-		moved();
-		parent->children.erase(std::find(parent->children.begin(), parent->children.end(), this));
+		needsRedraw(-1);
+		mParent->mChildren.erase(std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this));
 	}
 }
 
 void jmg::Base::baseDraw()
 {
-	if (parent == NULL) {
-		cascadeDraw(relx,rely);
+	if (mParent == NULL) {
+		cascadeDraw(mRelx,mRely);
 	}
 }
 
 void jmg::Base::baseHandleEvent(const ALLEGRO_EVENT& event)
 {
-	if (parent == NULL) {
+	if (mParent == NULL) {
 		cascadeHandleEvent(event);
 	}
 }
 
 int jmg::Base::calcOrigX() const
 {
-	const Base* c = parent;
+	const Base* c = mParent;
 	int x = 0;
 	while (c) {
-		x += c->relx;
-		c = c->parent;
+		x += c->mRelx;
+		c = c->mParent;
 	}
 	return x;
 }
 
 int jmg::Base::calcOrigY() const
 {
-	const Base* c = parent;
+	const Base* c = mParent;
 	int y = 0;
 	while (c) {
-		y += c->rely;
-		c = c->parent;
+		y += c->mRely;
+		c = c->mParent;
 	}
 	return y;
 }
 
-void jmg::Base::moved()
+void jmg::Base::needsRedraw(int depth)
 {
-	Base* farthestParent = this;
-	while (farthestParent->parent) {
-		farthestParent = farthestParent->parent;
+	if (depth < 0) {
+		depth = 0xFFFFFF;
 	}
-	farthestParent->needsRedraw = true;
+	Base* farthestParent = this;
+	while (farthestParent->mParent && depth-- > 0) {
+		farthestParent = farthestParent->mParent;
+	}
+	farthestParent->mNeedsRedraw = true;
 }
 
 void jmg::Base::cascadeDraw(int origx, int origy, bool parentNeedsIt)
 {
-	bool r = needsRedraw = needsRedraw || parentNeedsIt;
+	bool r = mNeedsRedraw = mNeedsRedraw || parentNeedsIt;
 	redraw(origx, origy);
-	for (std::vector<Base*>::iterator it = children.begin(); it != children.end(); ++it) {
-		(*it)->cascadeDraw(origx+relx, origy+rely, r);
+	for (std::vector<Base*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it) {
+		(*it)->cascadeDraw(origx+mRelx, origy+mRely, r);
 	}
 }
 
 bool jmg::Base::cascadeHandleEvent(const ALLEGRO_EVENT& event)
 {
-	for (std::vector<Base*>::iterator it = children.begin(); it != children.end(); ++it) {
+	for (std::vector<Base*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it) {
 		if ((*it)->cascadeHandleEvent(event)) {
 			return true;
 		}
@@ -105,71 +108,71 @@ bool jmg::Base::cascadeHandleEvent(const ALLEGRO_EVENT& event)
 	return handleEvent(event);
 }
 
-jmg::WallPaper::WallPaper(const ALLEGRO_COLOR & color) : color(color)
+jmg::WallPaper::WallPaper(const ALLEGRO_COLOR & color) : Base(0,0,color)
 {
 }
 
 void jmg::WallPaper::draw(int, int)
 {
-	al_clear_to_color(color);
+	al_clear_to_color(mColor);
 }
 
 jmg::MoveableRectangle::MoveableRectangle(int w,int h) : Rectangle(w, h)
 {
 }
 
-jmg::DrawableRectangle::DrawableRectangle() : color(al_map_rgb(255, 255, 255)), outline(1)
+jmg::DrawableRectangle::DrawableRectangle() : mOutline(1)
 {
 }
 
-jmg::DrawableRectangle::DrawableRectangle(int w, int h) : Rectangle(w,h), color(al_map_rgb(255,255,255)), outline(1)
+jmg::DrawableRectangle::DrawableRectangle(int w, int h) : Rectangle(w,h), mOutline(1)
 {
 }
 
 void jmg::DrawableRectangle::draw(int origx, int origy)
 {
-	float x = (float)(origx + relx);
-	float y = (float)(origy + rely);
-	al_draw_filled_rectangle(x, y, x + (float)width, y + (float)height, color);
-	if (outline) {
-		al_draw_rectangle(x, y, x + (float)width, y + (float)height, al_map_rgb(0,0,0), (float)outline);
+	float x = (float)(origx + mRelx);
+	float y = (float)(origy + mRely);
+	al_draw_filled_rectangle(x, y, x + (float)mWidth, y + (float)mHeight, mColor);
+	if (mOutline) {
+		al_draw_rectangle(x, y, x + (float)mWidth, y + (float)mHeight, al_map_rgb(0,0,0), (float)mOutline);
 	}
 }
 
-jmg::Rectangle::Rectangle() : width(20), height(20)
+jmg::Rectangle::Rectangle() : mWidth(20), mHeight(20)
 {
 }
 
-jmg::Rectangle::Rectangle(int w, int h) : width(w), height(h)
+jmg::Rectangle::Rectangle(int w, int h) : mWidth(w), mHeight(h)
 {
 }
 
-jmg::Moveable::Moveable() : target(this), button(1)
+jmg::Moveable::Moveable() : mTarget(this), mButton(1)
 {
 }
 
-jmg::Moveable::Moveable(int w, int h) : Rectangle(w,h), target(this), button(1)
+jmg::Moveable::Moveable(int w, int h) : Rectangle(w,h), mTarget(this), mButton(1)
 {
 }
 
 bool jmg::Moveable::handleEvent(const ALLEGRO_EVENT & event)
 {
-	if (catchMouse(event, button)) {
-		dx = event.mouse.x - target->calcOrigX() - target->relx;
-		dy = event.mouse.y - target->calcOrigY() - target->rely;
-		held = true;
+	if (catchMouse(event, mButton)) {
+		mDx = event.mouse.x - mTarget->calcOrigX() - mTarget->mRelx;
+		mDy = event.mouse.y - mTarget->calcOrigY() - mTarget->mRely;
+		mHeld = true;
 		return true;
 	}
-	else if (event.type == ALLEGRO_EVENT_MOUSE_AXES && held) {
-		target->relx = event.mouse.x - target->calcOrigX() - dx;
-		target->rely = event.mouse.y - target->calcOrigY() - dy;
+	else if (event.type == ALLEGRO_EVENT_MOUSE_AXES && mHeld) {
+		mTarget->mRelx = event.mouse.x - mTarget->calcOrigX() - mDx;
+		mTarget->mRely = event.mouse.y - mTarget->calcOrigY() - mDy;
 
-		target->moved();
+		mTarget->needsRedraw(-1);
 
 		return true;
 	}
-	else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == button) {
-		held = false;
+	else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == mButton) {
+		mHeld = false;
 	}
 	return false;
 }
@@ -181,25 +184,25 @@ void callbackTest(void* arg) {
 	}
 }
 
-jmg::Window::Window(int w, int h, const char* capt) : Rectangle(w,h), mover(w - 18, 22), btnClose(22,22)
+jmg::Window::Window(int w, int h, const char* capt) : Rectangle(w,h), mMover(w - 18, 22), mBtnClose(22,22)
 {
-	mover.relx = -2;
-	mover.rely = -22;
-	mover.target = this;
-	mover.color.r = 0;
-	caption.value = capt;
-	caption.relx = 4;
-	caption.rely = 4;
-	mover.addChild(&caption);
-	btnClose.relx = mover.relx + mover.width;
-	btnClose.rely = mover.rely;
-	btnClose.callback = callbackTest;
-	btnClose.args = (void*)this;
-	relx = 2;
-	rely = 22;
+	mMover.mRelx = -2;
+	mMover.mRely = -22;
+	mMover.mTarget = this;
+	mMover.mColor.r = 0;
+	mCaption.mValue = capt;
+	mCaption.mRelx = 4;
+	mCaption.mRely = 4;
+	mMover.addChild(&mCaption);
+	mBtnClose.mRelx = mMover.mRelx + mMover.mWidth;
+	mBtnClose.mRely = mMover.mRely;
+	mBtnClose.mCallback = callbackTest;
+	mBtnClose.mCallbackArgs = (void*)this;
+	mRelx = 2;
+	mRely = 22;
 
-	addChild(&mover);
-	addChild(&btnClose);
+	addChild(&mMover);
+	addChild(&mBtnClose);
 }
 
 bool jmg::Window::handleEvent(const ALLEGRO_EVENT & event)
@@ -222,72 +225,74 @@ jmg::InteractiveRectangle::InteractiveRectangle(int w, int h) : Rectangle(w,h)
 
 bool jmg::InteractiveRectangle::isPointInside(int px, int py)
 {
-	int dx = px - calcOrigX() - relx;
-	int dy = py - calcOrigY() - rely;
+	int dx = px - calcOrigX() - mRelx;
+	int dy = py - calcOrigY() - mRely;
 
-	return dx >= 0 && dx < width && dy >= 0 && dy < height;
+	return dx >= 0 && dx < mWidth && dy >= 0 && dy < mHeight;
 }
 
 bool jmg::InteractiveRectangle::catchMouse(const ALLEGRO_EVENT & event, int button, ALLEGRO_EVENT_TYPE evType)
 {
 	// catch mouse
 	if (event.type == evType && event.mouse.button == button) {
-		int dx = event.mouse.x - calcOrigX() - relx;
-		int dy = event.mouse.y - calcOrigY() - rely;
+		int dx = event.mouse.x - calcOrigX() - mRelx;
+		int dy = event.mouse.y - calcOrigY() - mRely;
 
-		if (dx >= 0 && dx < width && dy >= 0 && dy < height) {
+		if (dx >= 0 && dx < mWidth && dy >= 0 && dy < mHeight) {
 			return true;
 		}
 	}
 	return false;
 }
 
-jmg::Button::Button() : Rectangle(20,20), hovering(false), clicking(false), callback(NULL), args(NULL)
+jmg::Button::Button() : Rectangle(20,20), mHovering(false), mClicking(false), mCallback(NULL), mCallbackArgs(NULL)
 {
 }
 
-jmg::Button::Button(int w, int h) : Rectangle(w,h), hovering(false), clicking(false), callback(NULL), args(NULL)
+jmg::Button::Button(int w, int h) : Rectangle(w,h), mHovering(false), mClicking(false), mCallback(NULL), mCallbackArgs(NULL)
 {
 }
 
 void jmg::Button::draw(int origx, int origy)
 {
-	ALLEGRO_COLOR c = color;
-	unsigned char a = hovering ? (clicking ? 100 : 200) : 255;
-	color.r = a * color.r / 255;
-	color.g = a * color.g / 255;
-	color.b = a * color.b / 255;
+	ALLEGRO_COLOR c = mColor;
+	unsigned char a = mHovering ? (mClicking ? 100 : 200) : 255;
+	mColor.r = a * mColor.r / 255;
+	mColor.g = a * mColor.g / 255;
+	mColor.b = a * mColor.b / 255;
 	jmg::DrawableRectangle::draw(origx, origy);
-	color = c;
+	mColor = c;
 }
 
 bool jmg::Button::handleEvent(const ALLEGRO_EVENT & event)
 {
 	if (catchMouse(event)) {
-		clicking = true;
-		needsRedraw = true;
+		mClicking = true;
+		needsRedraw();
 		return true;
 	}
 	else if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
-		bool lastHovering = hovering;
-		hovering = isPointInside(event.mouse.x, event.mouse.y);
-		needsRedraw = hovering != lastHovering;
-		return hovering;
+		bool lastHovering = mHovering;
+		mHovering = isPointInside(event.mouse.x, event.mouse.y);
+		if (mHovering != lastHovering ) {
+			needsRedraw();
+		}
+		return mHovering;
 	}
 	else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
 		bool inside = isPointInside(event.mouse.x, event.mouse.y);
-		if (inside && clicking && callback) {
-			callback(args);
+		if (inside && mClicking && mCallback) {
+			mCallback(mCallbackArgs);
 		}
-		clicking = false;
-		hovering = inside;
-		needsRedraw = true;
+		mClicking = false;
+		mHovering = inside;
+		needsRedraw();
 		return inside;
 	}
 	return false;
 }
 
-ALLEGRO_FONT * jmg::FetchDefaultFont()
+ALLEGRO_FONT * jmg::fetchDefaultFont()
 {
 	static ALLEGRO_FONT * defaultFont = NULL;
 	if (!defaultFont) {
@@ -299,7 +304,12 @@ ALLEGRO_FONT * jmg::FetchDefaultFont()
 	return defaultFont;
 }
 
-jmg::Label::Label(const char * val) : value(val), color(al_map_rgb(0,0,0)), font(jmg::FetchDefaultFont())
+int jmg::Label::calcMaxWidth()
+{
+	return mLimits ? mLimits->mWidth - mRelx : 0xFFFFFF;
+}
+
+jmg::Label::Label(const char * val) : Base(0,0,al_map_rgb(0, 0, 0)), mValue(val), mFont(jmg::fetchDefaultFont()), mLimits(NULL)
 {
 }
 
@@ -307,79 +317,192 @@ void jmg::Label::draw(int origx, int origy)
 {
 	//al_draw_text(font, color, origx + relx, origy + rely, 0, value.c_str());
 
-	al_draw_multiline_text(font,color, origx + relx, origy + rely, 9999.9f,
-		(float)al_get_font_line_height(font), 0, value.c_str());
+	al_draw_multiline_text(mFont,mColor, origx + mRelx, origy + mRely, (float)calcMaxWidth(),
+		(float)al_get_font_line_height(mFont), 0, mValue.c_str());
 }
 
-jmg::Text::Text(const char * val) : Label(val), textPos(0)
+jmg::Text::Text(const char * val) : Label(val), mTextPos(0)
 {
+}
+
+struct TextDrawArgs {
+	int charCount;
+	int advance;
+	int line;
+	jmg::Text* text;
+};
+
+bool textDrawCallback(int line_num, const char *line, int size, void *extra) {
+	TextDrawArgs& args = *((TextDrawArgs*)extra);
+
+	if (args.charCount + size+1 < args.text->mTextPos) {
+		args.charCount += size+1;
+		return true;
+	}
+	else {
+		args.advance = 0;
+		int lastChar = ALLEGRO_NO_KERNING;
+		int linePos = args.text->mTextPos - args.charCount;
+		for (int i = 0; i <= size && i < linePos; ++i) {
+			int newChar = (i >= size) ? ALLEGRO_NO_KERNING : line[i];
+			args.advance += al_get_glyph_advance(args.text->mFont, lastChar, newChar);
+			lastChar = newChar;
+		}
+
+		args.line = line_num * al_get_font_line_height(args.text->mFont);
+		return false;
+	}
 }
 
 void jmg::Text::draw(int origx, int origy)
 {
 	const int l = 10;
-	al_draw_line(tx - l, ty, tx + l, ty, color, 1.0f);
-	al_draw_line(tx, ty - l, tx, ty + l, color, 1.0f);
 
-	int advance = 0;
-	int line = 0;
+	//int advance = 0;
+	//int line = 0;
 
-	const size_t vl = value.length();
+	TextDrawArgs args;
+	args.advance = 0;
+	args.charCount = 0;
+	args.line = 0;
+	args.text = this;
+
+	//
+	al_do_multiline_text(mFont, calcMaxWidth(), mValue.c_str(), textDrawCallback, (void*)&args);
+
+	/*/
+	const int vl = (int)mValue.length();
 	int lastChar = ALLEGRO_NO_KERNING;
-	for (size_t i = 0; i < vl && i < textPos; ++i) {
-		int newChar = value[i];
-		if (lastChar == '\n') {
-			advance = 0;
-			line += al_get_font_line_height(font);
-		}
-		else {
-			advance += al_get_glyph_advance(font, lastChar, newChar);
-		}
+	for (int i = 0; i <= vl && i < mTextPos; ++i) {
+		int newChar = (i >= vl) ? ALLEGRO_NO_KERNING : mValue[i];
+		args.advance += al_get_glyph_advance(mFont, lastChar, newChar);
 		lastChar = newChar;
-	}
+	}//*/
 
-	advance += al_get_glyph_advance(font, lastChar, ALLEGRO_NO_KERNING);
-
-	const float x = (float)(relx + calcOrigX() + advance);
-	const float y = (float)(rely + calcOrigY() + line);
+	const float x = (float)(mRelx + calcOrigX() + args.advance);
+	const float y = (float)(mRely + calcOrigY() + args.line);
 
 	al_draw_line(x, y, x, y + l * 2, al_map_rgb(255, 0, 0), 2.0f);
 
 	jmg::Label::draw(origx, origy);
 }
 
+struct TextClickArgs {
+	int x;
+	int y;
+	int mx;
+	int my;
+	int textPos;
+	jmg::Text* text;
+	bool found;
+};
+
+bool textClickCallback(int line_num, const char *_line, int size, void *extra) {
+	TextClickArgs& args = *((TextClickArgs*)extra);
+	std::string line(_line,(size_t)size);
+
+	int bbx, bby, bbw, bbh;
+	al_get_text_dimensions(args.text->mFont, line.c_str(), &bbx, &bby, &bbw, &bbh);
+
+	const ALLEGRO_FONT* font = args.text->mFont;
+
+	const int x = args.x;
+	const int lh = al_get_font_line_height(font);
+	const int y = args.y + line_num * lh;
+
+	const size_t vl = line.length();
+	if (bbx + x <= args.mx && args.mx < bbx + x + bbw && y <= args.my && args.my < y + lh) {
+		int advance = 0;
+		int lastChar = ALLEGRO_NO_KERNING;
+		size_t i = 0;
+		for (; i <= vl && advance <= args.mx - bbx - x; ++i) {
+			int newChar = (i >= vl) ? ALLEGRO_NO_KERNING : line[i];
+			advance += al_get_glyph_advance(font, lastChar, newChar);
+			lastChar = newChar;
+		}
+
+		args.textPos += (int)i - 1;
+		args.found = true;
+		return false;
+	}
+	else {
+		
+		if (y <= args.my && args.my < y + lh) {
+			if (args.mx >= bbx + x - args.text->mRelx && args.mx < bbx + x) {
+				args.found = true;
+				args.textPos += 1;
+				return false;
+			}
+			else if (args.mx <= x + args.text->calcMaxWidth() && args.mx >= bbx + x + bbw) {
+				args.found = true;
+				args.textPos += vl + 1;
+				return false;
+			}
+		}
+		args.textPos += vl + 1;
+		return true;
+	}
+}
+
 bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 {
 	if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1) {
-		int bbx, bby, bbw, bbh;
-		al_get_text_dimensions(jmg::FetchDefaultFont(), value.c_str(), &bbx, &bby, &bbw, &bbh);
 
-		int x = calcOrigX() + relx;
-		int y = calcOrigY() + rely;
+		/*int x = calcOrigX() + mRelx;
+		int y = calcOrigY() + mRely;
 		int mx = event.mouse.x;
-		int my = event.mouse.y;
+		int my = event.mouse.y;*/
 
-		if (bbx+x <= mx && mx < bbx+x+bbw && bby+y <= my && my < bby+y+bbh) {
-			tx = mx;
-			ty = my;
-			moved();
+		TextClickArgs args;
+		args.x = calcOrigX() + mRelx;
+		args.y = calcOrigY() + mRely;
+		args.mx = event.mouse.x;
+		args.my = event.mouse.y;
+		args.textPos = 0;
+		args.text = this;
+		args.found = false;
+
+		al_do_multiline_text(mFont, calcMaxWidth(), mValue.c_str(), textClickCallback, (void*)&args);
+
+		if (args.found) {
+			mTextPos = args.textPos;
+			needsRedraw(1);
 			return true;
 		}
+
+		/*int bbx, bby, bbw, bbh;
+		al_get_text_dimensions(mFont, mValue.c_str(), &bbx, &bby, &bbw, &bbh);
+		if (bbx+x <= mx && mx < bbx+x+bbw && bby+y <= my && my < bby+y+bbh) {
+			int advance = 0;
+			const size_t vl = mValue.length();
+			int lastChar = ALLEGRO_NO_KERNING;
+			size_t i = 0;
+			for (; i <= vl && advance < mx - bbx - x; ++i) {
+				int newChar = (i>=vl) ? ALLEGRO_NO_KERNING : mValue[i];
+				advance += al_get_glyph_advance(mFont, lastChar, newChar);
+				lastChar = newChar;
+			}
+
+			mTextPos = (int)i-2;
+
+			needsRedraw(1);
+			return true;
+		}*/
 	}
 	else if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
 		if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-			if (--textPos < 0) {
-				textPos = 0;
+			if (--mTextPos < 0) {
+				mTextPos = 0;
 			}
-			moved();
+			needsRedraw(1);
 			return true;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-			const size_t vl = value.length();
-			if (++textPos > vl && vl > 0) {
-				textPos = (int)vl;
+			const size_t vl = mValue.length();
+			if (++mTextPos > vl && vl > 0) {
+				mTextPos = (int)vl;
 			}
-			moved();
+			needsRedraw(1);
 			return true;
 		}
 	}
