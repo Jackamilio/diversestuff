@@ -4,8 +4,8 @@
 #include <allegro5\allegro.h>
 #include <allegro5\allegro_font.h>
 #include <allegro5\events.h>
+#include <allegro5\utf8.h>
 #include <vector>
-#include <string>
 
 #pragma warning(disable:4250)
 
@@ -111,22 +111,36 @@ namespace jmg
 
 	class Label : public Base {
 	public:
-		std::string mValue;
+		ALLEGRO_USTR* mValue;
 		ALLEGRO_FONT* mFont;
 		Rectangle* mLimits;
 
-		int calcMaxWidth();
+		inline int getCharAt(int pos) const { return al_ustr_get(mValue, al_ustr_offset(mValue, pos)); }
+
+		int calcMaxWidth() const;
+		inline void setValue(const char* val) { al_ustr_assign_cstr(mValue, val); }
+		void setValue(const char16_t* val);
 
 		Label(const char* val = "");
+		Label(const char16_t* val);
+		~Label();
 
 		void draw(int origx, int origy);
 	};
 
 	class Text : public Label {
+	private:
+		void insert(int keycode);
+		int getTextIndexFromCursorPos(int fromx, int fromy) const;
+		void getCursorPosFromTextIndex(int pos, int* posx, int* posy) const;
+		int cursorXRef;
+
+		void resetCursorXRef();
 	public:
 		int mTextPos;
 
 		Text(const char* val = "");
+		Text(const char16_t* val);
 
 		void draw(int origx, int origy);
 		bool handleEvent(const ALLEGRO_EVENT& event);

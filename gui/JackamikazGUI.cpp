@@ -1,5 +1,6 @@
 #include "JackamikazGUI.h"
 #include <algorithm>
+#include <allegro5\allegro.h>
 #include <allegro5\allegro_primitives.h>
 #include <allegro5\allegro_ttf.h>
 
@@ -190,7 +191,7 @@ jmg::Window::Window(int w, int h, const char* capt) : Rectangle(w,h), mMover(w -
 	mMover.mRely = -22;
 	mMover.mTarget = this;
 	mMover.mColor.r = 0;
-	mCaption.mValue = capt;
+	mCaption.setValue(capt);
 	mCaption.mRelx = 4;
 	mCaption.mRely = 4;
 	mMover.addChild(&mCaption);
@@ -304,87 +305,43 @@ ALLEGRO_FONT * jmg::fetchDefaultFont()
 	return defaultFont;
 }
 
-int jmg::Label::calcMaxWidth()
+int jmg::Label::calcMaxWidth() const
 {
 	return mLimits ? mLimits->mWidth - mRelx : 0xFFFFFF;
 }
 
-jmg::Label::Label(const char * val) : Base(0,0,al_map_rgb(0, 0, 0)), mValue(val), mFont(jmg::fetchDefaultFont()), mLimits(NULL)
+void jmg::Label::setValue(const char16_t * val)
 {
+	al_ustr_free(mValue);
+	mValue = al_ustr_new_from_utf16((const uint16_t*)val);
+}
+
+jmg::Label::Label(const char * val) : Base(0,0,al_map_rgb(0, 0, 0)), mValue(al_ustr_new(val)), mFont(jmg::fetchDefaultFont()), mLimits(NULL)
+{
+}
+
+jmg::Label::Label(const char16_t * val) : Base(0, 0, al_map_rgb(0, 0, 0)), mValue(al_ustr_new_from_utf16((uint16_t*)val)), mFont(jmg::fetchDefaultFont()), mLimits(NULL)
+{
+}
+
+jmg::Label::~Label()
+{
+	al_ustr_free(mValue);
 }
 
 void jmg::Label::draw(int origx, int origy)
 {
 	//al_draw_text(font, color, origx + relx, origy + rely, 0, value.c_str());
 
-	al_draw_multiline_text(mFont,mColor, origx + mRelx, origy + mRely, (float)calcMaxWidth(),
-		(float)al_get_font_line_height(mFont), 0, mValue.c_str());
+	al_draw_multiline_ustr(mFont,mColor, origx + mRelx, origy + mRely, (float)calcMaxWidth(),
+		(float)al_get_font_line_height(mFont), 0, mValue);
 }
 
-jmg::Text::Text(const char * val) : Label(val), mTextPos(0)
+void jmg::Text::insert(int keycode)
 {
-}
-
-struct TextDrawArgs {
-	int charCount;
-	int advance;
-	int line;
-	jmg::Text* text;
-};
-
-bool textDrawCallback(int line_num, const char *line, int size, void *extra) {
-	TextDrawArgs& args = *((TextDrawArgs*)extra);
-
-	if (args.charCount + size+1 < args.text->mTextPos) {
-		args.charCount += size+1;
-		return true;
-	}
-	else {
-		args.advance = 0;
-		int lastChar = ALLEGRO_NO_KERNING;
-		int linePos = args.text->mTextPos - args.charCount;
-		for (int i = 0; i <= size && i < linePos; ++i) {
-			int newChar = (i >= size) ? ALLEGRO_NO_KERNING : line[i];
-			args.advance += al_get_glyph_advance(args.text->mFont, lastChar, newChar);
-			lastChar = newChar;
-		}
-
-		args.line = line_num * al_get_font_line_height(args.text->mFont);
-		return false;
-	}
-}
-
-void jmg::Text::draw(int origx, int origy)
-{
-	const int l = 10;
-
-	//int advance = 0;
-	//int line = 0;
-
-	TextDrawArgs args;
-	args.advance = 0;
-	args.charCount = 0;
-	args.line = 0;
-	args.text = this;
-
-	//
-	al_do_multiline_text(mFont, calcMaxWidth(), mValue.c_str(), textDrawCallback, (void*)&args);
-
-	/*/
-	const int vl = (int)mValue.length();
-	int lastChar = ALLEGRO_NO_KERNING;
-	for (int i = 0; i <= vl && i < mTextPos; ++i) {
-		int newChar = (i >= vl) ? ALLEGRO_NO_KERNING : mValue[i];
-		args.advance += al_get_glyph_advance(mFont, lastChar, newChar);
-		lastChar = newChar;
-	}//*/
-
-	const float x = (float)(mRelx + calcOrigX() + args.advance);
-	const float y = (float)(mRely + calcOrigY() + args.line);
-
-	al_draw_line(x, y, x, y + l * 2, al_map_rgb(255, 0, 0), 2.0f);
-
-	jmg::Label::draw(origx, origy);
+	al_ustr_insert_chr(mValue, al_ustr_offset(mValue, mTextPos), keycode);
+	++mTextPos;
+	needsRedraw(1);
 }
 
 struct TextClickArgs {
@@ -393,16 +350,15 @@ struct TextClickArgs {
 	int mx;
 	int my;
 	int textPos;
-	jmg::Text* text;
+	const jmg::Text* text;
 	bool found;
 };
 
-bool textClickCallback(int line_num, const char *_line, int size, void *extra) {
+bool textClickCallback(int line_num, const ALLEGRO_USTR *line, void *extra) {
 	TextClickArgs& args = *((TextClickArgs*)extra);
-	std::string line(_line,(size_t)size);
 
 	int bbx, bby, bbw, bbh;
-	al_get_text_dimensions(args.text->mFont, line.c_str(), &bbx, &bby, &bbw, &bbh);
+	al_get_ustr_dimensions(args.text->mFont, line, &bbx, &bby, &bbw, &bbh);
 
 	const ALLEGRO_FONT* font = args.text->mFont;
 
@@ -410,32 +366,33 @@ bool textClickCallback(int line_num, const char *_line, int size, void *extra) {
 	const int lh = al_get_font_line_height(font);
 	const int y = args.y + line_num * lh;
 
-	const size_t vl = line.length();
+	const int vl = (int)al_ustr_length(line);
 	if (bbx + x <= args.mx && args.mx < bbx + x + bbw && y <= args.my && args.my < y + lh) {
 		int advance = 0;
 		int lastChar = ALLEGRO_NO_KERNING;
-		size_t i = 0;
+		int i = 0;
 		for (; i <= vl && advance <= args.mx - bbx - x; ++i) {
-			int newChar = (i >= vl) ? ALLEGRO_NO_KERNING : line[i];
+			int newChar = (i >= vl) ? ALLEGRO_NO_KERNING : al_ustr_get(line, al_ustr_offset(line, i));
 			advance += al_get_glyph_advance(font, lastChar, newChar);
 			lastChar = newChar;
 		}
 
-		args.textPos += (int)i - 1;
+		args.textPos += i - 1;
 		args.found = true;
 		return false;
 	}
 	else {
-		
+
 		if (y <= args.my && args.my < y + lh) {
+			// clicks on the left of the text
 			if (args.mx >= bbx + x - args.text->mRelx && args.mx < bbx + x) {
 				args.found = true;
-				args.textPos += 1;
 				return false;
 			}
+			// clicks on the right of the text
 			else if (args.mx <= x + args.text->calcMaxWidth() && args.mx >= bbx + x + bbw) {
 				args.found = true;
-				args.textPos += vl + 1;
+				args.textPos += vl;
 				return false;
 			}
 		}
@@ -444,65 +401,234 @@ bool textClickCallback(int line_num, const char *_line, int size, void *extra) {
 	}
 }
 
+int jmg::Text::getTextIndexFromCursorPos(int fromx, int fromy) const
+{
+	TextClickArgs args;
+	args.x = calcOrigX() + mRelx;
+	args.y = calcOrigY() + mRely;
+	args.mx = fromx;
+	args.my = fromy;
+	args.textPos = 0;
+	args.text = this;
+	args.found = false;
+
+	al_do_multiline_ustr(mFont, calcMaxWidth(), mValue, textClickCallback, (void*)&args);
+
+	return args.found ? args.textPos : -1;
+}
+
+struct TextDrawArgs {
+	int charCount;
+	int advance; // if it's set negative it's not calculated
+	int line; // idem
+	const jmg::Text* text;
+};
+
+bool textDrawCallback(int line_num, const ALLEGRO_USTR *line, void *extra) {
+	TextDrawArgs& args = *((TextDrawArgs*)extra);
+	const int size = (int)al_ustr_length(line);
+
+	if (args.charCount + size + 1 <= args.text->mTextPos) {
+		args.charCount += size + 1;
+		return true;
+	}
+	else {
+		if (args.advance >= 0) {
+			args.advance = 0;
+			int lastChar = ALLEGRO_NO_KERNING;
+			int linePos = args.text->mTextPos + 1 - args.charCount;
+			for (int i = 0; i <= size && i < linePos; ++i) {
+				int newChar = (i >= size) ? ALLEGRO_NO_KERNING : al_ustr_get(line, al_ustr_offset(line, i));
+				args.advance += al_get_glyph_advance(args.text->mFont, lastChar, newChar);
+				lastChar = newChar;
+			}
+		}
+
+		if (args.line >= 0) {
+			args.line = line_num * al_get_font_line_height(args.text->mFont);
+		}
+		return false;
+	}
+}
+
+
+void jmg::Text::getCursorPosFromTextIndex(int pos, int * posx, int * posy) const
+{
+	TextDrawArgs args;
+	args.charCount = 0;
+	args.advance = posx ? 0 : -1; // avoid unnecessary cpu usage
+	args.line = posy ? 0 : -1;
+	args.text = this;
+
+	al_do_multiline_ustr(mFont, calcMaxWidth(), mValue, textDrawCallback, (void*)&args);
+
+	if (posx) *posx = mRelx + calcOrigX() + args.advance;
+	if (posy) *posy = mRely + calcOrigY() + args.line;
+}
+
+void jmg::Text::resetCursorXRef()
+{
+	int absxref;
+	getCursorPosFromTextIndex(mTextPos, &absxref, NULL);
+	cursorXRef = absxref - mRelx - calcOrigX() - 2;
+}
+
+
+jmg::Text::Text(const char * val) : Label(val), cursorXRef(-2), mTextPos(0)
+{
+}
+
+jmg::Text::Text(const char16_t* val) : Label(val), cursorXRef(-2), mTextPos(0)
+{
+}
+
+void jmg::Text::draw(int origx, int origy)
+{
+	const int l = 10;
+
+	int _x, _y;
+
+	getCursorPosFromTextIndex(mTextPos, &_x, &_y);
+
+	const float x = (float)_x;
+	const float y = (float)_y;
+
+	al_draw_line(x, y, x, y + l * 2, al_map_rgb(255, 0, 0), 2.0f);
+
+	jmg::Label::draw(origx, origy);
+}
+
 bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 {
 	if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1) {
+		
+		int pos = getTextIndexFromCursorPos(event.mouse.x, event.mouse.y);
 
-		/*int x = calcOrigX() + mRelx;
-		int y = calcOrigY() + mRely;
-		int mx = event.mouse.x;
-		int my = event.mouse.y;*/
-
-		TextClickArgs args;
-		args.x = calcOrigX() + mRelx;
-		args.y = calcOrigY() + mRely;
-		args.mx = event.mouse.x;
-		args.my = event.mouse.y;
-		args.textPos = 0;
-		args.text = this;
-		args.found = false;
-
-		al_do_multiline_text(mFont, calcMaxWidth(), mValue.c_str(), textClickCallback, (void*)&args);
-
-		if (args.found) {
-			mTextPos = args.textPos;
+		if (pos >= 0) {
+			cursorXRef = event.mouse.x - mRelx - calcOrigX();
+			mTextPos = pos;
 			needsRedraw(1);
 			return true;
 		}
-
-		/*int bbx, bby, bbw, bbh;
-		al_get_text_dimensions(mFont, mValue.c_str(), &bbx, &bby, &bbw, &bbh);
-		if (bbx+x <= mx && mx < bbx+x+bbw && bby+y <= my && my < bby+y+bbh) {
-			int advance = 0;
-			const size_t vl = mValue.length();
-			int lastChar = ALLEGRO_NO_KERNING;
-			size_t i = 0;
-			for (; i <= vl && advance < mx - bbx - x; ++i) {
-				int newChar = (i>=vl) ? ALLEGRO_NO_KERNING : mValue[i];
-				advance += al_get_glyph_advance(mFont, lastChar, newChar);
-				lastChar = newChar;
-			}
-
-			mTextPos = (int)i-2;
-
-			needsRedraw(1);
-			return true;
-		}*/
 	}
 	else if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
 		if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-			if (--mTextPos < 0) {
+			if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
+				while (getCharAt(--mTextPos) == ' ' && mTextPos > 0) {}
+				while (getCharAt(--mTextPos) != ' ' && mTextPos > 0) {}
+				if (mTextPos > 0) {
+					const size_t vl = al_ustr_length(mValue);
+					if (++mTextPos > vl) {
+						mTextPos = (int)vl;
+					}
+				}
+			}
+			else if (--mTextPos < 0) {
 				mTextPos = 0;
 			}
+			
+			resetCursorXRef();
 			needsRedraw(1);
 			return true;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-			const size_t vl = mValue.length();
-			if (++mTextPos > vl && vl > 0) {
+			const size_t vl = al_ustr_length(mValue);
+
+			if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
+				while (getCharAt(++mTextPos) != ' ' && mTextPos < vl) {}
+				while (getCharAt(++mTextPos) == ' ' && mTextPos < vl) {}
+			}
+			else {
+				++mTextPos;
+			}
+
+			if (mTextPos > vl) {
 				mTextPos = (int)vl;
 			}
+			resetCursorXRef();
 			needsRedraw(1);
+			return true;
+		}
+		else if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
+			int x, y;
+			getCursorPosFromTextIndex(mTextPos, NULL, &y);
+			x = cursorXRef + mRelx + calcOrigX();
+			int pos = getTextIndexFromCursorPos(x, y - al_get_font_line_height(mFont));
+			mTextPos = pos >= 0 ? pos : 0;
+			needsRedraw(1);
+			return true;
+		}
+		else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+			int x, y;
+			getCursorPosFromTextIndex(mTextPos, NULL, &y);
+			x = cursorXRef + mRelx + calcOrigX();
+			int pos = getTextIndexFromCursorPos(x, y + al_get_font_line_height(mFont));
+			if (pos > 0) {
+				mTextPos = pos;
+				needsRedraw(1);
+			}
+			return true;
+		}
+		else if (event.keyboard.keycode == ALLEGRO_KEY_END) {
+			int x, y;
+			getCursorPosFromTextIndex(mTextPos, NULL, &y);
+			const int dif = calcMaxWidth();
+			x = mRelx + calcOrigX() + dif;
+			int pos = getTextIndexFromCursorPos(x, y);
+			if (pos > 0) {
+				mTextPos = pos;
+				needsRedraw(1);
+				cursorXRef = dif;
+			}
+			return true;
+		}
+		else if (event.keyboard.keycode == ALLEGRO_KEY_HOME) {
+			int x, y;
+			getCursorPosFromTextIndex(mTextPos, NULL, &y);
+			x = calcOrigX();
+			int pos = getTextIndexFromCursorPos(x, y);
+			mTextPos = pos >= 0 ? pos : 0;
+			needsRedraw(1);
+			cursorXRef = -2;
+			return true;
+		}
+		else if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
+			if (mTextPos > 0) {
+				al_ustr_remove_chr(mValue, al_ustr_offset(mValue,--mTextPos));
+				resetCursorXRef();
+				needsRedraw(1);
+			}
+			return true;
+		}
+		else if (event.keyboard.keycode == ALLEGRO_KEY_DELETE) {
+			if (mTextPos < al_ustr_length(mValue)) {
+				al_ustr_remove_chr(mValue, al_ustr_offset(mValue, mTextPos));
+				needsRedraw(1);
+			}
+			return true;
+		}
+		else if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
+			insert('\n');
+			resetCursorXRef();
+			return true;
+		}
+		else if (event.keyboard.keycode == ALLEGRO_KEY_TAB) {
+			// couldn't find a proper tab character that would handle it correctly
+			// I could write my own way of drawing a string and treating \t how I want it
+			// but it's too much work for low importance
+			insert(' ');
+			insert(' ');
+			insert(' ');
+			insert(' ');
+			resetCursorXRef();
+			return true;
+		}
+		else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+			return true;
+		}
+		else if (event.keyboard.unichar > 0) {
+			insert(event.keyboard.unichar);
+			resetCursorXRef();
 			return true;
 		}
 	}

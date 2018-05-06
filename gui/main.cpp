@@ -27,7 +27,7 @@ int main(int nbarg, char ** args)
 
 	jmg::WallPaper wp(al_map_rgb(200, 200, 200));
 	jmg::Window win(200,250,"Salut les gens");
-	jmg::Text text("Salut je teste ma vie\ngenre lol ouais trop bien tavu ouech genre vazi quoi              _._._._._._._._._            ");
+	jmg::Text text(u"Salut je teste ma vie\ngenre lol אאאאאאיייייי ouais trop bien tavu ouech genre vazi quoi");
 	jmg::MoveableRectangle mr(200,350);
 	mr.addChild(&text);
 	text.mLimits = &mr;
