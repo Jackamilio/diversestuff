@@ -136,8 +136,12 @@ namespace jmg
 		int cursorXRef;
 
 		void resetCursorXRef();
+
+		bool handleCursorPosEvents(const ALLEGRO_EVENT& event, int& cursorPos);
+		bool collapseSelection();
 	public:
 		int mTextPos;
+		int mSelectionPos;
 
 		Text(const char* val = "");
 		Text(const char16_t* val);

@@ -340,7 +340,7 @@ void jmg::Label::draw(int origx, int origy)
 void jmg::Text::insert(int keycode)
 {
 	al_ustr_insert_chr(mValue, al_ustr_offset(mValue, mTextPos), keycode);
-	++mTextPos;
+	mSelectionPos = ++mTextPos;
 	needsRedraw(1);
 }
 
@@ -354,7 +354,7 @@ struct TextClickArgs {
 	bool found;
 };
 
-bool textClickCallback(int line_num, const ALLEGRO_USTR *line, void *extra) {
+bool getTextIndexCallback(int line_num, const ALLEGRO_USTR *line, void *extra) {
 	TextClickArgs& args = *((TextClickArgs*)extra);
 
 	int bbx, bby, bbw, bbh;
@@ -412,7 +412,7 @@ int jmg::Text::getTextIndexFromCursorPos(int fromx, int fromy) const
 	args.text = this;
 	args.found = false;
 
-	al_do_multiline_ustr(mFont, calcMaxWidth(), mValue, textClickCallback, (void*)&args);
+	al_do_multiline_ustr(mFont, calcMaxWidth(), mValue, getTextIndexCallback, (void*)&args);
 
 	return args.found ? args.textPos : -1;
 }
@@ -421,31 +421,36 @@ struct TextDrawArgs {
 	int charCount;
 	int advance; // if it's set negative it's not calculated
 	int line; // idem
-	const jmg::Text* text;
+	int textPos;
+	const ALLEGRO_FONT* font;
 };
 
-bool textDrawCallback(int line_num, const ALLEGRO_USTR *line, void *extra) {
+bool getCursorPosCallback(int line_num, const ALLEGRO_USTR *line, void *extra) {
 	TextDrawArgs& args = *((TextDrawArgs*)extra);
 	const int size = (int)al_ustr_length(line);
 
-	if (args.charCount + size + 1 <= args.text->mTextPos) {
+	if (args.charCount + size + 1 <= args.textPos) {
 		args.charCount += size + 1;
+		if (args.line >= 0 && args.charCount == args.textPos) {
+			args.line = (line_num+1) * al_get_font_line_height(args.font);
+			return false;
+		}
 		return true;
 	}
 	else {
 		if (args.advance >= 0) {
 			args.advance = 0;
 			int lastChar = ALLEGRO_NO_KERNING;
-			int linePos = args.text->mTextPos + 1 - args.charCount;
+			int linePos = args.textPos + 1 - args.charCount;
 			for (int i = 0; i <= size && i < linePos; ++i) {
 				int newChar = (i >= size) ? ALLEGRO_NO_KERNING : al_ustr_get(line, al_ustr_offset(line, i));
-				args.advance += al_get_glyph_advance(args.text->mFont, lastChar, newChar);
+				args.advance += al_get_glyph_advance(args.font, lastChar, newChar);
 				lastChar = newChar;
 			}
 		}
 
 		if (args.line >= 0) {
-			args.line = line_num * al_get_font_line_height(args.text->mFont);
+			args.line = line_num * al_get_font_line_height(args.font);
 		}
 		return false;
 	}
@@ -458,9 +463,10 @@ void jmg::Text::getCursorPosFromTextIndex(int pos, int * posx, int * posy) const
 	args.charCount = 0;
 	args.advance = posx ? 0 : -1; // avoid unnecessary cpu usage
 	args.line = posy ? 0 : -1;
-	args.text = this;
+	args.textPos = pos;
+	args.font = mFont;
 
-	al_do_multiline_ustr(mFont, calcMaxWidth(), mValue, textDrawCallback, (void*)&args);
+	al_do_multiline_ustr(mFont, calcMaxWidth(), mValue, getCursorPosCallback, (void*)&args);
 
 	if (posx) *posx = mRelx + calcOrigX() + args.advance;
 	if (posy) *posy = mRely + calcOrigY() + args.line;
@@ -474,39 +480,96 @@ void jmg::Text::resetCursorXRef()
 }
 
 
-jmg::Text::Text(const char * val) : Label(val), cursorXRef(-2), mTextPos(0)
+jmg::Text::Text(const char * val) : Label(val), cursorXRef(-2), mTextPos(0), mSelectionPos(0)
 {
 }
 
-jmg::Text::Text(const char16_t* val) : Label(val), cursorXRef(-2), mTextPos(0)
+jmg::Text::Text(const char16_t* val) : Label(val), cursorXRef(-2), mTextPos(0), mSelectionPos(0)
 {
+}
+
+struct DrawSelectionArgs {
+	int leftCursor;
+	int rightCursor;
+	int charCount;
+	int absx;
+	int absy;
+	const ALLEGRO_FONT* font;
+};
+
+bool drawSelectionCallback(int line_num, const ALLEGRO_USTR *line, void *extra) {
+	DrawSelectionArgs& args = *((DrawSelectionArgs*)extra);
+	const int size = (int)al_ustr_length(line);
+
+	if (args.charCount + size + 1 > args.leftCursor) {
+		int advance = 0;
+		int leftadvance = 0;
+		int lastChar = ALLEGRO_NO_KERNING;
+		int linePos = args.leftCursor + 1 - args.charCount;
+		int maxPos = args.rightCursor + 1 - args.charCount;
+		int max = size < maxPos ? size : maxPos;
+		if (linePos < 0) linePos = 0;
+		if (max == size) ++max;
+
+		for (int i = 0; i < max; ++i) {
+			int newChar = (i >= max) ? ALLEGRO_NO_KERNING : al_ustr_get(line, al_ustr_offset(line, i));
+			advance += al_get_glyph_advance(args.font, lastChar, newChar);
+			lastChar = newChar;
+			if (i < linePos) {
+				leftadvance = advance;
+			}
+		}
+
+		if (advance == 0) {
+			advance = al_get_glyph_width(args.font, ' ');
+		}
+
+		const int lh = al_get_font_line_height(args.font);
+		al_draw_filled_rectangle(
+			args.absx + leftadvance, args.absy + line_num * lh,
+			args.absx + advance, args.absy + (line_num + 1)*lh,
+			al_map_rgb(0, 255, 255));
+	}
+	args.charCount += size + 1;
+	return args.charCount < args.rightCursor;
 }
 
 void jmg::Text::draw(int origx, int origy)
 {
-	const int l = 10;
-
 	int _x, _y;
 
 	getCursorPosFromTextIndex(mTextPos, &_x, &_y);
-
 	const float x = (float)_x;
 	const float y = (float)_y;
+	al_draw_line(x, y, x, y + al_get_font_line_height(mFont), al_map_rgb(0, 0, 0), 1.0f);
 
-	al_draw_line(x, y, x, y + l * 2, al_map_rgb(255, 0, 0), 2.0f);
+	if (mSelectionPos != mTextPos) {
+		/*getCursorPosFromTextIndex(mSelectionPos, &_x, &_y);
+		const float x = (float)_x;
+		const float y = (float)_y;
+		al_draw_line(x, y, x, y + al_get_font_line_height(mFont), al_map_rgb(0, 255, 255), 1.0f);*/
+		DrawSelectionArgs args;
+		args.leftCursor = mSelectionPos < mTextPos ? mSelectionPos : mTextPos;
+		args.rightCursor = mSelectionPos > mTextPos ? mSelectionPos : mTextPos;
+		args.charCount = 0;
+		args.absx = origx + mRelx;
+		args.absy = origy + mRely;
+		args.font = mFont;
+		
+		al_do_multiline_ustr(mFont, calcMaxWidth(), mValue, drawSelectionCallback, (void*)&args);
+	}
 
 	jmg::Label::draw(origx, origy);
 }
 
-bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
-{
+bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event, int& cursorPos) {
 	if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1) {
-		
+
 		int pos = getTextIndexFromCursorPos(event.mouse.x, event.mouse.y);
 
 		if (pos >= 0) {
 			cursorXRef = event.mouse.x - mRelx - calcOrigX();
-			mTextPos = pos;
+			cursorPos = pos;
 			needsRedraw(1);
 			return true;
 		}
@@ -514,19 +577,19 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 	else if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
 		if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
 			if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
-				while (getCharAt(--mTextPos) == ' ' && mTextPos > 0) {}
-				while (getCharAt(--mTextPos) != ' ' && mTextPos > 0) {}
-				if (mTextPos > 0) {
+				while (getCharAt(--cursorPos) == ' ' && cursorPos > 0) {}
+				while (getCharAt(--cursorPos) != ' ' && cursorPos > 0) {}
+				if (cursorPos > 0) {
 					const size_t vl = al_ustr_length(mValue);
-					if (++mTextPos > vl) {
-						mTextPos = (int)vl;
+					if (++cursorPos > vl) {
+						cursorPos = (int)vl;
 					}
 				}
 			}
-			else if (--mTextPos < 0) {
-				mTextPos = 0;
+			else if (--cursorPos < 0) {
+				cursorPos = 0;
 			}
-			
+
 			resetCursorXRef();
 			needsRedraw(1);
 			return true;
@@ -535,15 +598,15 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 			const size_t vl = al_ustr_length(mValue);
 
 			if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
-				while (getCharAt(++mTextPos) != ' ' && mTextPos < vl) {}
-				while (getCharAt(++mTextPos) == ' ' && mTextPos < vl) {}
+				while (getCharAt(++cursorPos) != ' ' && cursorPos < vl) {}
+				while (getCharAt(++cursorPos) == ' ' && cursorPos < vl) {}
 			}
 			else {
-				++mTextPos;
+				++cursorPos;
 			}
 
-			if (mTextPos > vl) {
-				mTextPos = (int)vl;
+			if (cursorPos > vl) {
+				cursorPos = (int)vl;
 			}
 			resetCursorXRef();
 			needsRedraw(1);
@@ -551,32 +614,32 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
 			int x, y;
-			getCursorPosFromTextIndex(mTextPos, NULL, &y);
+			getCursorPosFromTextIndex(cursorPos, NULL, &y);
 			x = cursorXRef + mRelx + calcOrigX();
 			int pos = getTextIndexFromCursorPos(x, y - al_get_font_line_height(mFont));
-			mTextPos = pos >= 0 ? pos : 0;
+			cursorPos = pos >= 0 ? pos : 0;
 			needsRedraw(1);
 			return true;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
 			int x, y;
-			getCursorPosFromTextIndex(mTextPos, NULL, &y);
+			getCursorPosFromTextIndex(cursorPos, NULL, &y);
 			x = cursorXRef + mRelx + calcOrigX();
 			int pos = getTextIndexFromCursorPos(x, y + al_get_font_line_height(mFont));
 			if (pos > 0) {
-				mTextPos = pos;
+				cursorPos = pos;
 				needsRedraw(1);
 			}
 			return true;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_END) {
 			int x, y;
-			getCursorPosFromTextIndex(mTextPos, NULL, &y);
+			getCursorPosFromTextIndex(cursorPos, NULL, &y);
 			const int dif = calcMaxWidth();
 			x = mRelx + calcOrigX() + dif;
 			int pos = getTextIndexFromCursorPos(x, y);
 			if (pos > 0) {
-				mTextPos = pos;
+				cursorPos = pos;
 				needsRedraw(1);
 				cursorXRef = dif;
 			}
@@ -584,35 +647,84 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_HOME) {
 			int x, y;
-			getCursorPosFromTextIndex(mTextPos, NULL, &y);
+			getCursorPosFromTextIndex(cursorPos, NULL, &y);
 			x = calcOrigX();
 			int pos = getTextIndexFromCursorPos(x, y);
-			mTextPos = pos >= 0 ? pos : 0;
+			cursorPos = pos >= 0 ? pos : 0;
 			needsRedraw(1);
 			cursorXRef = -2;
 			return true;
 		}
+	}
+	return false;
+}
+
+bool jmg::Text::collapseSelection()
+{
+	if (mSelectionPos != mTextPos) {
+		int size = mSelectionPos - mTextPos;
+		if (size < 0) {
+			size = -size;
+			mTextPos = mSelectionPos;
+		}
+		else {
+			mSelectionPos = mTextPos;
+		}
+		al_ustr_remove_range(mValue, al_ustr_offset(mValue, mTextPos), al_ustr_offset(mValue, mTextPos + size));
+		return true;
+	}
+	return false;
+}
+
+bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
+{
+	if (handleCursorPosEvents(event, mTextPos)) {
+		ALLEGRO_KEYBOARD_STATE state;
+		al_get_keyboard_state(&state);
+		if (!(al_key_down(&state,ALLEGRO_KEY_LSHIFT) || al_key_down(&state, ALLEGRO_KEY_RSHIFT))) {
+			mSelectionPos = mTextPos;
+		}
+		return true;
+	}
+	else if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
+		if (event.keyboard.keycode == ALLEGRO_KEY_A && event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
+			mSelectionPos = 0;
+			mTextPos = (int)al_ustr_length(mValue);
+			resetCursorXRef();
+			needsRedraw(1);
+		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
-			if (mTextPos > 0) {
-				al_ustr_remove_chr(mValue, al_ustr_offset(mValue,--mTextPos));
+			if (collapseSelection()) {
+				resetCursorXRef();
+				needsRedraw(1);
+			}
+			else if (mTextPos > 0) {
+				al_ustr_remove_chr(mValue, al_ustr_offset(mValue, --mTextPos));
+				mSelectionPos = mTextPos;
 				resetCursorXRef();
 				needsRedraw(1);
 			}
 			return true;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_DELETE) {
-			if (mTextPos < al_ustr_length(mValue)) {
+			if (collapseSelection()) {
+				resetCursorXRef();
+				needsRedraw(1);
+			}
+			else if (mTextPos < al_ustr_length(mValue)) {
 				al_ustr_remove_chr(mValue, al_ustr_offset(mValue, mTextPos));
 				needsRedraw(1);
 			}
 			return true;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
+			collapseSelection();
 			insert('\n');
 			resetCursorXRef();
 			return true;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_TAB) {
+			collapseSelection();
 			// couldn't find a proper tab character that would handle it correctly
 			// I could write my own way of drawing a string and treating \t how I want it
 			// but it's too much work for low importance
@@ -624,9 +736,14 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 			return true;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+			if (mSelectionPos != mTextPos) {
+				mSelectionPos = mTextPos;
+				needsRedraw(1);
+			}
 			return true;
 		}
 		else if (event.keyboard.unichar > 0) {
+			collapseSelection();
 			insert(event.keyboard.unichar);
 			resetCursorXRef();
 			return true;
