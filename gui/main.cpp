@@ -30,7 +30,6 @@ int main(int nbarg, char ** args)
 	jmg::Text text(u"Salut je teste ma vie\ngenre lol אאאאאאיייייי ouais trop bien tavu ouech genre vazi quoi");
 	jmg::MoveableRectangle mr(200,350);
 	mr.addChild(&text);
-	text.mLimits = &mr;
 	wp.addChild(&mr);
 
 	win.mColor.g = 0;
@@ -38,8 +37,9 @@ int main(int nbarg, char ** args)
 	win.mRelx = 300;
 	win.mRely = 150;
 
-	text.mRelx = 20;
-	text.mRely = 20;
+	text.mRelx = 10;
+	text.mRely = 10;
+	text.mWidth = mr.mWidth - text.mRelx * 2;
 
 	wp.addChild(&win);
 

@@ -113,11 +113,10 @@ namespace jmg
 	public:
 		ALLEGRO_USTR* mValue;
 		ALLEGRO_FONT* mFont;
-		Rectangle* mLimits;
+		int mWidth;
 
 		inline int getCharAt(int pos) const { return al_ustr_get(mValue, al_ustr_offset(mValue, pos)); }
 
-		int calcMaxWidth() const;
 		inline void setValue(const char* val) { al_ustr_assign_cstr(mValue, val); }
 		void setValue(const char16_t* val);
 
@@ -133,11 +132,13 @@ namespace jmg
 		void insert(int keycode);
 		int getTextIndexFromCursorPos(int fromx, int fromy) const;
 		void getCursorPosFromTextIndex(int pos, int* posx, int* posy) const;
+		
 		int cursorXRef;
-
 		void resetCursorXRef();
 
-		bool handleCursorPosEvents(const ALLEGRO_EVENT& event, int& cursorPos);
+		bool mClicking;
+
+		bool handleCursorPosEvents(const ALLEGRO_EVENT& event);
 		bool collapseSelection();
 	public:
 		int mTextPos;
