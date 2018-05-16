@@ -1,0 +1,14 @@
+fuckingtest {
+int toutou = -3
+uint tatie = 18
+float poutou = 48.9
+double pouetatute = 2222.2222
+vec3 posichiant = 18 19 20.5
+vec4 faipatapute = 5 4 3 2
+quat tournicoti = 3.14 31.4 413 341
+}
+gameobject {
+locrotscale transform
+string model
+fuckingtest phoque
+}
