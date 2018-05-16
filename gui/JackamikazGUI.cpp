@@ -25,9 +25,17 @@ bool jmg::Base::handleEvent(const ALLEGRO_EVENT & event)
 	return false;
 }
 
+bool jmg::Base::has(const Base * child) const
+{
+	return std::find(mChildren.begin(), mChildren.end(), child) != mChildren.end();
+}
+
 void jmg::Base::addChild(Base * child)
 {
-	if (child) {
+	if (child && !has(child)) {
+		if (child->mParent != this) {
+			child->remove();
+		}
 		mChildren.push_back(child);
 		child->mParent = this;
 	}
@@ -90,18 +98,20 @@ void jmg::Base::needsRedraw(int depth)
 	farthestParent->mNeedsRedraw = true;
 }
 
+typedef std::list<jmg::Base*> BaseList;
+
 void jmg::Base::cascadeDraw(int origx, int origy, bool parentNeedsIt)
 {
 	bool r = mNeedsRedraw = mNeedsRedraw || parentNeedsIt;
 	redraw(origx, origy);
-	for (std::vector<Base*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it) {
+	for (BaseList::iterator it = mChildren.begin(); it != mChildren.end(); ++it) {
 		(*it)->cascadeDraw(origx+mRelx, origy+mRely, r);
 	}
 }
 
 bool jmg::Base::cascadeHandleEvent(const ALLEGRO_EVENT& event)
 {
-	for (std::vector<Base*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it) {
+	for (BaseList::reverse_iterator it = mChildren.rbegin(); it != mChildren.rend(); ++it) {
 		if ((*it)->cascadeHandleEvent(event)) {
 			return true;
 		}
@@ -211,9 +221,33 @@ bool jmg::Window::handleEvent(const ALLEGRO_EVENT & event)
 	return catchMouse(event);
 }
 
+void jmg::Window::open()
+{
+	if (parent()) {
+		parent()->addChild(this);
+		needsRedraw(-1);
+	}
+}
+
 void jmg::Window::close()
 {
 	remove();
+	needsRedraw(-1);
+}
+
+void jmg::Window::setParent(Base * p, bool startsOpen)
+{
+	if (p != parent()) {
+		p->addChild(this);
+		if (!startsOpen) {
+			remove();
+		}
+		needsRedraw(-1);
+	}
+	else if (p && p->has(this) != startsOpen) {
+		startsOpen ? p->addChild(this) : remove();
+		needsRedraw(-1);
+	}
 }
 
 jmg::InteractiveRectangle::InteractiveRectangle()
@@ -597,7 +631,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 				while (getCharAt(--mTextPos) == ' ' && mTextPos > 0) {}
 				while (getCharAt(--mTextPos) != ' ' && mTextPos > 0) {}
 				if (mTextPos > 0) {
-					const size_t vl = al_ustr_length(mValue);
+					const int vl = (int)al_ustr_length(mValue);
 					if (++mTextPos > vl) {
 						mTextPos = (int)vl;
 					}
@@ -612,7 +646,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 			return true;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-			const size_t vl = al_ustr_length(mValue);
+			const int vl = (int)al_ustr_length(mValue);
 
 			if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
 				while (getCharAt(++mTextPos) != ' ' && mTextPos < vl) {}
@@ -732,7 +766,7 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 				resetCursorXRef();
 				needsRedraw(1);
 			}
-			else if (mTextPos < al_ustr_length(mValue)) {
+			else if (mTextPos < (int)al_ustr_length(mValue)) {
 				al_ustr_remove_chr(mValue, al_ustr_offset(mValue, mTextPos));
 				needsRedraw(1);
 			}

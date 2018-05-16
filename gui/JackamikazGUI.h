@@ -5,7 +5,7 @@
 #include <allegro5\allegro_font.h>
 #include <allegro5\events.h>
 #include <allegro5\utf8.h>
-#include <vector>
+#include <list>
 
 #pragma warning(disable:4250)
 
@@ -18,7 +18,7 @@ namespace jmg
 		bool cascadeHandleEvent(const ALLEGRO_EVENT& event);
 
 		Base * mParent;
-		std::vector<Base*> mChildren;
+		std::list<Base*> mChildren;
 		bool mNeedsRedraw;
 
 	protected:
@@ -30,6 +30,10 @@ namespace jmg
 		ALLEGRO_COLOR mColor;
 
 		Base(int relx=0, int rely=0, ALLEGRO_COLOR color=al_map_rgb(255,255,255));
+
+		inline Base* parent() { return mParent; }
+
+		bool has(const Base* child) const;
 
 		void addChild(Base* child);
 		void remove();
@@ -160,7 +164,10 @@ namespace jmg
 		Window(int w, int h, const char* caption = "Window");
 		bool handleEvent(const ALLEGRO_EVENT& event);
 
+		void open();
 		void close();
+
+		void setParent(Base* parent, bool startsOpen);
 	};
 
 	ALLEGRO_FONT* fetchDefaultFont();

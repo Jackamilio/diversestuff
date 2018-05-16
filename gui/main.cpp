@@ -41,7 +41,7 @@ int main(int nbarg, char ** args)
 	text.mRely = 10;
 	text.mWidth = mr.mWidth - text.mRelx * 2;
 
-	wp.addChild(&win);
+	win.setParent(&wp, false);
 
 
 	bool quitApp = false;
@@ -52,6 +52,10 @@ int main(int nbarg, char ** args)
 			quitApp = true;
 		}
 		else {
+			if (event.type == ALLEGRO_EVENT_KEY_UP
+			 && event.keyboard.keycode == ALLEGRO_KEY_F1) {
+				win.open();
+			}
 			wp.baseHandleEvent(event);
 			wp.baseDraw();
 			al_flip_display();
