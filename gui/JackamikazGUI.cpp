@@ -507,9 +507,9 @@ struct DrawSelectionArgs {
 
 bool drawSelectionCallback(int line_num, const ALLEGRO_USTR *line, void *extra) {
 	DrawSelectionArgs& args = *((DrawSelectionArgs*)extra);
-	const int size = (int)al_ustr_length(line);
+	const int size = (int)al_ustr_length(line) + 1; //+1 for extra space counted at the end of a line
 
-	if (args.charCount + size + 1 > args.leftCursor) {
+	if (args.charCount + size > args.leftCursor) {
 		int advance = 0;
 		int leftadvance = 0;
 		int lastChar = ALLEGRO_NO_KERNING;
@@ -538,7 +538,7 @@ bool drawSelectionCallback(int line_num, const ALLEGRO_USTR *line, void *extra) 
 			args.absx + advance, args.absy + (line_num + 1)*lh,
 			al_map_rgb(0, 255, 255));
 	}
-	args.charCount += size + 1;
+	args.charCount += size;
 	return args.charCount < args.rightCursor;
 }
 
