@@ -2,3 +2,9 @@
 /gui/packages
 /gui/x64
 /gui/.vs
+/datadriven/Debug
+/datadriven/packages
+/datadriven/x64
+/datadriven/datadriven/Debug
+/datadriven/datadriven/x64
+/datadriven/.vs
