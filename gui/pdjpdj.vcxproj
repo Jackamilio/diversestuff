@@ -153,6 +153,7 @@
     <ClCompile Include="Dump.cpp" />
     <ClCompile Include="Editorcamera.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Exposing.cpp" />
     <ClCompile Include="GraphicContext.cpp" />
     <ClCompile Include="JackamikazGUI.cpp" />
     <ClCompile Include="LevelData.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Dump.h" />
     <ClInclude Include="Editorcamera.h" />
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="Exposing.h" />
     <ClInclude Include="GraphicContext.h" />
     <ClInclude Include="Interpolator.h" />
     <ClInclude Include="JackamikazGUI.h" />

@@ -13,18 +13,18 @@
 //#include "GameData.h"
 
 class LevelData {
-	class Saveable {
-	protected:
-		virtual void Save(std::ofstream& f) const = 0;
-		virtual void Load(std::ifstream& i) = 0;
-	};
+	//class Saveable {
+	//protected:
+	//	virtual void Save(std::ofstream& f) const = 0;
+	//	virtual void Load(std::ifstream& i) = 0;
+	//};
 
 public:
 	LevelData();
 	~LevelData();
 
-	bool Save(const char* filename);
-	bool Load(const char* filename);
+	//bool Save(const char* filename);
+	bool OldLoad(const char* filename);
 
 	void Clear();
 
@@ -33,10 +33,10 @@ public:
 
 
 	// Tileset section
-	class TilesetData : public Saveable {
+	class TilesetData {//: public Saveable {
 	public:
-		void Save(std::ofstream& f) const;
-		void Load(std::ifstream& f);
+		//void Save(std::ofstream& f) const;
+		void OldLoad(std::ifstream& f);
 
 		TilesetData();
 		TilesetData(const TilesetData& copy);
@@ -55,10 +55,10 @@ public:
 	bool UpdateTilesetData(int index, const char * file, unsigned int ox, unsigned int oy, unsigned int px, unsigned int py, unsigned int tw, unsigned int th);
 
 	// Brick section
-	class Vertex : public Saveable {
+	class Vertex {//: public Saveable {
 	public:
-		void Save(std::ofstream& f) const;
-		void Load(std::ifstream& f);
+		//void Save(std::ofstream& f) const;
+		void OldLoad(std::ifstream& f);
 
 		Vertex();
 		Vertex(const Vertex& vert);
@@ -79,10 +79,10 @@ public:
 	};
 
 	friend class BrickData;
-	class BrickData : public Saveable {
+	class BrickData {//: public Saveable {
 	public:
-		void Save(std::ofstream& f) const;
-		void Load(std::ifstream& f);
+		//void Save(std::ofstream& f) const;
+		void OldLoad(std::ifstream& f);
 	
 		BrickData(LevelData& ld);
 		LevelData& levelData;
@@ -111,10 +111,10 @@ public:
 	void AddBrickData();
 
 	// Actual level data
-	class Coordinate : public Saveable {
+	class Coordinate {//: public Saveable {
 	public:
-		void Save(std::ofstream& f) const;
-		void Load(std::ifstream& f);
+		//void Save(std::ofstream& f) const;
+		void OldLoad(std::ifstream& f);
 
 		Coordinate();
 		Coordinate(int X, int Y, int Z);
@@ -129,10 +129,10 @@ public:
 		inline bool operator!=(const Coordinate& c) const { return x != c.x || y != c.y || z != c.z; }
 	};
 
-	class Brick : public Saveable {
+	class Brick {//: public Saveable {
 	public:
-		void Save(std::ofstream& f) const;
-		void Load(std::ifstream& f);
+		//void Save(std::ofstream& f) const;
+		void OldLoad(std::ifstream& f);
 		bool operator==(const Brick& comp) const;
 		bool operator!=(const Brick& comp) const;
 

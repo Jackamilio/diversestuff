@@ -32,17 +32,21 @@ public:
 		engine.graphics.proj = glm::perspective(glm::radians(40.0f), 640.0f / 480.0f, 0.5f, 50.0f);
 	}
 
-	void Event(ALLEGRO_EVENT& event) {
+	bool Event(ALLEGRO_EVENT& event) {
 		if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1) {
 			mleft = true;
+			return true;
 		}
-		if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == 1) {
+		else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == 1) {
 			mleft = false;
+			return true;
 		}
-		if (event.type == ALLEGRO_EVENT_MOUSE_AXES && mleft) {
+		else if (event.type == ALLEGRO_EVENT_MOUSE_AXES && mleft) {
 			camera.horAngle += (float)event.mouse.dx * 0.01f;
 			camera.verAngle += (float)event.mouse.dy * 0.01f;
+			return true;
 		}
+		return false;
 	}
 
 	void Step() {
@@ -68,7 +72,7 @@ public:
 	//btRigidBody* body;
 
 	EngineLevel(Engine& e, const char* level) : engine(e) {
-		lvldt.Load(level);
+		lvldt.OldLoad(level);
 		model = &engine.graphics.models.Get(&lvldt);
 		DrawLevelData(lvldt, engine.graphics.textures, true);
 		glEndList();
@@ -117,7 +121,7 @@ public:
 		, mr(200, 350)
 	{
 		engine.overlayGraphic.AddChild(this);
-		engine.inputRoot.AddChild(this);
+		engine.inputRoot.AddChild(this,true);
 
 		mr.addChild(&text);
 		root.addChild(&mr);
@@ -139,12 +143,12 @@ public:
 		root.baseDraw();
 	}
 
-	void Event(ALLEGRO_EVENT& event) {
+	bool Event(ALLEGRO_EVENT& event) {
 		if (event.type == ALLEGRO_EVENT_KEY_UP
 		 && event.keyboard.keycode == ALLEGRO_KEY_F1) {
 			win.open();
 		}
-		root.baseHandleEvent(event);
+		return root.baseHandleEvent(event);
 	}
 };
 
@@ -195,7 +199,7 @@ int main(int nbarg, char ** args) {
 		TestCamera camera(engine);
 		EngineLevel lvl(engine,"niveau.lvl");
 		FPSCounter fc(engine);
-		//JmGui gui(engine);
+		JmGui gui(engine);
 
 		while (engine.OneLoop()) {}
 	}

@@ -39,7 +39,7 @@ namespace jmg
 		void remove();
 
 		void baseDraw();
-		void baseHandleEvent(const ALLEGRO_EVENT& event);
+		bool baseHandleEvent(const ALLEGRO_EVENT& event);
 
 		int calcOrigX() const;
 		int calcOrigY() const;

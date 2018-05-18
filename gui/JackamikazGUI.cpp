@@ -57,11 +57,12 @@ void jmg::Base::baseDraw()
 	}
 }
 
-void jmg::Base::baseHandleEvent(const ALLEGRO_EVENT& event)
+bool jmg::Base::baseHandleEvent(const ALLEGRO_EVENT& event)
 {
 	if (mParent == NULL) {
-		cascadeHandleEvent(event);
+		return cascadeHandleEvent(event);
 	}
+	return false;
 }
 
 int jmg::Base::calcOrigX() const

@@ -148,13 +148,16 @@ bool Engine::Init()
 	return true;
 }
 
-void RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event) {
-	input->Event(event);
-	if (!input->stopChild) {
+bool RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event) {
+	if (!input->Event(event)) {
 		for (unsigned int i = 0; i < input->children.size(); ++i) {
-			RecursiveInput(input->children[i], event);
+			if (RecursiveInput(input->children[i], event)) {
+				return true;
+			}
 		}
+		return false;
 	}
+	return true;
 }
 
 void RecursiveUpdate(Engine::Update* update) {
@@ -178,9 +181,15 @@ bool Engine::OneLoop()
 	time = al_get_time();
 	dt = time - lastTime;
 
+	bool stayOpen = true;
 	ALLEGRO_EVENT event;
 	while (al_get_next_event(eventQueue, &event)) {
-		RecursiveInput(&inputRoot, event);
+		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			stayOpen = false;
+		}
+		else {
+			RecursiveInput(&inputRoot, event);
+		}
 	}
 
 	//physics->stepSimulation(dt, 10);
@@ -196,7 +205,7 @@ bool Engine::OneLoop()
 		al_rest(dtTarget - elapsed);
 	}
 
-	return inputRoot.ContinueLoop();
+	return stayOpen;
 }
 
 /*void Engine::Dynamic::Collision(Engine::Dynamic* other, btPersistentManifold& manifold)
@@ -208,14 +217,9 @@ void Engine::Dynamic::ReactToCollisionFrom(btRigidBody & body)
 	body.setUserPointer((void*)this);
 }*/
 
-void Engine::InputRoot::Event(ALLEGRO_EVENT & event)
+bool Engine::InputRoot::Event(ALLEGRO_EVENT & event)
 {
-	/*if (event.type == ALLEGRO_EVENT_KEY_DOWN && event.keyboard.keycode == ALLEGRO_KEY_F1) {
-		Gui::Send(Gui::Message::openMainWindow);
-	}*/
-	if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-		stopChild = true;
-	}
+	return false;
 }
 
 /*void Engine::DynamicRoot::Tick()

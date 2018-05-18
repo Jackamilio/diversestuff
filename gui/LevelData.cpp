@@ -12,7 +12,7 @@ LevelData::~LevelData()
 	Clear();
 }
 
-bool LevelData::Save(const char * filename)
+/*bool LevelData::Save(const char * filename)
 {
 	std::ofstream f;
 	f.open(filename, std::ios::out);
@@ -56,9 +56,9 @@ bool LevelData::Save(const char * filename)
 		return true;
 	}
 	return false;
-}
+}*/
 
-bool LevelData::Load(const char * filename)
+bool LevelData::OldLoad(const char * filename)
 {
 	std::ifstream f;
 	f.open(filename, std::ios::in);
@@ -70,25 +70,25 @@ bool LevelData::Load(const char * filename)
 		f >> nb;
 		for (unsigned int i = 0; i < nb; ++i) {
 			LevelData::TilesetData* tileset = undoRedoer.UseSPtr(new LevelData::TilesetData());
-			tileset->Load(f);
+			tileset->OldLoad(f);
 			tilesets.push_back(tileset);
 		}
 		f >> nb;
 		for (unsigned int i = 0; i < nb; ++i) {
 			LevelData::BrickData* brick = undoRedoer.UseSPtr(new LevelData::BrickData(*this));
-			brick->Load(f);
+			brick->OldLoad(f);
 			bricks.push_back(brick);
 		}
 		f >> nb;
 		for (unsigned int i = 0; i < nb; ++i) {
 			Coordinate c;
-			c.Load(f);
+			c.OldLoad(f);
 			unsigned int nb2;
 			f >> nb2;
 			BrickHeap& ref = level[c];
 			for (unsigned int j = 0; j < nb2; ++j) {
 				Brick b(*this);
-				b.Load(f);
+				b.OldLoad(f);
 				ref.push_back(b);
 			}
 		}
@@ -365,21 +365,23 @@ bool LevelData::RayCast(const glm::vec3 & rayOrigin, const glm::vec3 & rayDirect
 	return false;
 }
 
-void LevelData::TilesetData::Save(std::ofstream & f) const
+/*void LevelData::TilesetData::Save(std::ofstream & f) const
 {
-	f /*OLD COMMENT<< file.size() << ' '*/ << file << ' ';
+	//OLD COMMENT f /_OLD COMMENT<< file.size() << ' '_/ << file << ' ';
+	f << file << ' ';
 	f << ox << ' ' << oy << ' ' << px << ' ' << py << ' ' << tw << ' ' << th << ' ';
 	f << '\n';
-}
+}*/
 
-void LevelData::TilesetData::Load(std::ifstream & f)
+void LevelData::TilesetData::OldLoad(std::ifstream & f)
 {
-	/*OLD COMMENTunsigned int l;
-	f >> l;
-	char* c = new char[l];
-	f.read(c, l);
-	file = c;
-	delete[] c;*/
+	//OLD COMMENT
+	//unsigned int l;
+	//f >> l;
+	//char* c = new char[l];
+	//f.read(c, l);
+	//file = c;
+	//delete[] c;
 	f >> file >> ox >> oy >> px >> py >> tw >> th;
 }
 
@@ -425,13 +427,13 @@ LevelData::TilesetData::~TilesetData()
 	ox = 0;
 }
 
-void LevelData::Vertex::Save(std::ofstream & f) const
+/*void LevelData::Vertex::Save(std::ofstream & f) const
 {
 	f << x << ' ' << y << ' ' << z << ' ' << u << ' ' << v << ' ';
 	f << '\n';
-}
+}*/
 
-void LevelData::Vertex::Load(std::ifstream & f)
+void LevelData::Vertex::OldLoad(std::ifstream & f)
 {
 	f >> x >> y >> z >> u >> v;
 }
@@ -461,7 +463,7 @@ LevelData::Vertex::~Vertex()
 {
 }
 
-void LevelData::BrickData::Save(std::ofstream & f) const
+/*void LevelData::BrickData::Save(std::ofstream & f) const
 {
 	f << vertices.size() << '\n';
 	for (unsigned int i = 0; i < vertices.size(); ++i) {
@@ -473,15 +475,15 @@ void LevelData::BrickData::Save(std::ofstream & f) const
 		f << triangles[i] << ' ';
 	}
 	f << '\n';
-}
+}*/
 
-void LevelData::BrickData::Load(std::ifstream & f)
+void LevelData::BrickData::OldLoad(std::ifstream & f)
 {
 	unsigned int nb;
 	f >> nb;
 	for (unsigned int i = 0; i < nb; ++i) {
 		Vertex* vert = levelData.undoRedoer.UseSPtr(new Vertex());
-		vert->Load(f);
+		vert->OldLoad(f);
 		vertices.push_back(vert);
 	}
 	f >> nb;
@@ -526,12 +528,12 @@ bool LevelData::BrickData::UpdateTriangleList(const TriangleList & tri)
 	return true;
 }
 
-void LevelData::Brick::Save(std::ofstream & f) const
+/*void LevelData::Brick::Save(std::ofstream & f) const
 {
 	f << tilex << ' ' << tiley << ' ' << levelData.FindTilesetData(tilesetdata) << ' ' << levelData.FindBrickData(brickdata) << ' ' << matrix.AsSingleInt() << ' ';
-}
+}*/
 
-void LevelData::Brick::Load(std::ifstream & f)
+void LevelData::Brick::OldLoad(std::ifstream & f)
 {
 	f >> tilex >> tiley;
 	int i;
@@ -627,12 +629,12 @@ void LevelData::Brick::TransformTriangle(const glm::vec3 & position, int triangl
 	ot3 = t3.xyz();
 }
 
-void LevelData::Coordinate::Save(std::ofstream & f) const
+/*void LevelData::Coordinate::Save(std::ofstream & f) const
 {
 	f << x << ' ' << y << ' ' << z << ' ';
-}
+}*/
 
-void LevelData::Coordinate::Load(std::ifstream & f)
+void LevelData::Coordinate::OldLoad(std::ifstream & f)
 {
 	f >> x >> y >> z;
 }

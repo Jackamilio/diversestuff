@@ -24,12 +24,11 @@ public:
 	class Node {
 	public:
 		std::vector<T*> children;
-		void AddChild(T* c);
+		void AddChild(T* c, bool onTop = false);
 	};
 	class Input : public Node<Input> {
 	public:
-		virtual void Event(ALLEGRO_EVENT& event) = 0;
-		bool stopChild;
+		virtual bool Event(ALLEGRO_EVENT& event) = 0;
 	};
 	/*class Dynamic : public Node<Dynamic> {
 	public:
@@ -49,8 +48,7 @@ public:
 	// root node classes
 	class InputRoot : public Input {
 	public:
-		void Event(ALLEGRO_EVENT& event);
-		inline bool ContinueLoop() { return !stopChild; }
+		bool Event(ALLEGRO_EVENT& event);
 	};
 	/*class DynamicRoot : public Dynamic {
 	public:
@@ -172,9 +170,14 @@ private:
 };
 
 template<class T>
-inline void Engine::Node<T>::AddChild(T * c)
+inline void Engine::Node<T>::AddChild(T * c, bool onTop)
 {
-	children.push_back(c);
+	if (onTop) {
+		children.insert(children.begin(), c);
+	}
+	else {
+		children.push_back(c);
+	}
 }
 
 template<class T>
