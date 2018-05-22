@@ -56,6 +56,28 @@ namespace jmg
 		void draw(int, int);
 	};
 
+	class Image : public Base {
+	public:
+		enum PreRenderedImage {
+			CROSS,
+			ARROW_UP,
+			ARROW_DOWN,
+			ARROW_LEFT,
+			ARROW_RIGHT
+		};
+
+		static ALLEGRO_BITMAP* getImage(PreRenderedImage img);
+
+		ALLEGRO_BITMAP* mImage;
+
+		Image(const ALLEGRO_COLOR& color = al_map_rgb(255,255,255));
+		Image(const char* file, const ALLEGRO_COLOR& color = al_map_rgb(255, 255, 255));
+		Image(ALLEGRO_BITMAP* bitmap, const ALLEGRO_COLOR& color = al_map_rgb(255, 255, 255));
+		Image(PreRenderedImage image, const ALLEGRO_COLOR& color = al_map_rgb(255, 255, 255));
+
+		void draw(int, int);
+	};
+
 	class Rectangle {
 	public:
 		Rectangle();
@@ -162,6 +184,7 @@ namespace jmg
 	public:
 		MoveableRectangle mMover;
 		Button mBtnClose;
+		Image mBtnImage;
 		Label mCaption;
 
 		Window(int w, int h, const char* caption = "Window");

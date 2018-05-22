@@ -143,6 +143,7 @@ public:
 		engine.overlayGraphic.AddChild(this);
 		engine.inputRoot.AddChild(this,true);
 
+		mr.mColor = al_map_rgba(255, 255, 255, 127);
 		mr.addChild(&text);
 		root.addChild(&mr);
 

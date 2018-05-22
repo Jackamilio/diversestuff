@@ -66,40 +66,38 @@ namespace Exposing {
 
 	typedef std::vector<StructMember> StructInfo;
 
+	class StructComplete {
+	public:
+		std::string name;
+		Exposing::StructInfo desc;
+
+		StructComplete();
+		StructComplete(const char* n, const Exposing::StructInfo& d);
+	};
+
+	extern std::map<Exposing::Type, StructComplete> registeredTypes;
+
 	Type defineStruct(const char* name, const StructInfo& members, unsigned int structSize);
+
+	class WatcherWindow : public jmg::Window {
+	public:
+		const StructComplete& mWatchedStruct;
+		void* mWatchedAddress;
+		std::vector<jmg::Label*> mNameLabels;
+		std::vector<jmg::Label*> mValueLabels;
+
+		void refreshValueForLabels();
+
+		void draw(int origx, int origy);
+
+		WatcherWindow(const StructComplete& sc, void* wa);
+		~WatcherWindow();
+	};
 
 	template<class T>
 	jmg::Window* createWatcherFor(T& obj);
 };
 
-
-// move this fucker inside Exposing
-class StructComplete {
-public:
-	std::string name;
-	Exposing::StructInfo desc;
-
-	StructComplete();
-	StructComplete(const char* n, const Exposing::StructInfo& d);
-};
-
-extern std::map<Exposing::Type, StructComplete> registeredTypes;
-
-// move this fucker inside Exposing too
-class WatcherWindow : public jmg::Window {
-public:
-	const StructComplete& mWatchedStruct;
-	void* mWatchedAddress;
-	std::vector<jmg::Label*> mNameLabels;
-	std::vector<jmg::Label*> mValueLabels;
-
-	void refreshValueForLabels();
-
-	void draw(int origx, int origy);
-
-	WatcherWindow(const StructComplete& sc, void* wa);
-	~WatcherWindow();
-};
 
 template<class T>
 jmg::Window * Exposing::createWatcherFor(T& obj)

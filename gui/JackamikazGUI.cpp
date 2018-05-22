@@ -1,4 +1,5 @@
 #include "JackamikazGUI.h"
+#include <map>
 #include <algorithm>
 #include <allegro5\allegro.h>
 #include <allegro5\allegro_primitives.h>
@@ -222,7 +223,11 @@ void callbackTest(void* arg) {
 	}
 }
 
-jmg::Window::Window(int w, int h, const char* capt) : Rectangle(w,h), mMover(w - 18, 22), mBtnClose(22,22)
+jmg::Window::Window(int w, int h, const char* capt)
+	: Rectangle(w,h)
+	, mMover(w - 18, 22)
+	, mBtnClose(22,22)
+	, mBtnImage(Image::CROSS)
 {
 	mMover.mRelx = -2;
 	mMover.mRely = -22;
@@ -236,6 +241,7 @@ jmg::Window::Window(int w, int h, const char* capt) : Rectangle(w,h), mMover(w -
 	mBtnClose.mRely = mMover.mRely;
 	mBtnClose.mCallback = callbackTest;
 	mBtnClose.mCallbackArgs = (void*)this;
+	mBtnClose.addChild(&mBtnImage);
 	mRelx = 2;
 	mRely = 22;
 
@@ -832,4 +838,56 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 		}
 	}
 	return false;
+}
+
+ALLEGRO_BITMAP * jmg::Image::getImage(PreRenderedImage image)
+{
+	static std::map<PreRenderedImage, ALLEGRO_BITMAP*> images;
+	if (!images[image]) {
+		ALLEGRO_BITMAP* img = nullptr;
+		
+		ALLEGRO_BITMAP* target = al_get_target_bitmap();
+		switch (image) {
+		case CROSS:
+			img = al_create_bitmap(22, 22);
+			al_set_target_bitmap(img);
+			al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+			al_draw_line(2, 2, 20, 20, al_map_rgba(0, 0, 0, 255), 1.5f);
+			al_draw_line(20, 2, 2, 20, al_map_rgba(0, 0, 0, 255), 1.5f);
+			break;
+		default:
+		case ARROW_UP:
+		case ARROW_DOWN:
+		case ARROW_LEFT:
+		case ARROW_RIGHT:
+			break;
+		}
+
+		al_set_target_bitmap(target);
+		images[image] = img;
+	}
+	return images[image];
+}
+
+jmg::Image::Image(const ALLEGRO_COLOR & color) : Base(0,0,color), mImage(nullptr)
+{
+}
+
+jmg::Image::Image(const char * file, const ALLEGRO_COLOR & color) : Base(0, 0, color), mImage(al_load_bitmap(file))
+{
+}
+
+jmg::Image::Image(ALLEGRO_BITMAP * bitmap, const ALLEGRO_COLOR & color) : Base(0, 0, color), mImage(bitmap)
+{
+}
+
+jmg::Image::Image(PreRenderedImage image, const ALLEGRO_COLOR & color) : Base(0, 0, color), mImage(getImage(image))
+{
+}
+
+void jmg::Image::draw(int origx, int origy)
+{
+	if (mImage) {
+		al_draw_tinted_bitmap(mImage, mColor, origx + mRelx, origy + mRely, 0);
+	}
 }

@@ -11,7 +11,7 @@ template<> Exposing::Type Exposing::getType<float>() { return Exposing::FLOAT; }
 template<> Exposing::Type Exposing::getType<double>() { return Exposing::DOUBLE; }
 template<> Exposing::Type Exposing::getType<std::string>() { return Exposing::STRING; }
 
-std::map<Exposing::Type, StructComplete> registeredTypes;
+std::map<Exposing::Type, Exposing::StructComplete> Exposing::registeredTypes;
 unsigned int typeCount = (unsigned int)Exposing::MAX;
 
 Exposing::Type Exposing::defineStruct(const char * name, const Exposing::StructInfo& members, unsigned int structSize)
@@ -35,7 +35,7 @@ Exposing::StructMember::StructMember(const char * n, Type t, unsigned int o)
 {
 }
 
-void WatcherWindow::refreshValueForLabels()
+void Exposing::WatcherWindow::refreshValueForLabels()
 {
 	for (unsigned int i = 0; i < (unsigned int)mValueLabels.size(); ++i) {
 		char* address = (char*)mWatchedAddress + mWatchedStruct.desc[i].offset;
@@ -50,7 +50,7 @@ void WatcherWindow::refreshValueForLabels()
 	}
 }
 
-void WatcherWindow::draw(int origx, int origy)
+void Exposing::WatcherWindow::draw(int origx, int origy)
 {
 	refreshValueForLabels();
 	jmg::Window::draw(origx, origy);
@@ -58,13 +58,13 @@ void WatcherWindow::draw(int origx, int origy)
 
 void closeWatcherCallback(void* arg) {
 	if (arg) {
-		WatcherWindow* win = (WatcherWindow*)arg;
+		Exposing::WatcherWindow* win = (Exposing::WatcherWindow*)arg;
 		win->mDeleteMe = true;
 		win->close();
 	}
 }
 
-WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa) : jmg::Window(300, 100, sc.name.c_str()), mWatchedStruct(sc), mWatchedAddress(wa)
+Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa) : jmg::Window(300, 100, sc.name.c_str()), mWatchedStruct(sc), mWatchedAddress(wa)
 {
 	int y = 20;
 	const int xl = 20;
@@ -95,7 +95,7 @@ WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa) : jmg::Window(
 	mBtnClose.mCallbackArgs = (void*)this;
 }
 
-WatcherWindow::~WatcherWindow()
+Exposing::WatcherWindow::~WatcherWindow()
 {
 	for (unsigned int i = 0; i < (unsigned int)mNameLabels.size(); ++i) {
 		delete mNameLabels[i];
@@ -107,10 +107,10 @@ WatcherWindow::~WatcherWindow()
 	mValueLabels.clear();
 }
 
-StructComplete::StructComplete() : name("Struct incomplete!!")
+Exposing::StructComplete::StructComplete() : name("Struct incomplete!!")
 {
 }
 
-StructComplete::StructComplete(const char * n, const Exposing::StructInfo & d) : name(n), desc(d)
+Exposing::StructComplete::StructComplete(const char * n, const Exposing::StructInfo & d) : name(n), desc(d)
 {
 }
