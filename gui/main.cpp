@@ -128,8 +128,7 @@ public:
 	jmg::Base root;
 	jmg::WallPaper wp;
 	jmg::Window win;
-	jmg::Text text;
-	jmg::MoveableRectangle mr;
+	jmg::Numeric num;
 
 	ExposingTest test;
 
@@ -137,26 +136,20 @@ public:
 		: engine(e)
 		, wp(al_map_rgb(200, 200, 200))
 		, win(200, 250, "Salut les gens")
-		, text(u"Salut je teste ma vie\ngenre lol אאאאאאיייייי ouais trop bien tavu ouech genre vazi quoi")
-		, mr(200, 350)
+		, num(1,5,false)
 	{
 		engine.overlayGraphic.AddChild(this);
 		engine.inputRoot.AddChild(this,true);
 
-		mr.mColor = al_map_rgba(255, 255, 255, 127);
-		mr.addChild(&text);
-		root.addChild(&mr);
-
-		win.mColor.g = 0;
 		win.mOutline = 1;
 		win.mRelx = 300;
 		win.mRely = 150;
 
-		text.mRelx = 10;
-		text.mRely = 10;
-		text.mWidth = mr.mWidth - text.mRelx * 2;
-
 		win.setParent(&root, false);
+
+		num.mRelx = 30;
+		num.mRely = 30;
+		win.addChild(&num);
 	}
 
 	void Draw() {

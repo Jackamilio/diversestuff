@@ -6,6 +6,7 @@
 #include <allegro5\events.h>
 #include <allegro5\utf8.h>
 #include <list>
+#include <string>
 
 #pragma warning(disable:4250)
 
@@ -139,14 +140,17 @@ namespace jmg
 	};
 
 	class Label : public Base {
-	public:
+	protected:
 		ALLEGRO_USTR* mValue;
+		bool mEditing;
+
+	public:
 		ALLEGRO_FONT* mFont;
 		int mWidth;
 
 		inline int getCharAt(int pos) const { return al_ustr_get(mValue, al_ustr_offset(mValue, pos)); }
 
-		inline void setValue(const char* val) { al_ustr_assign_cstr(mValue, val); }
+		void setValue(const char* val);
 		void setValue(const char16_t* val);
 
 		Label(const char* val = "");
@@ -169,15 +173,37 @@ namespace jmg
 
 		bool handleCursorPosEvents(const ALLEGRO_EVENT& event);
 		bool collapseSelection();
+		void confirmEditing();
+	protected:
+		bool mIsNumeric;
 	public:
 		int mTextPos;
 		int mSelectionPos;
+
+		void(*mEditCallback)(void*);
+		void* mEditCallbackArgs;
+
+		unsigned char mMaxDigits;
+		unsigned char mMaxDecimals;
+		bool mPositiveOnly;
 
 		Text(const char* val = "");
 		Text(const char16_t* val);
 
 		void draw(int origx, int origy);
 		bool handleEvent(const ALLEGRO_EVENT& event);
+	};
+
+	class Numeric : public Text {
+	public:
+		Numeric(unsigned char maxDigits, unsigned char maxDecimals, bool positiveOnly);
+
+		inline int getAsInt() const { return std::stoi(std::string(al_cstr(mValue))); }
+		inline float getAsFloat() const { return std::stof(std::string(al_cstr(mValue))); }
+		inline double getAsDouble() const { return std::stod(std::string(al_cstr(mValue))); }
+
+		template<typename T>
+		inline void setFrom(T& val) { setValue(std::to_string(val).c_str()); }
 	};
 
 	class Window : public DrawableRectangle {

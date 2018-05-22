@@ -130,11 +130,11 @@ bool jmg::Base::cascadeHandleEvent(const ALLEGRO_EVENT& event)
 			deleted = true;
 		}
 
-		if (deleted || (*it)->mRemoveMe) {
-			mChildren.erase(std::next(it).base());
+		if (deleted || (*it)->mRemoveMe || (*it)->mParent != this) {
 			if (!deleted) {
 				(*it)->mRemoveMe = false;
 			}
+			mChildren.erase(std::next(it).base());
 		}
 		else {
 			++it;
@@ -232,7 +232,7 @@ jmg::Window::Window(int w, int h, const char* capt)
 	mMover.mRelx = -2;
 	mMover.mRely = -22;
 	mMover.mTarget = this;
-	mMover.mColor.r = 0;
+	mMover.mColor = al_map_rgb(200,200,200);
 	mCaption.setValue(capt);
 	mCaption.mRelx = 4;
 	mCaption.mRely = 4;
@@ -372,17 +372,38 @@ ALLEGRO_FONT * jmg::fetchDefaultFont()
 	return defaultFont;
 }
 
+void jmg::Label::setValue(const char * val)
+{
+	if (!mEditing)
+	{
+		al_ustr_assign_cstr(mValue, val);
+	}
+}
+
 void jmg::Label::setValue(const char16_t * val)
 {
-	al_ustr_free(mValue);
-	mValue = al_ustr_new_from_utf16((const uint16_t*)val);
+	if (!mEditing)
+	{
+		al_ustr_free(mValue);
+		mValue = al_ustr_new_from_utf16((const uint16_t*)val);
+	}
 }
 
-jmg::Label::Label(const char * val) : Base(0,0,al_map_rgb(0, 0, 0)), mValue(al_ustr_new(val)), mFont(jmg::fetchDefaultFont()), mWidth(0xFFFFFF)
+jmg::Label::Label(const char * val)
+	: Base(0,0,al_map_rgb(0, 0, 0))
+	, mValue(al_ustr_new(val))
+	, mEditing(false)
+	, mFont(jmg::fetchDefaultFont())
+	, mWidth(0xFFFFFF)
 {
 }
 
-jmg::Label::Label(const char16_t * val) : Base(0, 0, al_map_rgb(0, 0, 0)), mValue(al_ustr_new_from_utf16((uint16_t*)val)), mFont(jmg::fetchDefaultFont()), mWidth(0xFFFFFF)
+jmg::Label::Label(const char16_t * val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+	, mValue(al_ustr_new_from_utf16((uint16_t*)val))
+	, mEditing(false)
+	, mFont(jmg::fetchDefaultFont())
+	, mWidth(0xFFFFFF)
 {
 }
 
@@ -476,9 +497,10 @@ int jmg::Text::getTextIndexFromCursorPos(int fromx, int fromy) const
 
 	// hack to reach last line if it's a newline
 	// because the do_multiline doesn't call the last line when it's the case
+	// also if it's empty we still want to be able to clic at least once to edit the text
 	const int l = (int)al_ustr_length(mValue);
 	bool revertHack = false;
-	if (l > 0 && getCharAt(l-1) == '\n') {
+	if (l > 0 && getCharAt(l-1) == '\n' || l == 0) {
 		al_ustr_insert_chr(mValue, al_ustr_offset(mValue, l), '.');
 		revertHack = true;
 	}
@@ -555,11 +577,27 @@ void jmg::Text::resetCursorXRef()
 }
 
 
-jmg::Text::Text(const char * val) : Label(val), cursorXRef(-2), mTextPos(0), mSelectionPos(0), mClicking(false)
+jmg::Text::Text(const char * val)
+	: Label(val)
+	, cursorXRef(-2)
+	, mTextPos(0)
+	, mSelectionPos(0)
+	, mEditCallback(nullptr)
+	, mEditCallbackArgs(nullptr)
+	, mClicking(false)
+	, mIsNumeric(false)
 {
 }
 
-jmg::Text::Text(const char16_t* val) : Label(val), cursorXRef(-2), mTextPos(0), mSelectionPos(0), mClicking(false)
+jmg::Text::Text(const char16_t* val)
+	: Label(val)
+	, cursorXRef(-2)
+	, mTextPos(0)
+	, mSelectionPos(0)
+	, mEditCallback(nullptr)
+	, mEditCallbackArgs(nullptr)
+	, mClicking(false)
+	, mIsNumeric(false)
 {
 }
 
@@ -611,24 +649,26 @@ bool drawSelectionCallback(int line_num, const ALLEGRO_USTR *line, void *extra) 
 
 void jmg::Text::draw(int origx, int origy)
 {
-	int _x, _y;
+	if (mEditing) {
+		int _x, _y;
 
-	if (mSelectionPos != mTextPos) {
-		DrawSelectionArgs args;
-		args.leftCursor = mSelectionPos < mTextPos ? mSelectionPos : mTextPos;
-		args.rightCursor = mSelectionPos > mTextPos ? mSelectionPos : mTextPos;
-		args.charCount = 0;
-		args.absx = origx + mRelx;
-		args.absy = origy + mRely;
-		args.font = mFont;
+		if (mSelectionPos != mTextPos) {
+			DrawSelectionArgs args;
+			args.leftCursor = mSelectionPos < mTextPos ? mSelectionPos : mTextPos;
+			args.rightCursor = mSelectionPos > mTextPos ? mSelectionPos : mTextPos;
+			args.charCount = 0;
+			args.absx = origx + mRelx;
+			args.absy = origy + mRely;
+			args.font = mFont;
 		
-		al_do_multiline_ustr(mFont, mWidth, mValue, drawSelectionCallback, (void*)&args);
-	}
+			al_do_multiline_ustr(mFont, mWidth, mValue, drawSelectionCallback, (void*)&args);
+		}
 
-	getCursorPosFromTextIndex(mTextPos, &_x, &_y);
-	const float x = (float)_x;
-	const float y = (float)_y;
-	al_draw_line(x, y, x, y + al_get_font_line_height(mFont), al_map_rgb(0, 0, 0), 1.0f);
+		getCursorPosFromTextIndex(mTextPos, &_x, &_y);
+		const float x = (float)_x;
+		const float y = (float)_y;
+		al_draw_line(x, y, x, y + al_get_font_line_height(mFont), al_map_rgb(0, 0, 0), 1.0f);
+	}
 
 	jmg::Label::draw(origx, origy);
 }
@@ -638,106 +678,113 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 	 || event.type == ALLEGRO_EVENT_MOUSE_AXES && mClicking) {
 		int pos = getTextIndexFromCursorPos(event.mouse.x, event.mouse.y);
 
-		if (pos >= 0 && pos != mTextPos) {
-			cursorXRef = event.mouse.x - mRelx - calcOrigX();
-			mTextPos = pos;
-			needsRedraw(1);
+		if (pos >= 0) {
+			mEditing = true;
 			if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
 				mClicking = true;
 			}
-
+			if (pos != mTextPos) {
+				cursorXRef = event.mouse.x - mRelx - calcOrigX();
+				mTextPos = pos;
+				needsRedraw(1);
+			}
 			return true;
 		}
 		else if (mClicking && event.type == ALLEGRO_EVENT_MOUSE_AXES) {
 			return true;
 		}
-	}
-	else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == 1) {
-		if (mClicking) {
-			mClicking = false;
-			return true;
+		else {
+			confirmEditing();
 		}
 	}
-	else if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
-		if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-			if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
-				while (getCharAt(--mTextPos) == ' ' && mTextPos > 0) {}
-				while (getCharAt(--mTextPos) != ' ' && mTextPos > 0) {}
-				if (mTextPos > 0) {
-					const int vl = (int)al_ustr_length(mValue);
-					if (++mTextPos > vl) {
-						mTextPos = (int)vl;
+	else if (mEditing) {
+		if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == 1) {
+			if (mClicking) {
+				mClicking = false;
+				return true;
+			}
+		}
+		else if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+				if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
+					while (getCharAt(--mTextPos) == ' ' && mTextPos > 0) {}
+					while (getCharAt(--mTextPos) != ' ' && mTextPos > 0) {}
+					if (mTextPos > 0) {
+						const int vl = (int)al_ustr_length(mValue);
+						if (++mTextPos > vl) {
+							mTextPos = (int)vl;
+						}
 					}
 				}
-			}
-			else if (--mTextPos < 0) {
-				mTextPos = 0;
-			}
+				else if (--mTextPos < 0) {
+					mTextPos = 0;
+				}
 
-			resetCursorXRef();
-			needsRedraw(1);
-			return true;
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-			const int vl = (int)al_ustr_length(mValue);
-
-			if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
-				while (getCharAt(++mTextPos) != ' ' && mTextPos < vl) {}
-				while (getCharAt(++mTextPos) == ' ' && mTextPos < vl) {}
-			}
-			else {
-				++mTextPos;
-			}
-
-			if (mTextPos > vl) {
-				mTextPos = (int)vl;
-			}
-			resetCursorXRef();
-			needsRedraw(1);
-			return true;
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
-			int x, y;
-			getCursorPosFromTextIndex(mTextPos, NULL, &y);
-			x = cursorXRef + mRelx + calcOrigX();
-			int pos = getTextIndexFromCursorPos(x, y - al_get_font_line_height(mFont));
-			mTextPos = pos >= 0 ? pos : 0;
-			needsRedraw(1);
-			return true;
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-			int x, y;
-			getCursorPosFromTextIndex(mTextPos, NULL, &y);
-			x = cursorXRef + mRelx + calcOrigX();
-			int pos = getTextIndexFromCursorPos(x, y + al_get_font_line_height(mFont));
-			if (pos > 0) {
-				mTextPos = pos;
+				resetCursorXRef();
 				needsRedraw(1);
+				return true;
 			}
-			return true;
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_END) {
-			int x, y;
-			getCursorPosFromTextIndex(mTextPos, NULL, &y);
-			const int dif = mWidth;
-			x = mRelx + calcOrigX() + dif;
-			int pos = getTextIndexFromCursorPos(x, y);
-			if (pos > 0) {
-				mTextPos = pos;
+			else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+				const int vl = (int)al_ustr_length(mValue);
+
+				if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
+					while (getCharAt(++mTextPos) != ' ' && mTextPos < vl) {}
+					while (getCharAt(++mTextPos) == ' ' && mTextPos < vl) {}
+				}
+				else {
+					++mTextPos;
+				}
+
+				if (mTextPos > vl) {
+					mTextPos = (int)vl;
+				}
+				resetCursorXRef();
 				needsRedraw(1);
-				cursorXRef = dif;
+				return true;
 			}
-			return true;
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_HOME) {
-			int x, y;
-			getCursorPosFromTextIndex(mTextPos, NULL, &y);
-			x = calcOrigX();
-			int pos = getTextIndexFromCursorPos(x, y);
-			mTextPos = pos >= 0 ? pos : 0;
-			needsRedraw(1);
-			cursorXRef = -2;
-			return true;
+			else if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
+				int x, y;
+				getCursorPosFromTextIndex(mTextPos, NULL, &y);
+				x = cursorXRef + mRelx + calcOrigX();
+				int pos = getTextIndexFromCursorPos(x, y - al_get_font_line_height(mFont));
+				mTextPos = pos >= 0 ? pos : 0;
+				needsRedraw(1);
+				return true;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+				int x, y;
+				getCursorPosFromTextIndex(mTextPos, NULL, &y);
+				x = cursorXRef + mRelx + calcOrigX();
+				int pos = getTextIndexFromCursorPos(x, y + al_get_font_line_height(mFont));
+				if (pos > 0) {
+					mTextPos = pos;
+					needsRedraw(1);
+				}
+				return true;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_END) {
+				int x, y;
+				getCursorPosFromTextIndex(mTextPos, NULL, &y);
+				const int dif = mWidth;
+				x = mRelx + calcOrigX() + dif;
+				int pos = getTextIndexFromCursorPos(x, y);
+				if (pos > 0) {
+					mTextPos = pos;
+					needsRedraw(1);
+					cursorXRef = dif;
+				}
+				return true;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_HOME) {
+				int x, y;
+				getCursorPosFromTextIndex(mTextPos, NULL, &y);
+				x = calcOrigX();
+				int pos = getTextIndexFromCursorPos(x, y);
+				mTextPos = pos >= 0 ? pos : 0;
+				needsRedraw(1);
+				cursorXRef = -2;
+				return true;
+			}
 		}
 	}
 	return false;
@@ -760,6 +807,14 @@ bool jmg::Text::collapseSelection()
 	return false;
 }
 
+void jmg::Text::confirmEditing()
+{
+	mEditing = false;
+	if (mEditCallback) {
+		mEditCallback(mEditCallbackArgs);
+	}
+}
+
 bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 {
 	if (handleCursorPosEvents(event)) {
@@ -774,86 +829,128 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 		}
 		return true;
 	}
-	else if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
-		if (event.keyboard.keycode == ALLEGRO_KEY_A && event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
-			mSelectionPos = 0;
-			mTextPos = (int)al_ustr_length(mValue);
-			resetCursorXRef();
-			needsRedraw(1);
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
-			if (collapseSelection()) {
+	else if (mEditing) {
+		if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_A && event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
+				mSelectionPos = 0;
+				mTextPos = (int)al_ustr_length(mValue);
 				resetCursorXRef();
 				needsRedraw(1);
 			}
-			else if (mTextPos > 0) {
-				al_ustr_remove_chr(mValue, al_ustr_offset(mValue, --mTextPos));
+			else if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
+				if (collapseSelection()) {
+					resetCursorXRef();
+					needsRedraw(1);
+				}
+				else if (mTextPos > 0) {
+					al_ustr_remove_chr(mValue, al_ustr_offset(mValue, --mTextPos));
+					mSelectionPos = mTextPos;
+					resetCursorXRef();
+					needsRedraw(1);
+				}
+				return true;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_DELETE) {
+				if (collapseSelection()) {
+					resetCursorXRef();
+					needsRedraw(1);
+				}
+				else if (mTextPos < (int)al_ustr_length(mValue)) {
+					al_ustr_remove_chr(mValue, al_ustr_offset(mValue, mTextPos));
+					needsRedraw(1);
+				}
+				return true;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_ENTER || event.keyboard.keycode == ALLEGRO_KEY_PAD_ENTER) {
+				if (mIsNumeric) {
+					confirmEditing();
+					mSelectionPos = mTextPos;
+					needsRedraw(1);
+				}
+				else {
+					collapseSelection();
+					insert('\n');
+					resetCursorXRef();
+				}
+				return true;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_TAB && !mIsNumeric) {
+				collapseSelection();
+				// couldn't find a proper tab character that would handle it correctly
+				// I could write my own way of drawing a string and treating \t how I want it
+				// but it's too much work for low importance
+				insert(' ');
+				insert(' ');
+				insert(' ');
+				insert(' ');
+				resetCursorXRef();
+				return true;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
 				mSelectionPos = mTextPos;
-				resetCursorXRef();
+				mEditing = false;
 				needsRedraw(1);
+				return true;
 			}
-			return true;
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_DELETE) {
-			if (collapseSelection()) {
-				resetCursorXRef();
-				needsRedraw(1);
+			else if (event.keyboard.unichar > 0) {
+				bool doInsert = !mIsNumeric;
+				const int unichar = event.keyboard.unichar;
+				if (mIsNumeric) {
+					static std::string allowedNumeric("-.012345789");
+					if (allowedNumeric.find((char)unichar) != std::string::npos) {
+						const int pointPos = al_ustr_find_chr(mValue, 0, '.');
+						const int size = (int)al_ustr_size(mValue);
+						const int right = mTextPos > mSelectionPos ? mTextPos : mSelectionPos;
+						const int minusHere = (al_ustr_find_chr(mValue, 0, '-') < 0 ? 0 : 1);
+
+						if (unichar == '-') {
+							doInsert = !mPositiveOnly && !minusHere && (mTextPos == 0 || mSelectionPos == 0);
+						}
+						else if (unichar == '.') {
+							doInsert = pointPos < 0 && size - right <= mMaxDecimals && right - minusHere <= mMaxDigits;
+						}
+						else {
+							const int digits = (pointPos < 0 ? size : pointPos) - minusHere;
+							const int decimals = pointPos < 0 ? 0 : size - pointPos - 1;
+							doInsert = pointPos >= 0 && right > pointPos ? decimals < mMaxDecimals : digits < mMaxDigits;
+						}
+					}
+				}
+				if (doInsert) {
+					collapseSelection();
+					insert(unichar);
+					resetCursorXRef();
+					return true;
+				}
 			}
-			else if (mTextPos < (int)al_ustr_length(mValue)) {
-				al_ustr_remove_chr(mValue, al_ustr_offset(mValue, mTextPos));
-				needsRedraw(1);
-			}
-			return true;
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
-			collapseSelection();
-			insert('\n');
-			resetCursorXRef();
-			return true;
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_TAB) {
-			collapseSelection();
-			// couldn't find a proper tab character that would handle it correctly
-			// I could write my own way of drawing a string and treating \t how I want it
-			// but it's too much work for low importance
-			insert(' ');
-			insert(' ');
-			insert(' ');
-			insert(' ');
-			resetCursorXRef();
-			return true;
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
-			if (mSelectionPos != mTextPos) {
-				mSelectionPos = mTextPos;
-				needsRedraw(1);
-			}
-			return true;
-		}
-		else if (event.keyboard.unichar > 0) {
-			collapseSelection();
-			insert(event.keyboard.unichar);
-			resetCursorXRef();
-			return true;
 		}
 	}
 	return false;
 }
+
+jmg::Numeric::Numeric(unsigned char maxDigits, unsigned char maxDecimals, bool positiveOnly)
+{
+	mIsNumeric = true;
+	mMaxDigits = maxDigits;
+	mMaxDecimals = maxDecimals;
+	mPositiveOnly = positiveOnly;
+}
+
 
 ALLEGRO_BITMAP * jmg::Image::getImage(PreRenderedImage image)
 {
 	static std::map<PreRenderedImage, ALLEGRO_BITMAP*> images;
 	if (!images[image]) {
 		ALLEGRO_BITMAP* img = nullptr;
-		
 		ALLEGRO_BITMAP* target = al_get_target_bitmap();
+
 		switch (image) {
 		case CROSS:
 			img = al_create_bitmap(22, 22);
 			al_set_target_bitmap(img);
 			al_clear_to_color(al_map_rgba(0, 0, 0, 0));
-			al_draw_line(2, 2, 20, 20, al_map_rgba(0, 0, 0, 255), 1.5f);
-			al_draw_line(20, 2, 2, 20, al_map_rgba(0, 0, 0, 255), 1.5f);
+			al_draw_line(4, 4, 18, 18, al_map_rgba(0, 0, 0, 255), 1.5f);
+			al_draw_line(18, 4, 4, 18, al_map_rgba(0, 0, 0, 255), 1.5f);
 			break;
 		default:
 		case ARROW_UP:

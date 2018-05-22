@@ -84,7 +84,14 @@ namespace Exposing {
 		const StructComplete& mWatchedStruct;
 		void* mWatchedAddress;
 		std::vector<jmg::Label*> mNameLabels;
-		std::vector<jmg::Label*> mValueLabels;
+		std::vector<jmg::Numeric*> mValueFields;
+
+		struct EditValueArgs {
+			Exposing::WatcherWindow* window;
+			unsigned int id;
+		};
+
+		std::vector<EditValueArgs*> mValueArgs;
 
 		void refreshValueForLabels();
 

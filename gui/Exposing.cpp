@@ -37,15 +37,15 @@ Exposing::StructMember::StructMember(const char * n, Type t, unsigned int o)
 
 void Exposing::WatcherWindow::refreshValueForLabels()
 {
-	for (unsigned int i = 0; i < (unsigned int)mValueLabels.size(); ++i) {
+	for (unsigned int i = 0; i < (unsigned int)mValueFields.size(); ++i) {
 		char* address = (char*)mWatchedAddress + mWatchedStruct.desc[i].offset;
 
 		// expand later, testing int only now
 		if (mWatchedStruct.desc[i].type == Exposing::INT) {
-			mValueLabels[i]->setValue(std::to_string((*(int*)address)).c_str());
+			mValueFields[i]->setFrom(*(int*)address);
 		}
 		else {
-			mValueLabels[i]->setValue("undef conv");
+			mValueFields[i]->setValue("undef conv");
 		}
 	}
 }
@@ -64,6 +64,17 @@ void closeWatcherCallback(void* arg) {
 	}
 }
 
+void editValueCallback(void* a) {
+	Exposing::WatcherWindow::EditValueArgs* args = (Exposing::WatcherWindow::EditValueArgs*)a;
+
+	char* address = (char*)args->window->mWatchedAddress + args->window->mWatchedStruct.desc[args->id].offset;
+
+	//testing int only now
+	if (args->window->mWatchedStruct.desc[args->id].type == Exposing::INT) {
+		*(int*)address = args->window->mValueFields[args->id]->getAsInt();
+	}
+}
+
 Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa) : jmg::Window(300, 100, sc.name.c_str()), mWatchedStruct(sc), mWatchedAddress(wa)
 {
 	int y = 20;
@@ -75,15 +86,18 @@ Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa) : jm
 		nameLabel->mRelx = xl;
 		nameLabel->mRely = y;
 
-		jmg::Label* valueLabel = new jmg::Label();
-		valueLabel->mRelx = xr;
-		valueLabel->mRely = y;
+		jmg::Numeric* valueField = new jmg::Numeric(9,9,false);
+		valueField->mRelx = xr;
+		valueField->mRely = y;
+		mValueArgs.push_back(new EditValueArgs{this,i});
+		valueField->mEditCallback = editValueCallback;
+		valueField->mEditCallbackArgs = mValueArgs[i];
 
 		mNameLabels.push_back(nameLabel);
-		mValueLabels.push_back(valueLabel);
+		mValueFields.push_back(valueField);
 
 		addChild(nameLabel);
-		addChild(valueLabel);
+		addChild(valueField);
 
 		y += yStep;
 	}
@@ -101,10 +115,14 @@ Exposing::WatcherWindow::~WatcherWindow()
 		delete mNameLabels[i];
 	}
 	mNameLabels.clear();
-	for (unsigned int i = 0; i < (unsigned int)mValueLabels.size(); ++i) {
-		delete mValueLabels[i];
+	for (unsigned int i = 0; i < (unsigned int)mValueFields.size(); ++i) {
+		delete mValueFields[i];
 	}
-	mValueLabels.clear();
+	mValueFields.clear();
+	for (unsigned int i = 0; i < (unsigned int)mValueArgs.size(); ++i) {
+		delete mValueArgs[i];
+	}
+	mValueArgs.clear();
 }
 
 Exposing::StructComplete::StructComplete() : name("Struct incomplete!!")
