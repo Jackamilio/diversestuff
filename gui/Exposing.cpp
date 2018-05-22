@@ -11,9 +11,14 @@ template<> Exposing::Type Exposing::getType<float>() { return Exposing::FLOAT; }
 template<> Exposing::Type Exposing::getType<double>() { return Exposing::DOUBLE; }
 template<> Exposing::Type Exposing::getType<std::string>() { return Exposing::STRING; }
 
-Exposing::Type Exposing::defineStruct(const char * name, const std::vector<StructMember>& members, unsigned int structSize)
+std::map<Exposing::Type, StructComplete> registeredTypes;
+unsigned int typeCount = (unsigned int)Exposing::MAX;
+
+Exposing::Type Exposing::defineStruct(const char * name, const Exposing::StructInfo& members, unsigned int structSize)
 {
-	return Exposing::UNDEF;
+	Exposing::Type newType = (Exposing::Type)++typeCount;
+	registeredTypes[newType] = StructComplete(name, members);
+	return newType;
 }
 
 Exposing::StructMember::StructMember()
@@ -27,5 +32,85 @@ Exposing::StructMember::StructMember(const char * n, Type t, unsigned int o)
 	: name(n)
 	, type(t)
 	, offset(o)
+{
+}
+
+void WatcherWindow::refreshValueForLabels()
+{
+	for (unsigned int i = 0; i < (unsigned int)mValueLabels.size(); ++i) {
+		char* address = (char*)mWatchedAddress + mWatchedStruct.desc[i].offset;
+
+		// expand later, testing int only now
+		if (mWatchedStruct.desc[i].type == Exposing::INT) {
+			mValueLabels[i]->setValue(std::to_string((*(int*)address)).c_str());
+		}
+		else {
+			mValueLabels[i]->setValue("undef conv");
+		}
+	}
+}
+
+void WatcherWindow::draw(int origx, int origy)
+{
+	refreshValueForLabels();
+	jmg::Window::draw(origx, origy);
+}
+
+void closeWatcherCallback(void* arg) {
+	if (arg) {
+		WatcherWindow* win = (WatcherWindow*)arg;
+		win->mDeleteMe = true;
+		win->close();
+	}
+}
+
+WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa) : jmg::Window(300, 100, sc.name.c_str()), mWatchedStruct(sc), mWatchedAddress(wa)
+{
+	int y = 20;
+	const int xl = 20;
+	const int xr = 200;
+	const int yStep = 25;
+	for (unsigned int i = 0; i < (unsigned int)sc.desc.size(); ++i) {
+		jmg::Label* nameLabel = new jmg::Label(sc.desc[i].name.c_str());
+		nameLabel->mRelx = xl;
+		nameLabel->mRely = y;
+
+		jmg::Label* valueLabel = new jmg::Label();
+		valueLabel->mRelx = xr;
+		valueLabel->mRely = y;
+
+		mNameLabels.push_back(nameLabel);
+		mValueLabels.push_back(valueLabel);
+
+		addChild(nameLabel);
+		addChild(valueLabel);
+
+		y += yStep;
+	}
+
+	mHeight = y + yStep;
+	mWidth = 300; //wtf this doesn't work?
+
+	mBtnClose.mCallback = closeWatcherCallback;
+	mBtnClose.mCallbackArgs = (void*)this;
+}
+
+WatcherWindow::~WatcherWindow()
+{
+	for (unsigned int i = 0; i < (unsigned int)mNameLabels.size(); ++i) {
+		delete mNameLabels[i];
+	}
+	mNameLabels.clear();
+	for (unsigned int i = 0; i < (unsigned int)mValueLabels.size(); ++i) {
+		delete mValueLabels[i];
+	}
+	mValueLabels.clear();
+}
+
+StructComplete::StructComplete() : name("Struct incomplete!!")
+{
+}
+
+StructComplete::StructComplete(const char * n, const Exposing::StructInfo & d) : name(n), desc(d)
 {
 }

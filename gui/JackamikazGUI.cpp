@@ -16,7 +16,14 @@ void jmg::Base::draw(int origx, int origy)
 {
 }
 
-jmg::Base::Base(int relx, int rely, ALLEGRO_COLOR color) : mParent(NULL), mNeedsRedraw(true), mRelx(relx), mRely(rely), mColor(color)
+jmg::Base::Base(int relx, int rely, ALLEGRO_COLOR color)
+	: mParent(NULL)
+	, mNeedsRedraw(true)
+	, mRemoveMe(false)
+	, mRelx(relx)
+	, mRely(rely)
+	, mColor(color)
+	, mDeleteMe(false)
 {
 }
 
@@ -33,11 +40,9 @@ bool jmg::Base::has(const Base * child) const
 void jmg::Base::addChild(Base * child)
 {
 	if (child && !has(child)) {
-		if (child->mParent != this) {
-			child->remove();
-		}
 		mChildren.push_back(child);
 		child->mParent = this;
+		child->mRemoveMe = false;
 	}
 }
 
@@ -46,7 +51,7 @@ void jmg::Base::remove()
 	if (mParent)
 	{
 		needsRedraw(-1);
-		mParent->mChildren.erase(std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this));
+		mRemoveMe = true;
 	}
 }
 
@@ -103,17 +108,38 @@ typedef std::list<jmg::Base*> BaseList;
 
 void jmg::Base::cascadeDraw(int origx, int origy, bool parentNeedsIt)
 {
-	bool r = mNeedsRedraw = mNeedsRedraw || parentNeedsIt;
-	redraw(origx, origy);
-	for (BaseList::iterator it = mChildren.begin(); it != mChildren.end(); ++it) {
-		(*it)->cascadeDraw(origx+mRelx, origy+mRely, r);
+	if (!mRemoveMe && !mDeleteMe) {
+		bool r = mNeedsRedraw = mNeedsRedraw || parentNeedsIt;
+		redraw(origx, origy);
+		for (BaseList::iterator it = mChildren.begin(); it != mChildren.end(); ++it) {
+			(*it)->cascadeDraw(origx + mRelx, origy + mRely, r);
+		}
 	}
 }
 
 bool jmg::Base::cascadeHandleEvent(const ALLEGRO_EVENT& event)
 {
-	for (BaseList::reverse_iterator it = mChildren.rbegin(); it != mChildren.rend(); ++it) {
-		if ((*it)->cascadeHandleEvent(event)) {
+	for (BaseList::reverse_iterator it = mChildren.rbegin(); it != mChildren.rend();) {
+		bool eventIntercepted = (*it)->cascadeHandleEvent(event);
+
+		bool deleted = false;
+
+		if ((*it)->mDeleteMe) {
+			delete (*it);
+			deleted = true;
+		}
+
+		if (deleted || (*it)->mRemoveMe) {
+			mChildren.erase(std::next(it).base());
+			if (!deleted) {
+				(*it)->mRemoveMe = false;
+			}
+		}
+		else {
+			++it;
+		}
+
+		if (eventIntercepted) {
 			return true;
 		}
 	}

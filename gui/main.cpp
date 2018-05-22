@@ -9,6 +9,7 @@
 #include "LevelData.h"
 #include "Dump.h"
 #include "Editorcamera.h"
+#include "Exposing.h"
 
 class TestCamera : public Engine::Input, public Engine::Update {
 public:
@@ -103,6 +104,23 @@ public:
 	}
 };
 
+class ExposingTest {
+public:
+	int varToExpose;
+	int otherVarToSee;
+
+	ExposingTest() : varToExpose(0), otherVarToSee(25) {}
+
+	IM_AN_EXPOSER
+};
+
+#define EXPOSE_TYPE ExposingTest
+EXPOSE_START
+EXPOSE(varToExpose)
+EXPOSE(otherVarToSee)
+EXPOSE_END
+#undef EXPOSE_TYPE
+
 class JmGui : public Engine::Graphic, public Engine::Input {
 public:
 	Engine & engine;
@@ -112,6 +130,8 @@ public:
 	jmg::Window win;
 	jmg::Text text;
 	jmg::MoveableRectangle mr;
+
+	ExposingTest test;
 
 	JmGui(Engine& e)
 		: engine(e)
@@ -139,14 +159,20 @@ public:
 	}
 
 	void Draw() {
+		test.varToExpose++;
 		root.needsRedraw();
 		root.baseDraw();
 	}
 
 	bool Event(ALLEGRO_EVENT& event) {
-		if (event.type == ALLEGRO_EVENT_KEY_UP
-		 && event.keyboard.keycode == ALLEGRO_KEY_F1) {
-			win.open();
+		if (event.type == ALLEGRO_EVENT_KEY_UP) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_F1) {
+				win.open();
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_F2) {
+				jmg::Window* watcher = Exposing::createWatcherFor(test);
+				watcher->setParent(&root, true);
+			}
 		}
 		return root.baseHandleEvent(event);
 	}

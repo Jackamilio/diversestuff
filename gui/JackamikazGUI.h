@@ -21,6 +21,7 @@ namespace jmg
 		std::list<Base*> mChildren;
 		bool mNeedsRedraw;
 
+		bool mRemoveMe;
 	protected:
 		virtual void draw(int origx, int origy);
 		virtual bool handleEvent(const ALLEGRO_EVENT& event);
@@ -28,8 +29,10 @@ namespace jmg
 		int mRelx;
 		int mRely;
 		ALLEGRO_COLOR mColor;
+		bool mDeleteMe;
 
 		Base(int relx=0, int rely=0, ALLEGRO_COLOR color=al_map_rgb(255,255,255));
+		virtual ~Base() {}
 
 		inline Base* parent() { return mParent; }
 
@@ -156,11 +159,11 @@ namespace jmg
 	};
 
 	class Window : public DrawableRectangle {
-	private:
+	public:
 		MoveableRectangle mMover;
 		Button mBtnClose;
 		Label mCaption;
-	public:
+
 		Window(int w, int h, const char* caption = "Window");
 		bool handleEvent(const ALLEGRO_EVENT& event);
 

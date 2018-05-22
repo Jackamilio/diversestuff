@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <map>
+#include "JackamikazGUI.h"
 
 namespace Exposing {
 	enum Type {
@@ -62,24 +64,71 @@ namespace Exposing {
 		StructMember(const char* n, Type t, unsigned int o);
 	};
 
-	Type defineStruct(const char* name, const std::vector<StructMember>& members, unsigned int structSize);
+	typedef std::vector<StructMember> StructInfo;
+
+	Type defineStruct(const char* name, const StructInfo& members, unsigned int structSize);
+
+	template<class T>
+	jmg::Window* createWatcherFor(T& obj);
 };
 
 
-#define IM_AN_EXPOSER static TwType __getTwType();
+// move this fucker inside Exposing
+class StructComplete {
+public:
+	std::string name;
+	Exposing::StructInfo desc;
+
+	StructComplete();
+	StructComplete(const char* n, const Exposing::StructInfo& d);
+};
+
+extern std::map<Exposing::Type, StructComplete> registeredTypes;
+
+// move this fucker inside Exposing too
+class WatcherWindow : public jmg::Window {
+public:
+	const StructComplete& mWatchedStruct;
+	void* mWatchedAddress;
+	std::vector<jmg::Label*> mNameLabels;
+	std::vector<jmg::Label*> mValueLabels;
+
+	void refreshValueForLabels();
+
+	void draw(int origx, int origy);
+
+	WatcherWindow(const StructComplete& sc, void* wa);
+	~WatcherWindow();
+};
+
+template<class T>
+jmg::Window * Exposing::createWatcherFor(T& obj)
+{
+	Exposing::Type typeToWatch = Exposing::getType<T>();
+
+	const StructComplete& sc = registeredTypes[typeToWatch];
+
+	jmg::Window* window = new WatcherWindow(sc, (void*)&obj);
+
+	return window;
+}
+
+
+#define IM_AN_EXPOSER static Exposing::Type __getType();
 
 // must define EXPOSE_TYPE first
 #define STR_(s) #s
 #define STR(s) STR_(s)
 #define EXPOSE_START \
-TwType EXPOSE_TYPE::__getTwType() { \
-	static Exposing type = Exposing::UNDEF; \
+Exposing::Type EXPOSE_TYPE::__getType() { \
+	static Exposing::Type type = Exposing::UNDEF; \
 	if (type != Exposing::UNDEF) return type; \
 	std::vector<Exposing::StructMember> vec; \
 	Exposing::StructMember tmp;
 
+//tmp = { #var, type, offsetof(EXPOSE_TYPE, var), "" ## __VA_ARGS__};
 #define __EXPOSE(type, var, ...) \
-	tmp = Exposing::StructMember(#var, type, offsetof(EXPOSE_TYPE, var)); \//tmp = { #var, type, offsetof(EXPOSE_TYPE, var), "" ## __VA_ARGS__}; \
+	tmp = Exposing::StructMember(#var, type, offsetof(EXPOSE_TYPE, var)); \
 	vec.push_back(tmp);
 
 #define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, __VA_ARGS__)
@@ -91,7 +140,7 @@ TwType EXPOSE_TYPE::__getTwType() { \
 	vec.push_back(tmp);
 
 #define EXPOSE_END \
-	type = Exposing::DefineStruct(STR(EXPOSE_TYPE), vec, sizeof(EXPOSE_TYPE)); \
+	type = Exposing::defineStruct(STR(EXPOSE_TYPE), vec, sizeof(EXPOSE_TYPE)); \
 	return type; \
 }
 
