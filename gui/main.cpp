@@ -156,6 +156,7 @@ public:
 	jmg::WallPaper wp;
 	jmg::Window win;
 	jmg::Numeric num;
+	jmg::CheckBox chk;
 
 	ExposingTest test;
 
@@ -177,6 +178,10 @@ public:
 		num.mRelx = 30;
 		num.mRely = 30;
 		win.addAndAdaptLabel(&num, 10);
+
+		chk.mRelx = 30;
+		chk.mRely = 50;
+		win.addChild(&chk);
 	}
 
 	void Draw() {

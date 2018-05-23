@@ -57,13 +57,13 @@ namespace jmg
 		void needsRedraw(int depth = 0);
 	};
 
-	class WallPaper : public Base{
+	class WallPaper : public virtual Base{
 	public:
 		WallPaper(const ALLEGRO_COLOR& color);
 		void draw(int, int);
 	};
 
-	class Image : public Base {
+	class Image : public virtual Base {
 	public:
 		enum PreRenderedImage {
 			CROSS,
@@ -87,7 +87,7 @@ namespace jmg
 		void draw(int, int);
 	};
 
-	class Label : public Base {
+	class Label : public virtual Base {
 	protected:
 		ALLEGRO_USTR * mValue;
 
@@ -179,15 +179,13 @@ namespace jmg
 
 	class Rectangle {
 	public:
-		Rectangle();
 		Rectangle(int w, int h);
 		int mWidth;
 		int mHeight;
 	};
 
-	class InteractiveRectangle : public Rectangle, public Base {
+	class InteractiveRectangle : public Rectangle, public virtual Base {
 	public:
-		InteractiveRectangle();
 		InteractiveRectangle(int w, int h);
 		bool isPointInside(int px, int py);
 		bool catchMouse(const ALLEGRO_EVENT& event, int button = 1, ALLEGRO_EVENT_TYPE evType = ALLEGRO_EVENT_MOUSE_BUTTON_DOWN);
@@ -203,14 +201,12 @@ namespace jmg
 		Base * mTarget;
 		unsigned int mButton;
 
-		Moveable();
 		Moveable(int w, int h);
 		bool handleEvent(const ALLEGRO_EVENT& event);
 	};
 
 	class DrawableRectangle : public virtual InteractiveRectangle {
 	public:
-		DrawableRectangle();
 		DrawableRectangle(int w, int h);
 		void draw(int origx, int origy);
 
@@ -236,6 +232,15 @@ namespace jmg
 
 		void(*mCallback)(void*);
 		void* mCallbackArgs;
+	};
+
+	class CheckBox : public Button, public Image {
+	public:
+		bool mChecked;
+
+		CheckBox();
+		
+		void draw(int origx, int origy);
 	};
 
 	class Window : public DrawableRectangle {

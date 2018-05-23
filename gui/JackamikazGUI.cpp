@@ -182,11 +182,10 @@ void jmg::WallPaper::draw(int, int)
 	al_clear_to_color(mColor);
 }
 
-jmg::MoveableRectangle::MoveableRectangle(int w,int h) : InteractiveRectangle(w, h)
-{
-}
-
-jmg::DrawableRectangle::DrawableRectangle() : mOutline(1)
+jmg::MoveableRectangle::MoveableRectangle(int w,int h)
+	: Moveable(w, h)
+	, DrawableRectangle(w, h)
+	, InteractiveRectangle(w, h)
 {
 }
 
@@ -204,15 +203,7 @@ void jmg::DrawableRectangle::draw(int origx, int origy)
 	}
 }
 
-jmg::Rectangle::Rectangle() : mWidth(20), mHeight(20)
-{
-}
-
 jmg::Rectangle::Rectangle(int w, int h) : mWidth(w), mHeight(h)
-{
-}
-
-jmg::Moveable::Moveable() : mTarget(this), mButton(1)
 {
 }
 
@@ -251,6 +242,7 @@ void callbackTest(void* arg) {
 
 jmg::Window::Window(int w, int h, const char* capt)
 	: InteractiveRectangle(w,h)
+	, DrawableRectangle(w,h)
 	, mMover(mWidth - 18, 22)
 	, mCaption(capt)
 	, mBtnClose(22,22)
@@ -309,10 +301,6 @@ void jmg::Window::setParent(Base * p, bool startsOpen)
 	}
 }
 
-jmg::InteractiveRectangle::InteractiveRectangle()
-{
-}
-
 jmg::InteractiveRectangle::InteractiveRectangle(int w, int h) : Rectangle(w,h)
 {
 }
@@ -353,11 +341,23 @@ void jmg::InteractiveRectangle::addAndAdaptLabel(Label * label, int leftMargin, 
 	addChild(label);
 }
 
-jmg::Button::Button() : InteractiveRectangle(20,20), mHovering(false), mClicking(false), mCallback(NULL), mCallbackArgs(NULL)
+jmg::Button::Button()
+	: InteractiveRectangle(20,20)
+	, DrawableRectangle(20,20)
+	, mHovering(false)
+	, mClicking(false)
+	, mCallback(NULL)
+	, mCallbackArgs(NULL)
 {
 }
 
-jmg::Button::Button(int w, int h) : InteractiveRectangle(w,h), mHovering(false), mClicking(false), mCallback(NULL), mCallbackArgs(NULL)
+jmg::Button::Button(int w, int h)
+	: InteractiveRectangle(w,h)
+	, DrawableRectangle(w,h)
+	,mHovering(false)
+	,mClicking(false)
+	,mCallback(NULL)
+	,mCallbackArgs(NULL)
 {
 }
 
@@ -1102,6 +1102,13 @@ ALLEGRO_BITMAP * jmg::Image::getImage(PreRenderedImage image)
 			al_draw_line(4, 4, 18, 18, al_map_rgba(0, 0, 0, 255), 1.5f);
 			al_draw_line(18, 4, 4, 18, al_map_rgba(0, 0, 0, 255), 1.5f);
 			break;
+		case CHECK:
+			img = al_create_bitmap(10, 10);
+			al_set_target_bitmap(img);
+			al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+			al_draw_line(1, 3, 4, 9, al_map_rgba(0, 0, 0, 255), 1.5f);
+			al_draw_line(4, 9, 8, 1, al_map_rgba(0, 0, 0, 255), 1.5f);
+			break;
 		default:
 		case ARROW_UP:
 		case ARROW_DOWN:
@@ -1142,4 +1149,26 @@ void jmg::Image::draw(int origx, int origy)
 jmg::Context::Context()
 	: mWritingFocus(nullptr)
 {
+}
+
+void checkTheBox(void* arg) {
+	jmg::CheckBox* checkBox = (jmg::CheckBox*)arg;
+	checkBox->mChecked = !checkBox->mChecked;
+}
+
+jmg::CheckBox::CheckBox()
+	: InteractiveRectangle(10,10)
+	, Button(10,10)
+	, Image(jmg::Image::CHECK)
+{
+	mCallback = checkTheBox;
+	mCallbackArgs = (void*)this;
+}
+
+void jmg::CheckBox::draw(int origx, int origy)
+{
+	jmg::Button::draw(origx, origy);
+	if (mChecked) {
+		jmg::Image::draw(origx, origy);
+	}
 }
