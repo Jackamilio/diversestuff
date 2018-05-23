@@ -61,6 +61,8 @@ namespace jmg
 	public:
 		enum PreRenderedImage {
 			CROSS,
+			CHECK,
+			RADIO,
 			ARROW_UP,
 			ARROW_DOWN,
 			ARROW_LEFT,
@@ -150,6 +152,7 @@ namespace jmg
 
 		inline int getCharAt(int pos) const { return al_ustr_get(mValue, al_ustr_offset(mValue, pos)); }
 
+		inline const char* getValue() const { return al_cstr(mValue); }
 		void setValue(const char* val);
 		void setValue(const char16_t* val);
 
@@ -158,7 +161,25 @@ namespace jmg
 		~Label();
 
 		void draw(int origx, int origy);
+
+		int getAsInt() const;
+		float getAsFloat() const;
+		double getAsDouble() const;
+
+		template<typename T>
+		void setFrom(T val, int maxDecimals = 999999);
 	};
+
+	template<typename T>
+	inline void Label::setFrom(T val, int maxDecimals)
+	{
+		setValue(std::to_string(val).c_str());
+		const int pointPos = al_ustr_find_chr(mValue, 0, '.');
+		const int size = (int)al_ustr_size(mValue);
+		if (pointPos >= 0 && size - pointPos > maxDecimals) {
+			al_ustr_remove_range(mValue, pointPos, size);
+		}
+	}
 
 	class Text : public Label {
 	private:
@@ -183,8 +204,10 @@ namespace jmg
 		void(*mEditCallback)(void*);
 		void* mEditCallbackArgs;
 
-		unsigned char mMaxDigits;
-		unsigned char mMaxDecimals;
+		double mMinValue;
+		double mMaxValue;
+		int mMaxDigits;
+		int mMaxDecimals;
 		bool mPositiveOnly;
 
 		Text(const char* val = "");
@@ -196,14 +219,16 @@ namespace jmg
 
 	class Numeric : public Text {
 	public:
-		Numeric(unsigned char maxDigits, unsigned char maxDecimals, bool positiveOnly);
+		void init(double minValue, double maxValue, int maxDigits, int maxDecimals, bool positiveOnly);
 
-		inline int getAsInt() const { return std::stoi(std::string(al_cstr(mValue))); }
-		inline float getAsFloat() const { return std::stof(std::string(al_cstr(mValue))); }
-		inline double getAsDouble() const { return std::stod(std::string(al_cstr(mValue))); }
-
-		template<typename T>
-		inline void setFrom(T& val) { setValue(std::to_string(val).c_str()); }
+		Numeric(char val);
+		Numeric(unsigned char val);
+		Numeric(short val);
+		Numeric(unsigned short val);
+		Numeric(int val);
+		Numeric(unsigned int val);
+		Numeric(float val);
+		Numeric(double val);
 	};
 
 	class Window : public DrawableRectangle {

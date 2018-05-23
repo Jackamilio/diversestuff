@@ -136,7 +136,7 @@ public:
 		: engine(e)
 		, wp(al_map_rgb(200, 200, 200))
 		, win(200, 250, "Salut les gens")
-		, num(1,5,false)
+		, num((char)0)
 	{
 		engine.overlayGraphic.AddChild(this);
 		engine.inputRoot.AddChild(this,true);

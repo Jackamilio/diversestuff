@@ -4,6 +4,7 @@
 #include <allegro5\allegro.h>
 #include <allegro5\allegro_primitives.h>
 #include <allegro5\allegro_ttf.h>
+#include <limits>
 
 void jmg::Base::redraw(int origx, int origy)
 {
@@ -420,6 +421,36 @@ void jmg::Label::draw(int origx, int origy)
 		(float)al_get_font_line_height(mFont), 0, mValue);
 }
 
+int jmg::Label::getAsInt() const
+{
+	try {
+		return std::stoi(std::string(al_cstr(mValue)));
+	}
+	catch (std::exception) {
+		return 0;
+	}
+}
+
+float jmg::Label::getAsFloat() const
+{
+	try {
+		return std::stof(std::string(al_cstr(mValue)));
+	}
+	catch (std::exception) {
+		return 0.0f;
+	}
+}
+
+double jmg::Label::getAsDouble() const
+{
+	try {
+		return std::stod(std::string(al_cstr(mValue)));
+	}
+	catch (std::exception) {
+		return 0.0;
+	}
+}
+
 void jmg::Text::insert(int keycode)
 {
 	al_ustr_insert_chr(mValue, al_ustr_offset(mValue, mTextPos), keycode);
@@ -810,6 +841,20 @@ bool jmg::Text::collapseSelection()
 void jmg::Text::confirmEditing()
 {
 	mEditing = false;
+	if (mIsNumeric) {
+		if (al_ustr_size(mValue) == 0) {
+			setFrom((double)0.0, mMaxDecimals);
+		}
+		else {
+			const double val = getAsDouble();
+			if (val > mMaxValue) {
+				setFrom(mMaxValue, mMaxDecimals);
+			}
+			else if (val < mMinValue) {
+				setFrom(mMinValue, mMaxDecimals);
+			}
+		}
+	}
 	if (mEditCallback) {
 		mEditCallback(mEditCallbackArgs);
 	}
@@ -907,7 +952,7 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 							doInsert = !mPositiveOnly && !minusHere && (mTextPos == 0 || mSelectionPos == 0);
 						}
 						else if (unichar == '.') {
-							doInsert = pointPos < 0 && size - right <= mMaxDecimals && right - minusHere <= mMaxDigits;
+							doInsert = mMaxDecimals > 0 && pointPos < 0 && size - right <= mMaxDecimals && right - minusHere <= mMaxDigits;
 						}
 						else {
 							const int digits = (pointPos < 0 ? size : pointPos) - minusHere;
@@ -928,13 +973,78 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 	return false;
 }
 
-jmg::Numeric::Numeric(unsigned char maxDigits, unsigned char maxDecimals, bool positiveOnly)
+void jmg::Numeric::init(double minValue, double maxValue, int maxDigits, int maxDecimals, bool positiveOnly)
 {
 	mIsNumeric = true;
+	mMinValue = minValue;
+	mMaxValue = maxValue;
 	mMaxDigits = maxDigits;
 	mMaxDecimals = maxDecimals;
 	mPositiveOnly = positiveOnly;
 }
+
+jmg::Numeric::Numeric(char val) {
+	init(-127, 127, 3, 0, false);
+	setFrom(val,mMaxDecimals);
+}
+
+jmg::Numeric::Numeric(unsigned char val) {
+	init(0, 255, 3, 0, true);
+	setFrom(val, mMaxDecimals);
+}
+
+jmg::Numeric::Numeric(short val) {
+	init(
+		std::numeric_limits<short>::min(),
+		std::numeric_limits<short>::max(),
+		std::numeric_limits<short>::digits, 0, false);
+	setFrom(val, mMaxDecimals);
+}
+
+jmg::Numeric::Numeric(unsigned short val) {
+	init(
+		std::numeric_limits<unsigned short>::min(),
+		std::numeric_limits<unsigned short>::max(),
+		std::numeric_limits<unsigned short>::digits, 0, true);
+	setFrom(val, mMaxDecimals);
+}
+
+jmg::Numeric::Numeric(int val) {
+	init(
+		std::numeric_limits<int>::min(),
+		std::numeric_limits<int>::max(),
+		std::numeric_limits<int>::digits, 0, false);
+	setFrom(val, mMaxDecimals);
+}
+
+jmg::Numeric::Numeric(unsigned int val) {
+	init(
+		std::numeric_limits<unsigned int>::min(),
+		std::numeric_limits<unsigned int>::max(),
+		std::numeric_limits<unsigned int>::digits, 0, true);
+	setFrom(val, mMaxDecimals);
+}
+
+jmg::Numeric::Numeric(float val) {
+	init(
+		std::numeric_limits<float>::min(),
+		std::numeric_limits<float>::max(),
+		std::numeric_limits<float>::digits,
+		std::numeric_limits<float>::digits10,
+		false);
+	setFrom(val, mMaxDecimals);
+}
+
+jmg::Numeric::Numeric(double val) {
+	init(
+		std::numeric_limits<double>::min(),
+		std::numeric_limits<double>::max(),
+		std::numeric_limits<double>::digits,
+		std::numeric_limits<double>::digits10,
+		false);
+	setFrom(val, mMaxDecimals);
+}
+
 
 
 ALLEGRO_BITMAP * jmg::Image::getImage(PreRenderedImage image)

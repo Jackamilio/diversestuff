@@ -40,9 +40,36 @@ void Exposing::WatcherWindow::refreshValueForLabels()
 	for (unsigned int i = 0; i < (unsigned int)mValueFields.size(); ++i) {
 		char* address = (char*)mWatchedAddress + mWatchedStruct.desc[i].offset;
 
-		// expand later, testing int only now
-		if (mWatchedStruct.desc[i].type == Exposing::INT) {
+		//if (mWatchedStruct.desc[i].type == Exposing::BOOL) {
+		//	mValueFields[i]->setFrom(*(bool*)address);
+		//}
+		//else 
+		if (mWatchedStruct.desc[i].type == Exposing::INT8) {
+			mValueFields[i]->setFrom(*(char*)address);
+		}
+		else if (mWatchedStruct.desc[i].type == Exposing::UINT8) {
+			mValueFields[i]->setFrom(*(unsigned char*)address);
+		}
+		else if (mWatchedStruct.desc[i].type == Exposing::INT16) {
+			mValueFields[i]->setFrom(*(short*)address);
+		}
+		else if (mWatchedStruct.desc[i].type == Exposing::UINT16) {
+			mValueFields[i]->setFrom(*(unsigned short*)address);
+		}
+		else if (mWatchedStruct.desc[i].type == Exposing::INT) {
 			mValueFields[i]->setFrom(*(int*)address);
+		}
+		else if (mWatchedStruct.desc[i].type == Exposing::UINT) {
+			mValueFields[i]->setFrom(*(unsigned int*)address);
+		}
+		else if (mWatchedStruct.desc[i].type == Exposing::FLOAT) {
+			mValueFields[i]->setFrom(*(float*)address);
+		}
+		else if (mWatchedStruct.desc[i].type == Exposing::DOUBLE) {
+			mValueFields[i]->setFrom(*(double*)address);
+		}
+		else if (mWatchedStruct.desc[i].type == Exposing::STRING) {
+			mValueFields[i]->setValue(((std::string*)address)->c_str());
 		}
 		else {
 			mValueFields[i]->setValue("undef conv");
@@ -69,9 +96,20 @@ void editValueCallback(void* a) {
 
 	char* address = (char*)args->window->mWatchedAddress + args->window->mWatchedStruct.desc[args->id].offset;
 
-	//testing int only now
-	if (args->window->mWatchedStruct.desc[args->id].type == Exposing::INT) {
-		*(int*)address = args->window->mValueFields[args->id]->getAsInt();
+	jmg::Text* text = args->window->mValueFields[args->id];
+	if (text) {
+		switch (args->window->mWatchedStruct.desc[args->id].type) {
+		//case Exposing::BOOL:	*(int*)address = text->getAsInt(); break;
+		case Exposing::INT8:	*(char*)address = text->getAsInt(); break;
+		case Exposing::UINT8:	*(unsigned char*)address = text->getAsInt(); break;
+		case Exposing::INT16:	*(short*)address = text->getAsInt(); break;
+		case Exposing::UINT16:	*(unsigned short*)address = text->getAsInt(); break;
+		case Exposing::INT:		*(int*)address = text->getAsInt(); break;
+		case Exposing::UINT:	*(unsigned int*)address = text->getAsInt(); break;
+		case Exposing::FLOAT:	*(float*)address = text->getAsFloat(); break;
+		case Exposing::DOUBLE:	*(double*)address = text->getAsDouble(); break;
+		case Exposing::STRING:	*(std::string*)address = text->getValue(); break;
+		}
 	}
 }
 
@@ -86,7 +124,21 @@ Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa) : jm
 		nameLabel->mRelx = xl;
 		nameLabel->mRely = y;
 
-		jmg::Numeric* valueField = new jmg::Numeric(9,9,false);
+		char* address = (char*)mWatchedAddress + mWatchedStruct.desc[i].offset;
+		jmg::Text* valueField = nullptr;
+		switch (sc.desc[i].type) {
+		//case BOOL: valueField = new jmg::Numeric(*(char*)address); break;
+		case INT8:	valueField = new jmg::Numeric(*(char*)address); break;
+		case UINT8:	valueField = new jmg::Numeric(*(unsigned char*)address); break;
+		case INT16:	valueField = new jmg::Numeric(*(short*)address); break;
+		case UINT16:valueField = new jmg::Numeric(*(unsigned short*)address); break;
+		case INT:	valueField = new jmg::Numeric(*(int*)address); break;
+		case UINT:	valueField = new jmg::Numeric(*(unsigned int*)address); break;
+		case FLOAT:	valueField = new jmg::Numeric(*(float*)address); break;
+		case DOUBLE:valueField = new jmg::Numeric(*(double*)address); break;
+		case STRING:valueField = new jmg::Text(((std::string*)address)->c_str()); break;
+		}
+		
 		valueField->mRelx = xr;
 		valueField->mRely = y;
 		mValueArgs.push_back(new EditValueArgs{this,i});
