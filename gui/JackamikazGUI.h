@@ -87,6 +87,15 @@ namespace jmg
 		void draw(int, int);
 	};
 
+	class Editable {
+	public:
+		void(*mEditCallback)(void*);
+		void* mEditCallbackArgs;
+
+		Editable();
+		void editHappened();
+	};
+
 	class Label : public virtual Base {
 	protected:
 		ALLEGRO_USTR * mValue;
@@ -127,7 +136,7 @@ namespace jmg
 		}
 	}
 
-	class Text : public Label {
+	class Text : public Label, public Editable {
 	private:
 		void insert(int keycode);
 		int getTextIndexFromCursorPos(int fromx, int fromy) const;
@@ -146,9 +155,6 @@ namespace jmg
 	public:
 		int mTextPos;
 		int mSelectionPos;
-
-		void(*mEditCallback)(void*);
-		void* mEditCallbackArgs;
 
 		double mMinValue;
 		double mMaxValue;
@@ -234,11 +240,11 @@ namespace jmg
 		void* mCallbackArgs;
 	};
 
-	class CheckBox : public Button, public Image {
+	class CheckBox : public Button, public Image, public Editable {
 	public:
 		bool mChecked;
 
-		CheckBox();
+		CheckBox(bool startsChecked = false);
 		
 		void draw(int origx, int origy);
 	};

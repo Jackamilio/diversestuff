@@ -135,7 +135,7 @@ public:
 
 #define EXPOSE_TYPE ExposingTest
 EXPOSE_START
-//EXPOSE(_bool)
+EXPOSE(_bool)
 EXPOSE(_char)
 EXPOSE(_uchar)
 EXPOSE(_short)

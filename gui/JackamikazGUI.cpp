@@ -429,7 +429,7 @@ void jmg::Label::setValue(const char16_t * val)
 }
 
 jmg::Label::Label(const char * val)
-	: Base(0,0,al_map_rgb(0, 0, 0))
+	: Base(0, 0, al_map_rgb(0, 0, 0))
 	, mValue(al_ustr_new(val))
 	, mFont(jmg::fetchDefaultFont())
 	, mWidth(0xFFFFFF)
@@ -453,7 +453,7 @@ void jmg::Label::draw(int origx, int origy)
 {
 	//al_draw_text(font, color, origx + relx, origy + rely, 0, value.c_str());
 
-	al_draw_multiline_ustr(mFont,mColor, origx + mRelx, origy + mRely, (float)mWidth,
+	al_draw_multiline_ustr(mFont, mColor, origx + mRelx, origy + mRely, (float)mWidth,
 		(float)al_get_font_line_height(mFont), 0, mValue);
 }
 
@@ -645,24 +645,22 @@ void jmg::Text::resetCursorXRef()
 
 
 jmg::Text::Text(const char * val)
-	: Label(val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+	, Label(val)
 	, cursorXRef(-2)
 	, mTextPos(0)
 	, mSelectionPos(0)
-	, mEditCallback(nullptr)
-	, mEditCallbackArgs(nullptr)
 	, mClicking(false)
 	, mIsNumeric(false)
 {
 }
 
 jmg::Text::Text(const char16_t* val)
-	: Label(val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+	, Label(val)
 	, cursorXRef(-2)
 	, mTextPos(0)
 	, mSelectionPos(0)
-	, mEditCallback(nullptr)
-	, mEditCallbackArgs(nullptr)
 	, mClicking(false)
 	, mIsNumeric(false)
 {
@@ -895,9 +893,7 @@ void jmg::Text::confirmEditing()
 			}
 		}
 	}
-	if (mEditCallback) {
-		mEditCallback(mEditCallbackArgs);
-	}
+	editHappened();
 }
 
 bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
@@ -1023,17 +1019,23 @@ void jmg::Numeric::init(double minValue, double maxValue, int maxDigits, int max
 	mPositiveOnly = positiveOnly;
 }
 
-jmg::Numeric::Numeric(char val) {
+jmg::Numeric::Numeric(char val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+{
 	init(-127, 127, 3, 0, false);
 	setFrom(val,mMaxDecimals);
 }
 
-jmg::Numeric::Numeric(unsigned char val) {
+jmg::Numeric::Numeric(unsigned char val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+{
 	init(0, 255, 3, 0, true);
 	setFrom(val, mMaxDecimals);
 }
 
-jmg::Numeric::Numeric(short val) {
+jmg::Numeric::Numeric(short val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+{
 	init(
 		std::numeric_limits<short>::min(),
 		std::numeric_limits<short>::max(),
@@ -1041,7 +1043,9 @@ jmg::Numeric::Numeric(short val) {
 	setFrom(val, mMaxDecimals);
 }
 
-jmg::Numeric::Numeric(unsigned short val) {
+jmg::Numeric::Numeric(unsigned short val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+{
 	init(
 		std::numeric_limits<unsigned short>::min(),
 		std::numeric_limits<unsigned short>::max(),
@@ -1049,7 +1053,9 @@ jmg::Numeric::Numeric(unsigned short val) {
 	setFrom(val, mMaxDecimals);
 }
 
-jmg::Numeric::Numeric(int val) {
+jmg::Numeric::Numeric(int val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+{
 	init(
 		std::numeric_limits<int>::min(),
 		std::numeric_limits<int>::max(),
@@ -1057,7 +1063,9 @@ jmg::Numeric::Numeric(int val) {
 	setFrom(val, mMaxDecimals);
 }
 
-jmg::Numeric::Numeric(unsigned int val) {
+jmg::Numeric::Numeric(unsigned int val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+{
 	init(
 		std::numeric_limits<unsigned int>::min(),
 		std::numeric_limits<unsigned int>::max(),
@@ -1065,7 +1073,9 @@ jmg::Numeric::Numeric(unsigned int val) {
 	setFrom(val, mMaxDecimals);
 }
 
-jmg::Numeric::Numeric(float val) {
+jmg::Numeric::Numeric(float val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+{
 	init(
 		std::numeric_limits<float>::min(),
 		std::numeric_limits<float>::max(),
@@ -1075,7 +1085,9 @@ jmg::Numeric::Numeric(float val) {
 	setFrom(val, mMaxDecimals);
 }
 
-jmg::Numeric::Numeric(double val) {
+jmg::Numeric::Numeric(double val)
+	: Base(0, 0, al_map_rgb(0, 0, 0))
+{
 	init(
 		std::numeric_limits<double>::min(),
 		std::numeric_limits<double>::max(),
@@ -1154,12 +1166,14 @@ jmg::Context::Context()
 void checkTheBox(void* arg) {
 	jmg::CheckBox* checkBox = (jmg::CheckBox*)arg;
 	checkBox->mChecked = !checkBox->mChecked;
+	checkBox->editHappened();
 }
 
-jmg::CheckBox::CheckBox()
+jmg::CheckBox::CheckBox(bool startsChecked)
 	: InteractiveRectangle(10,10)
 	, Button(10,10)
 	, Image(jmg::Image::CHECK)
+	, mChecked(startsChecked)
 {
 	mCallback = checkTheBox;
 	mCallbackArgs = (void*)this;
@@ -1170,5 +1184,18 @@ void jmg::CheckBox::draw(int origx, int origy)
 	jmg::Button::draw(origx, origy);
 	if (mChecked) {
 		jmg::Image::draw(origx, origy);
+	}
+}
+
+jmg::Editable::Editable()
+	: mEditCallback(nullptr)
+	, mEditCallbackArgs(nullptr)
+{
+}
+
+void jmg::Editable::editHappened()
+{
+	if (mEditCallback) {
+		mEditCallback(mEditCallbackArgs);
 	}
 }

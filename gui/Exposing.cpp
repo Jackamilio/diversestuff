@@ -40,40 +40,44 @@ void Exposing::WatcherWindow::refreshValueForLabels()
 	for (unsigned int i = 0; i < (unsigned int)mValueFields.size(); ++i) {
 		char* address = (char*)mWatchedAddress + mWatchedStruct.desc[i].offset;
 
-		if (!mValueFields[i]->isEditing()) {
-			//if (mWatchedStruct.desc[i].type == Exposing::BOOL) {
-			//	mValueFields[i]->setFrom(*(bool*)address);
-			//}
-			//else 
-			if (mWatchedStruct.desc[i].type == Exposing::INT8) {
-				mValueFields[i]->setFrom(*(char*)address);
-			}
-			else if (mWatchedStruct.desc[i].type == Exposing::UINT8) {
-				mValueFields[i]->setFrom(*(unsigned char*)address);
-			}
-			else if (mWatchedStruct.desc[i].type == Exposing::INT16) {
-				mValueFields[i]->setFrom(*(short*)address);
-			}
-			else if (mWatchedStruct.desc[i].type == Exposing::UINT16) {
-				mValueFields[i]->setFrom(*(unsigned short*)address);
-			}
-			else if (mWatchedStruct.desc[i].type == Exposing::INT) {
-				mValueFields[i]->setFrom(*(int*)address);
-			}
-			else if (mWatchedStruct.desc[i].type == Exposing::UINT) {
-				mValueFields[i]->setFrom(*(unsigned int*)address);
-			}
-			else if (mWatchedStruct.desc[i].type == Exposing::FLOAT) {
-				mValueFields[i]->setFrom(*(float*)address);
-			}
-			else if (mWatchedStruct.desc[i].type == Exposing::DOUBLE) {
-				mValueFields[i]->setFrom(*(double*)address);
-			}
-			else if (mWatchedStruct.desc[i].type == Exposing::STRING) {
-				mValueFields[i]->setValue(((std::string*)address)->c_str());
-			}
-			else {
-				mValueFields[i]->setValue("undef conv");
+		jmg::Base* base = mValueFields[i];
+
+		if (mWatchedStruct.desc[i].type == Exposing::BOOL) {
+			dynamic_cast<jmg::CheckBox*>(base)->mChecked = *(bool*)address;
+		}
+		else {
+			jmg::Text* text = dynamic_cast<jmg::Text*>(base);
+			if (!text->isEditing()) {
+				if (mWatchedStruct.desc[i].type == Exposing::INT8) {
+					text->setFrom(*(char*)address);
+				}
+				else if (mWatchedStruct.desc[i].type == Exposing::UINT8) {
+					text->setFrom(*(unsigned char*)address);
+				}
+				else if (mWatchedStruct.desc[i].type == Exposing::INT16) {
+					text->setFrom(*(short*)address);
+				}
+				else if (mWatchedStruct.desc[i].type == Exposing::UINT16) {
+					text->setFrom(*(unsigned short*)address);
+				}
+				else if (mWatchedStruct.desc[i].type == Exposing::INT) {
+					text->setFrom(*(int*)address);
+				}
+				else if (mWatchedStruct.desc[i].type == Exposing::UINT) {
+					text->setFrom(*(unsigned int*)address);
+				}
+				else if (mWatchedStruct.desc[i].type == Exposing::FLOAT) {
+					text->setFrom(*(float*)address);
+				}
+				else if (mWatchedStruct.desc[i].type == Exposing::DOUBLE) {
+					text->setFrom(*(double*)address);
+				}
+				else if (mWatchedStruct.desc[i].type == Exposing::STRING) {
+					text->setValue(((std::string*)address)->c_str());
+				}
+				else {
+					text->setValue("undef conv");
+				}
 			}
 		}
 	}
@@ -98,10 +102,11 @@ void editValueCallback(void* a) {
 
 	char* address = (char*)args->window->mWatchedAddress + args->window->mWatchedStruct.desc[args->id].offset;
 
-	jmg::Text* text = args->window->mValueFields[args->id];
+	jmg::Base* base = args->window->mValueFields[args->id];
+	jmg::Text* text = dynamic_cast<jmg::Text*>(base);
 	if (text) {
 		switch (args->window->mWatchedStruct.desc[args->id].type) {
-		//case Exposing::BOOL:	*(int*)address = text->getAsInt(); break;
+		case Exposing::BOOL:	*(bool*)address = dynamic_cast<jmg::CheckBox*>(base)->mChecked; break;
 		case Exposing::INT8:	*(char*)address = text->getAsInt(); break;
 		case Exposing::UINT8:	*(unsigned char*)address = text->getAsInt(); break;
 		case Exposing::INT16:	*(short*)address = text->getAsInt(); break;
@@ -129,11 +134,14 @@ Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa)
 		jmg::Label* nameLabel = new jmg::Label(sc.desc[i].name.c_str());
 		nameLabel->mRelx = xl;
 		nameLabel->mRely = y;
+		mNameLabels.push_back(nameLabel);
+		addChild(nameLabel);
 
 		char* address = (char*)mWatchedAddress + mWatchedStruct.desc[i].offset;
 		jmg::Text* valueField = nullptr;
+		jmg::CheckBox* checkbox = nullptr;
 		switch (sc.desc[i].type) {
-		//case BOOL: valueField = new jmg::Numeric(*(char*)address); break;
+		case BOOL:	checkbox = new jmg::CheckBox(*(bool*)address); break;
 		case INT8:	valueField = new jmg::Numeric(*(char*)address); break;
 		case UINT8:	valueField = new jmg::Numeric(*(unsigned char*)address); break;
 		case INT16:	valueField = new jmg::Numeric(*(short*)address); break;
@@ -145,15 +153,21 @@ Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa)
 		case STRING:valueField = new jmg::Text(((std::string*)address)->c_str()); break;
 		}
 		
-		mValueArgs.push_back(new EditValueArgs{this,i});
-		valueField->mEditCallback = editValueCallback;
-		valueField->mEditCallbackArgs = mValueArgs[i];
-
-		mNameLabels.push_back(nameLabel);
-		mValueFields.push_back(valueField);
-
-		addChild(nameLabel);
-		addAndAdaptLabel(valueField,xr,y,10);
+		mValueArgs.push_back(new EditValueArgs{ this,i });
+		if (valueField) {
+			valueField->mEditCallback = editValueCallback;
+			valueField->mEditCallbackArgs = mValueArgs[i];
+			mValueFields.push_back(valueField);
+			addAndAdaptLabel(valueField, xr, y, 10);
+		}
+		else if (checkbox) {
+			checkbox->mEditCallback = editValueCallback;
+			checkbox->mEditCallbackArgs = mValueArgs[i];
+			mValueFields.push_back(checkbox);
+			checkbox->mRelx = xr;
+			checkbox->mRely = y;
+			addChild(checkbox);
+		}
 
 		y += yStep;
 	}

@@ -84,7 +84,7 @@ namespace Exposing {
 		const StructComplete& mWatchedStruct;
 		void* mWatchedAddress;
 		std::vector<jmg::Label*> mNameLabels;
-		std::vector<jmg::Text*> mValueFields;
+		std::vector<jmg::Base*> mValueFields;
 
 		struct EditValueArgs {
 			Exposing::WatcherWindow* window;
