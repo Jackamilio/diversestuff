@@ -14,12 +14,30 @@ void jmg::Base::redraw(int origx, int origy)
 	}
 }
 
+jmg::Context& jmg::Base::getContext()
+{
+	if (!mContext) {
+		Base* c = this;
+		while (c->mParent) {
+			c = c->mParent;
+		}
+		if (!c->mContext) {
+			c->mContext = new Context();
+			c->mIsContextOwner = true;
+		}
+		mContext = c->mContext;
+	}
+	return *mContext;
+}
+
 void jmg::Base::draw(int origx, int origy)
 {
 }
 
 jmg::Base::Base(int relx, int rely, ALLEGRO_COLOR color)
-	: mParent(NULL)
+	: mContext(nullptr)
+	, mIsContextOwner(false)
+	, mParent(nullptr)
 	, mNeedsRedraw(true)
 	, mRemoveMe(false)
 	, mRelx(relx)
@@ -27,6 +45,13 @@ jmg::Base::Base(int relx, int rely, ALLEGRO_COLOR color)
 	, mColor(color)
 	, mDeleteMe(false)
 {
+}
+
+jmg::Base::~Base()
+{
+	if (mContext && mIsContextOwner) {
+		delete mContext;
+	}
 }
 
 bool jmg::Base::handleEvent(const ALLEGRO_EVENT & event)
@@ -157,7 +182,7 @@ void jmg::WallPaper::draw(int, int)
 	al_clear_to_color(mColor);
 }
 
-jmg::MoveableRectangle::MoveableRectangle(int w,int h) : Rectangle(w, h)
+jmg::MoveableRectangle::MoveableRectangle(int w,int h) : InteractiveRectangle(w, h)
 {
 }
 
@@ -165,7 +190,7 @@ jmg::DrawableRectangle::DrawableRectangle() : mOutline(1)
 {
 }
 
-jmg::DrawableRectangle::DrawableRectangle(int w, int h) : Rectangle(w,h), mOutline(1)
+jmg::DrawableRectangle::DrawableRectangle(int w, int h) : InteractiveRectangle(w,h), mOutline(1)
 {
 }
 
@@ -191,7 +216,7 @@ jmg::Moveable::Moveable() : mTarget(this), mButton(1)
 {
 }
 
-jmg::Moveable::Moveable(int w, int h) : Rectangle(w,h), mTarget(this), mButton(1)
+jmg::Moveable::Moveable(int w, int h) : InteractiveRectangle(w,h), mTarget(this), mButton(1)
 {
 }
 
@@ -225,8 +250,9 @@ void callbackTest(void* arg) {
 }
 
 jmg::Window::Window(int w, int h, const char* capt)
-	: Rectangle(w,h)
-	, mMover(w - 18, 22)
+	: InteractiveRectangle(w,h)
+	, mMover(mWidth - 18, 22)
+	, mCaption(capt)
 	, mBtnClose(22,22)
 	, mBtnImage(Image::CROSS)
 {
@@ -234,7 +260,6 @@ jmg::Window::Window(int w, int h, const char* capt)
 	mMover.mRely = -22;
 	mMover.mTarget = this;
 	mMover.mColor = al_map_rgb(200,200,200);
-	mCaption.setValue(capt);
 	mCaption.mRelx = 4;
 	mCaption.mRely = 4;
 	mMover.addChild(&mCaption);
@@ -314,11 +339,25 @@ bool jmg::InteractiveRectangle::catchMouse(const ALLEGRO_EVENT & event, int butt
 	return false;
 }
 
-jmg::Button::Button() : Rectangle(20,20), mHovering(false), mClicking(false), mCallback(NULL), mCallbackArgs(NULL)
+void jmg::InteractiveRectangle::addAndAdaptLabel(Label * label, int leftMargin, int topMargin, int rightMargin)
+{
+	if (topMargin < 0) {
+		topMargin = leftMargin;
+	}
+	if (rightMargin < 0) {
+		rightMargin = leftMargin;
+	}
+	label->mRelx = leftMargin;
+	label->mRely = topMargin;
+	label->mWidth = mWidth - leftMargin - rightMargin;
+	addChild(label);
+}
+
+jmg::Button::Button() : InteractiveRectangle(20,20), mHovering(false), mClicking(false), mCallback(NULL), mCallbackArgs(NULL)
 {
 }
 
-jmg::Button::Button(int w, int h) : Rectangle(w,h), mHovering(false), mClicking(false), mCallback(NULL), mCallbackArgs(NULL)
+jmg::Button::Button(int w, int h) : InteractiveRectangle(w,h), mHovering(false), mClicking(false), mCallback(NULL), mCallbackArgs(NULL)
 {
 }
 
@@ -373,27 +412,25 @@ ALLEGRO_FONT * jmg::fetchDefaultFont()
 	return defaultFont;
 }
 
+bool jmg::Label::isEditing()
+{
+	return getContext().mWritingFocus == this;
+}
+
 void jmg::Label::setValue(const char * val)
 {
-	if (!mEditing)
-	{
-		al_ustr_assign_cstr(mValue, val);
-	}
+	al_ustr_assign_cstr(mValue, val);
 }
 
 void jmg::Label::setValue(const char16_t * val)
 {
-	if (!mEditing)
-	{
-		al_ustr_free(mValue);
-		mValue = al_ustr_new_from_utf16((const uint16_t*)val);
-	}
+	al_ustr_free(mValue);
+	mValue = al_ustr_new_from_utf16((const uint16_t*)val);
 }
 
 jmg::Label::Label(const char * val)
 	: Base(0,0,al_map_rgb(0, 0, 0))
 	, mValue(al_ustr_new(val))
-	, mEditing(false)
 	, mFont(jmg::fetchDefaultFont())
 	, mWidth(0xFFFFFF)
 {
@@ -402,7 +439,6 @@ jmg::Label::Label(const char * val)
 jmg::Label::Label(const char16_t * val)
 	: Base(0, 0, al_map_rgb(0, 0, 0))
 	, mValue(al_ustr_new_from_utf16((uint16_t*)val))
-	, mEditing(false)
 	, mFont(jmg::fetchDefaultFont())
 	, mWidth(0xFFFFFF)
 {
@@ -680,7 +716,7 @@ bool drawSelectionCallback(int line_num, const ALLEGRO_USTR *line, void *extra) 
 
 void jmg::Text::draw(int origx, int origy)
 {
-	if (mEditing) {
+	if (isEditing()) {
 		int _x, _y;
 
 		if (mSelectionPos != mTextPos) {
@@ -710,7 +746,11 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 		int pos = getTextIndexFromCursorPos(event.mouse.x, event.mouse.y);
 
 		if (pos >= 0) {
-			mEditing = true;
+			Label*& writingFocus = getContext().mWritingFocus;
+			if (writingFocus) {
+				writingFocus->needsRedraw(-1); //notify focus lost
+			}
+			writingFocus = this;
 			if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
 				mClicking = true;
 			}
@@ -728,7 +768,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 			confirmEditing();
 		}
 	}
-	else if (mEditing) {
+	else if (isEditing()) {
 		if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == 1) {
 			if (mClicking) {
 				mClicking = false;
@@ -840,7 +880,7 @@ bool jmg::Text::collapseSelection()
 
 void jmg::Text::confirmEditing()
 {
-	mEditing = false;
+	getContext().mWritingFocus = nullptr;
 	if (mIsNumeric) {
 		if (al_ustr_size(mValue) == 0) {
 			setFrom((double)0.0, mMaxDecimals);
@@ -874,7 +914,7 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 		}
 		return true;
 	}
-	else if (mEditing) {
+	else if (isEditing()) {
 		if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
 			if (event.keyboard.keycode == ALLEGRO_KEY_A && event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
 				mSelectionPos = 0;
@@ -933,7 +973,7 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
 				mSelectionPos = mTextPos;
-				mEditing = false;
+				getContext().mWritingFocus = nullptr;
 				needsRedraw(1);
 				return true;
 			}
@@ -1097,4 +1137,9 @@ void jmg::Image::draw(int origx, int origy)
 	if (mImage) {
 		al_draw_tinted_bitmap(mImage, mColor, origx + mRelx, origy + mRely, 0);
 	}
+}
+
+jmg::Context::Context()
+	: mWritingFocus(nullptr)
+{
 }

@@ -106,18 +106,45 @@ public:
 
 class ExposingTest {
 public:
-	int varToExpose;
-	int otherVarToSee;
-
-	ExposingTest() : varToExpose(0), otherVarToSee(25) {}
+	bool _bool;
+	char _char;
+	unsigned char _uchar;
+	short _short;
+	unsigned short _ushort;
+	int _int;
+	unsigned int _uint;
+	float _float;
+	double _double;
+	std::string _string;
+	
+	ExposingTest()
+		: _bool(false)
+		, _char(0)
+		, _uchar(0)
+		, _short(0)
+		, _ushort(0)
+		, _int(0)
+		, _uint(0)
+		, _float(0.0f)
+		, _double(0.0)
+		, _string("string")
+	{}
 
 	IM_AN_EXPOSER
 };
 
 #define EXPOSE_TYPE ExposingTest
 EXPOSE_START
-EXPOSE(varToExpose)
-EXPOSE(otherVarToSee)
+//EXPOSE(_bool)
+EXPOSE(_char)
+EXPOSE(_uchar)
+EXPOSE(_short)
+EXPOSE(_ushort)
+EXPOSE(_int)
+EXPOSE(_uint)
+EXPOSE(_float)
+EXPOSE(_double)
+EXPOSE(_string)
 EXPOSE_END
 #undef EXPOSE_TYPE
 
@@ -149,11 +176,11 @@ public:
 
 		num.mRelx = 30;
 		num.mRely = 30;
-		win.addChild(&num);
+		win.addAndAdaptLabel(&num, 10);
 	}
 
 	void Draw() {
-		test.varToExpose++;
+		test._char++;
 		root.needsRedraw();
 		root.baseDraw();
 	}

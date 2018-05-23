@@ -12,8 +12,13 @@
 
 namespace jmg
 {
+	class Context;
+	
 	class Base {
 	private:
+		Context * mContext;
+		bool mIsContextOwner;
+
 		void redraw(int origx, int origy);
 		void cascadeDraw(int origx, int origy, bool parentNeedsIt = false);
 		bool cascadeHandleEvent(const ALLEGRO_EVENT& event);
@@ -24,6 +29,7 @@ namespace jmg
 
 		bool mRemoveMe;
 	protected:
+		Context& getContext();
 		virtual void draw(int origx, int origy);
 		virtual bool handleEvent(const ALLEGRO_EVENT& event);
 	public:
@@ -33,7 +39,7 @@ namespace jmg
 		bool mDeleteMe;
 
 		Base(int relx=0, int rely=0, ALLEGRO_COLOR color=al_map_rgb(255,255,255));
-		virtual ~Base() {}
+		virtual ~Base();
 
 		inline Base* parent() { return mParent; }
 
@@ -81,75 +87,15 @@ namespace jmg
 		void draw(int, int);
 	};
 
-	class Rectangle {
-	public:
-		Rectangle();
-		Rectangle(int w, int h);
-		int mWidth;
-		int mHeight;
-	};
-
-	class InteractiveRectangle : public virtual Rectangle, public virtual Base {
-	public:
-		InteractiveRectangle();
-		InteractiveRectangle(int w, int h);
-		bool isPointInside(int px, int py);
-		bool catchMouse(const ALLEGRO_EVENT& event, int button = 1, ALLEGRO_EVENT_TYPE evType = ALLEGRO_EVENT_MOUSE_BUTTON_DOWN);
-	};
-
-	class Moveable : public InteractiveRectangle {
-	private:
-		bool mHeld;
-		int mDx;
-		int mDy;
-	public:
-		Base * mTarget;
-		unsigned int mButton;
-
-		Moveable();
-		Moveable(int w, int h);
-		bool handleEvent(const ALLEGRO_EVENT& event);
-	};
-
-	class DrawableRectangle : public virtual InteractiveRectangle {
-	public:
-		DrawableRectangle();
-		DrawableRectangle(int w, int h);
-		void draw(int origx, int origy);
-
-		unsigned char mOutline;
-	};
-
-	class MoveableRectangle : public Moveable, public DrawableRectangle {
-	public:
-		MoveableRectangle(int w,int h);
-	};
-
-	class Button : public DrawableRectangle {
-	private:
-		bool mHovering;
-		bool mClicking;
-
-	public:
-		Button();
-		Button(int w, int h);
-
-		void draw(int origx, int origy);
-		bool handleEvent(const ALLEGRO_EVENT& event);
-
-		void(*mCallback)(void*);
-		void* mCallbackArgs;
-	};
-
 	class Label : public Base {
 	protected:
-		ALLEGRO_USTR* mValue;
-		bool mEditing;
+		ALLEGRO_USTR * mValue;
 
 	public:
-		ALLEGRO_FONT* mFont;
+		ALLEGRO_FONT * mFont;
 		int mWidth;
 
+		bool isEditing();
 		inline int getCharAt(int pos) const { return al_ustr_get(mValue, al_ustr_offset(mValue, pos)); }
 
 		inline const char* getValue() const { return al_cstr(mValue); }
@@ -186,7 +132,7 @@ namespace jmg
 		void insert(int keycode);
 		int getTextIndexFromCursorPos(int fromx, int fromy) const;
 		void getCursorPosFromTextIndex(int pos, int* posx, int* posy) const;
-		
+
 		int cursorXRef;
 		void resetCursorXRef();
 
@@ -231,6 +177,67 @@ namespace jmg
 		Numeric(double val);
 	};
 
+	class Rectangle {
+	public:
+		Rectangle();
+		Rectangle(int w, int h);
+		int mWidth;
+		int mHeight;
+	};
+
+	class InteractiveRectangle : public Rectangle, public Base {
+	public:
+		InteractiveRectangle();
+		InteractiveRectangle(int w, int h);
+		bool isPointInside(int px, int py);
+		bool catchMouse(const ALLEGRO_EVENT& event, int button = 1, ALLEGRO_EVENT_TYPE evType = ALLEGRO_EVENT_MOUSE_BUTTON_DOWN);
+		void addAndAdaptLabel(Label* label, int leftMargin = 0, int topMargin = -1, int rightMargin = -1); // -1 means : copy leftMargin
+	};
+
+	class Moveable : public virtual InteractiveRectangle {
+	private:
+		bool mHeld;
+		int mDx;
+		int mDy;
+	public:
+		Base * mTarget;
+		unsigned int mButton;
+
+		Moveable();
+		Moveable(int w, int h);
+		bool handleEvent(const ALLEGRO_EVENT& event);
+	};
+
+	class DrawableRectangle : public virtual InteractiveRectangle {
+	public:
+		DrawableRectangle();
+		DrawableRectangle(int w, int h);
+		void draw(int origx, int origy);
+
+		unsigned char mOutline;
+	};
+
+	class MoveableRectangle : public Moveable, public DrawableRectangle {
+	public:
+		MoveableRectangle(int w,int h);
+	};
+
+	class Button : public DrawableRectangle {
+	private:
+		bool mHovering;
+		bool mClicking;
+
+	public:
+		Button();
+		Button(int w, int h);
+
+		void draw(int origx, int origy);
+		bool handleEvent(const ALLEGRO_EVENT& event);
+
+		void(*mCallback)(void*);
+		void* mCallbackArgs;
+	};
+
 	class Window : public DrawableRectangle {
 	public:
 		MoveableRectangle mMover;
@@ -245,6 +252,13 @@ namespace jmg
 		void close();
 
 		void setParent(Base* parent, bool startsOpen);
+	};
+
+	class Context {
+	public:
+		Label * mWritingFocus;
+
+		Context();
 	};
 
 	ALLEGRO_FONT* fetchDefaultFont();

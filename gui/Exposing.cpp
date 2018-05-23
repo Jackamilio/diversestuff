@@ -40,39 +40,41 @@ void Exposing::WatcherWindow::refreshValueForLabels()
 	for (unsigned int i = 0; i < (unsigned int)mValueFields.size(); ++i) {
 		char* address = (char*)mWatchedAddress + mWatchedStruct.desc[i].offset;
 
-		//if (mWatchedStruct.desc[i].type == Exposing::BOOL) {
-		//	mValueFields[i]->setFrom(*(bool*)address);
-		//}
-		//else 
-		if (mWatchedStruct.desc[i].type == Exposing::INT8) {
-			mValueFields[i]->setFrom(*(char*)address);
-		}
-		else if (mWatchedStruct.desc[i].type == Exposing::UINT8) {
-			mValueFields[i]->setFrom(*(unsigned char*)address);
-		}
-		else if (mWatchedStruct.desc[i].type == Exposing::INT16) {
-			mValueFields[i]->setFrom(*(short*)address);
-		}
-		else if (mWatchedStruct.desc[i].type == Exposing::UINT16) {
-			mValueFields[i]->setFrom(*(unsigned short*)address);
-		}
-		else if (mWatchedStruct.desc[i].type == Exposing::INT) {
-			mValueFields[i]->setFrom(*(int*)address);
-		}
-		else if (mWatchedStruct.desc[i].type == Exposing::UINT) {
-			mValueFields[i]->setFrom(*(unsigned int*)address);
-		}
-		else if (mWatchedStruct.desc[i].type == Exposing::FLOAT) {
-			mValueFields[i]->setFrom(*(float*)address);
-		}
-		else if (mWatchedStruct.desc[i].type == Exposing::DOUBLE) {
-			mValueFields[i]->setFrom(*(double*)address);
-		}
-		else if (mWatchedStruct.desc[i].type == Exposing::STRING) {
-			mValueFields[i]->setValue(((std::string*)address)->c_str());
-		}
-		else {
-			mValueFields[i]->setValue("undef conv");
+		if (!mValueFields[i]->isEditing()) {
+			//if (mWatchedStruct.desc[i].type == Exposing::BOOL) {
+			//	mValueFields[i]->setFrom(*(bool*)address);
+			//}
+			//else 
+			if (mWatchedStruct.desc[i].type == Exposing::INT8) {
+				mValueFields[i]->setFrom(*(char*)address);
+			}
+			else if (mWatchedStruct.desc[i].type == Exposing::UINT8) {
+				mValueFields[i]->setFrom(*(unsigned char*)address);
+			}
+			else if (mWatchedStruct.desc[i].type == Exposing::INT16) {
+				mValueFields[i]->setFrom(*(short*)address);
+			}
+			else if (mWatchedStruct.desc[i].type == Exposing::UINT16) {
+				mValueFields[i]->setFrom(*(unsigned short*)address);
+			}
+			else if (mWatchedStruct.desc[i].type == Exposing::INT) {
+				mValueFields[i]->setFrom(*(int*)address);
+			}
+			else if (mWatchedStruct.desc[i].type == Exposing::UINT) {
+				mValueFields[i]->setFrom(*(unsigned int*)address);
+			}
+			else if (mWatchedStruct.desc[i].type == Exposing::FLOAT) {
+				mValueFields[i]->setFrom(*(float*)address);
+			}
+			else if (mWatchedStruct.desc[i].type == Exposing::DOUBLE) {
+				mValueFields[i]->setFrom(*(double*)address);
+			}
+			else if (mWatchedStruct.desc[i].type == Exposing::STRING) {
+				mValueFields[i]->setValue(((std::string*)address)->c_str());
+			}
+			else {
+				mValueFields[i]->setValue("undef conv");
+			}
 		}
 	}
 }
@@ -113,11 +115,15 @@ void editValueCallback(void* a) {
 	}
 }
 
-Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa) : jmg::Window(300, 100, sc.name.c_str()), mWatchedStruct(sc), mWatchedAddress(wa)
+Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa)
+	: jmg::InteractiveRectangle(300, 100)
+	, jmg::Window(-1, -1, sc.name.c_str())
+	, mWatchedStruct(sc)
+	, mWatchedAddress(wa)
 {
 	int y = 20;
 	const int xl = 20;
-	const int xr = 200;
+	const int xr = 150;
 	const int yStep = 25;
 	for (unsigned int i = 0; i < (unsigned int)sc.desc.size(); ++i) {
 		jmg::Label* nameLabel = new jmg::Label(sc.desc[i].name.c_str());
@@ -139,8 +145,6 @@ Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa) : jm
 		case STRING:valueField = new jmg::Text(((std::string*)address)->c_str()); break;
 		}
 		
-		valueField->mRelx = xr;
-		valueField->mRely = y;
 		mValueArgs.push_back(new EditValueArgs{this,i});
 		valueField->mEditCallback = editValueCallback;
 		valueField->mEditCallbackArgs = mValueArgs[i];
@@ -149,7 +153,7 @@ Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa) : jm
 		mValueFields.push_back(valueField);
 
 		addChild(nameLabel);
-		addChild(valueField);
+		addAndAdaptLabel(valueField,xr,y,10);
 
 		y += yStep;
 	}
