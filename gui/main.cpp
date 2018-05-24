@@ -152,19 +152,16 @@ class JmGui : public Engine::Graphic, public Engine::Input {
 public:
 	Engine & engine;
 
-	jmg::Base root;
-	jmg::WallPaper wp;
+	jmg::Root root;
 	jmg::Window win;
-	jmg::Numeric num;
-	jmg::CheckBox chk;
+	jmg::ShowHide sh;
+	std::vector<jmg::Label> labels;
 
 	ExposingTest test;
 
 	JmGui(Engine& e)
 		: engine(e)
-		, wp(al_map_rgb(200, 200, 200))
 		, win(200, 250, "Salut les gens")
-		, num((char)0)
 	{
 		engine.overlayGraphic.AddChild(this);
 		engine.inputRoot.AddChild(this,true);
@@ -172,16 +169,23 @@ public:
 		win.mOutline = 1;
 		win.mRelx = 300;
 		win.mRely = 150;
-
 		win.setParent(&root, false);
 
-		num.mRelx = 30;
-		num.mRely = 30;
-		win.addAndAdaptLabel(&num, 10);
+		labels.push_back(jmg::Label("Show Hide Test"));
+		labels.push_back(jmg::Label("Hidden 1"));
+		labels.push_back(jmg::Label("Hidden 2"));
+		labels.push_back(jmg::Label("Hidden 3"));
+		labels.push_back(jmg::Label("Below 1"));
+		labels.push_back(jmg::Label("Below 2"));
 
-		chk.mRelx = 30;
-		chk.mRely = 50;
-		win.addChild(&chk);
+		sh.mNbObjAlwaysShow = 2;
+		sh.addChild(&labels[0]);
+		labels[0].addBelow(&labels[1]);
+		labels[1].addBelow(&labels[2]);
+		labels[2].addBelow(&labels[3]);
+		win.addChild(&labels[4], 0, labels[3].mRely);
+		labels[4].addBelow(&labels[5]);
+		win.addChild(&sh);
 	}
 
 	void Draw() {

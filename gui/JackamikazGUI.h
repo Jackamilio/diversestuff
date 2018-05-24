@@ -6,6 +6,7 @@
 #include <allegro5\events.h>
 #include <allegro5\utf8.h>
 #include <list>
+#include <vector>
 #include <string>
 
 #pragma warning(disable:4250)
@@ -15,6 +16,8 @@ namespace jmg
 	class Context;
 	
 	class Base {
+	public:
+		typedef std::list<Base*> Children;
 	private:
 		Context * mContext;
 		bool mIsContextOwner;
@@ -24,7 +27,7 @@ namespace jmg
 		bool cascadeHandleEvent(const ALLEGRO_EVENT& event);
 
 		Base * mParent;
-		std::list<Base*> mChildren;
+		Children mChildren;
 		bool mNeedsRedraw;
 
 		bool mRemoveMe;
@@ -32,6 +35,9 @@ namespace jmg
 		Context& getContext();
 		virtual void draw(int origx, int origy);
 		virtual bool handleEvent(const ALLEGRO_EVENT& event);
+
+		virtual void onAddChild(Base* child) {}
+		virtual void onRemoveChild(Base* child) {}
 	public:
 		int mRelx;
 		int mRely;
@@ -42,10 +48,13 @@ namespace jmg
 		virtual ~Base();
 
 		inline Base* parent() { return mParent; }
+		inline const Children& children() { return mChildren; }
 
 		bool has(const Base* child) const;
 
 		void addChild(Base* child);
+		void addChild(Base* child, int relx, int rely);
+		void addBelow(Base* sibling, int additionalMargin = 0);
 		void remove();
 
 		void baseDraw();
@@ -54,14 +63,21 @@ namespace jmg
 		int calcOrigX() const;
 		int calcOrigY() const;
 
+		virtual int getHeight() const = 0;
+
 		void needsRedraw(int depth = 0);
 	};
 
-	class WallPaper : public virtual Base{
+	class Root : public virtual Base {
 	public:
-		WallPaper(const ALLEGRO_COLOR& color);
-		void draw(int, int);
+		int getHeight() const { return 0; }
 	};
+
+	//class WallPaper : public virtual Base{
+	//public:
+	//	WallPaper(const ALLEGRO_COLOR& color);
+	//	void draw(int, int);
+	//};
 
 	class Image : public virtual Base {
 	public:
@@ -69,6 +85,8 @@ namespace jmg
 			CROSS,
 			CHECK,
 			RADIO,
+			PLUS,
+			MINUS,
 			ARROW_UP,
 			ARROW_DOWN,
 			ARROW_LEFT,
@@ -85,6 +103,7 @@ namespace jmg
 		Image(PreRenderedImage image, const ALLEGRO_COLOR& color = al_map_rgb(255, 255, 255));
 
 		void draw(int, int);
+		int getHeight() const;
 	};
 
 	class Editable {
@@ -123,6 +142,8 @@ namespace jmg
 
 		template<typename T>
 		void setFrom(T val, int maxDecimals = 999999);
+
+		int getHeight() const;
 	};
 
 	template<typename T>
@@ -196,6 +217,7 @@ namespace jmg
 		bool isPointInside(int px, int py);
 		bool catchMouse(const ALLEGRO_EVENT& event, int button = 1, ALLEGRO_EVENT_TYPE evType = ALLEGRO_EVENT_MOUSE_BUTTON_DOWN);
 		void addAndAdaptLabel(Label* label, int leftMargin = 0, int topMargin = -1, int rightMargin = -1); // -1 means : copy leftMargin
+		int getHeight() const;
 	};
 
 	class Moveable : public virtual InteractiveRectangle {
@@ -240,13 +262,26 @@ namespace jmg
 		void* mCallbackArgs;
 	};
 
-	class CheckBox : public Button, public Image, public Editable {
+	class CheckBox : public Button, public Editable {
 	public:
 		bool mChecked;
+		Image mImage;
 
 		CheckBox(bool startsChecked = false);
 		
 		void draw(int origx, int origy);
+	};
+
+	class ShowHide : public Button {
+	public:
+		std::vector<Base*> mShowHideObjects;
+		unsigned int mNbObjAlwaysShow;
+		Image mPlusMinus;
+
+		ShowHide(int nbObjAlwaysShow = 1);
+
+		void show();
+		void hide();
 	};
 
 	class Window : public DrawableRectangle {

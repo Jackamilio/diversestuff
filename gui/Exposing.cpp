@@ -104,9 +104,9 @@ void editValueCallback(void* a) {
 
 	jmg::Base* base = args->window->mValueFields[args->id];
 	jmg::Text* text = dynamic_cast<jmg::Text*>(base);
+	const Exposing::Type type = args->window->mWatchedStruct.desc[args->id].type;
 	if (text) {
-		switch (args->window->mWatchedStruct.desc[args->id].type) {
-		case Exposing::BOOL:	*(bool*)address = dynamic_cast<jmg::CheckBox*>(base)->mChecked; break;
+		switch (type) {
 		case Exposing::INT8:	*(char*)address = text->getAsInt(); break;
 		case Exposing::UINT8:	*(unsigned char*)address = text->getAsInt(); break;
 		case Exposing::INT16:	*(short*)address = text->getAsInt(); break;
@@ -116,6 +116,12 @@ void editValueCallback(void* a) {
 		case Exposing::FLOAT:	*(float*)address = text->getAsFloat(); break;
 		case Exposing::DOUBLE:	*(double*)address = text->getAsDouble(); break;
 		case Exposing::STRING:	*(std::string*)address = text->getValue(); break;
+		}
+	}
+	else if (type == Exposing::BOOL) {
+		jmg::CheckBox* checkBox = dynamic_cast<jmg::CheckBox*>(base);
+		if (checkBox) {
+			*(bool*)address = checkBox->mChecked;
 		}
 	}
 }

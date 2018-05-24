@@ -70,6 +70,21 @@ void jmg::Base::addChild(Base * child)
 		mChildren.push_back(child);
 		child->mParent = this;
 		child->mRemoveMe = false;
+		onAddChild(child);
+	}
+}
+
+void jmg::Base::addChild(Base * child, int relx, int rely)
+{
+	child->mRelx = relx;
+	child->mRely = rely;
+	addChild(child);
+}
+
+void jmg::Base::addBelow(Base * sibling, int additionalMargin)
+{
+	if (mParent) {
+		mParent->addChild(sibling, mRelx, mRely + getHeight() + additionalMargin);
 	}
 }
 
@@ -160,6 +175,7 @@ bool jmg::Base::cascadeHandleEvent(const ALLEGRO_EVENT& event)
 			if (!deleted) {
 				(*it)->mRemoveMe = false;
 			}
+			onRemoveChild(*it);
 			mChildren.erase(std::next(it).base());
 		}
 		else {
@@ -173,14 +189,13 @@ bool jmg::Base::cascadeHandleEvent(const ALLEGRO_EVENT& event)
 	return handleEvent(event);
 }
 
-jmg::WallPaper::WallPaper(const ALLEGRO_COLOR & color) : Base(0,0,color)
-{
-}
+//jmg::WallPaper::WallPaper(const ALLEGRO_COLOR & color) : Base(0,0,color)
+//{
+//}
 
-void jmg::WallPaper::draw(int, int)
-{
-	al_clear_to_color(mColor);
-}
+//void jmg::WallPaper::draw(int, int) {
+//	al_clear_to_color(mColor);
+//}
 
 jmg::MoveableRectangle::MoveableRectangle(int w,int h)
 	: Moveable(w, h)
@@ -341,6 +356,11 @@ void jmg::InteractiveRectangle::addAndAdaptLabel(Label * label, int leftMargin, 
 	addChild(label);
 }
 
+int jmg::InteractiveRectangle::getHeight() const
+{
+	return mHeight;
+}
+
 jmg::Button::Button()
 	: InteractiveRectangle(20,20)
 	, DrawableRectangle(20,20)
@@ -485,6 +505,13 @@ double jmg::Label::getAsDouble() const
 	catch (std::exception) {
 		return 0.0;
 	}
+}
+
+int jmg::Label::getHeight() const
+{
+	int bbx, bby, bbw, bbh;
+	al_get_ustr_dimensions(mFont, mValue, &bbx, &bby, &bbw, &bbh);
+	return bbh;
 }
 
 void jmg::Text::insert(int keycode)
@@ -1121,6 +1148,20 @@ ALLEGRO_BITMAP * jmg::Image::getImage(PreRenderedImage image)
 			al_draw_line(1, 3, 4, 9, al_map_rgba(0, 0, 0, 255), 1.5f);
 			al_draw_line(4, 9, 8, 1, al_map_rgba(0, 0, 0, 255), 1.5f);
 			break;
+		case PLUS:
+			img = al_create_bitmap(10, 10);
+			al_set_target_bitmap(img);
+			al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+			al_draw_line(5, 1, 5, 8, al_map_rgba(0, 0, 0, 255), 1.0f);
+			al_draw_line(1, 4, 8, 4, al_map_rgba(0, 0, 0, 255), 1.0f);
+			break;
+		case MINUS:
+			img = al_create_bitmap(10, 10);
+			al_set_target_bitmap(img);
+			al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+			al_draw_line(1, 4, 8, 4, al_map_rgba(0, 0, 0, 255), 1.0f);
+			break;
+			break;
 		default:
 		case ARROW_UP:
 		case ARROW_DOWN:
@@ -1158,6 +1199,11 @@ void jmg::Image::draw(int origx, int origy)
 	}
 }
 
+int jmg::Image::getHeight() const
+{
+	return mImage ? al_get_bitmap_height(mImage) : 0;
+}
+
 jmg::Context::Context()
 	: mWritingFocus(nullptr)
 {
@@ -1165,16 +1211,24 @@ jmg::Context::Context()
 
 void checkTheBox(void* arg) {
 	jmg::CheckBox* checkBox = (jmg::CheckBox*)arg;
-	checkBox->mChecked = !checkBox->mChecked;
+	if (checkBox->mChecked) {
+		checkBox->mChecked = false;
+		checkBox->mImage.remove();
+	}
+	else {
+		checkBox->mChecked = true;
+		checkBox->addChild(&checkBox->mImage);
+	}
 	checkBox->editHappened();
 }
 
 jmg::CheckBox::CheckBox(bool startsChecked)
 	: InteractiveRectangle(10,10)
 	, Button(10,10)
-	, Image(jmg::Image::CHECK)
-	, mChecked(startsChecked)
+	, mImage(jmg::Image::CHECK)
+	, mChecked(!startsChecked)
 {
+	checkTheBox((void*)this);
 	mCallback = checkTheBox;
 	mCallbackArgs = (void*)this;
 }
@@ -1182,9 +1236,6 @@ jmg::CheckBox::CheckBox(bool startsChecked)
 void jmg::CheckBox::draw(int origx, int origy)
 {
 	jmg::Button::draw(origx, origy);
-	if (mChecked) {
-		jmg::Image::draw(origx, origy);
-	}
 }
 
 jmg::Editable::Editable()
@@ -1197,5 +1248,53 @@ void jmg::Editable::editHappened()
 {
 	if (mEditCallback) {
 		mEditCallback(mEditCallbackArgs);
+	}
+}
+
+void showHideCallback(void* arg) {
+	jmg::ShowHide* sh = (jmg::ShowHide*)arg;
+
+	if (sh->mShowHideObjects.size() == 0) {
+		sh->hide();
+	}
+	else {
+		sh->show();
+	}
+}
+
+jmg::ShowHide::ShowHide(int nbObjAlwaysShow)
+	: InteractiveRectangle(10,10)
+	, mNbObjAlwaysShow(nbObjAlwaysShow)
+	, mPlusMinus(jmg::Image::MINUS)
+{
+	addChild(&mPlusMinus);
+	mCallback = showHideCallback;
+	mCallbackArgs = (void*)this;
+}
+
+void jmg::ShowHide::show()
+{
+	if (mShowHideObjects.size() > 0) {
+		for (unsigned int i = 0; i < mShowHideObjects.size(); ++i) {
+			addChild(mShowHideObjects[i]);
+		}
+		mShowHideObjects.clear();
+		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::MINUS);
+		needsRedraw(-1);
+	}
+}
+
+void jmg::ShowHide::hide()
+{
+	if (mShowHideObjects.size() == 0) {
+		unsigned int ignore = 0;
+		for (Children::const_iterator it = children().begin(); it != children().end(); ++it) {
+			if (ignore++ >= mNbObjAlwaysShow) {
+				mShowHideObjects.push_back(*it);
+				(*it)->remove();
+			}
+		}
+		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::PLUS);
+		needsRedraw(-1);
 	}
 }
