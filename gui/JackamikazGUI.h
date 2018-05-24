@@ -54,7 +54,10 @@ namespace jmg
 
 		void addChild(Base* child);
 		void addChild(Base* child, int relx, int rely);
-		void addBelow(Base* sibling, int additionalMargin = 0);
+
+		void setAutoAdd(int startx = 0, int starty = 0, int additionalMargin = 0);
+		void autoAdd(Base* parent);
+
 		void remove();
 
 		void baseDraw();
@@ -133,6 +136,9 @@ namespace jmg
 		Label(const char* val = "");
 		Label(const char16_t* val);
 		~Label();
+
+		Label(const Label& other);
+		Label& operator= (const Label& other);
 
 		void draw(int origx, int origy);
 
@@ -303,6 +309,13 @@ namespace jmg
 	class Context {
 	public:
 		Label * mWritingFocus;
+
+		struct AutoAdd {
+			int mRelx;
+			int mRely;
+			int mAddititonalMargin;
+		};
+		AutoAdd mAutoAdd;
 
 		Context();
 	};

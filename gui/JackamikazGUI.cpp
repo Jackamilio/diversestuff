@@ -49,6 +49,15 @@ jmg::Base::Base(int relx, int rely, ALLEGRO_COLOR color)
 
 jmg::Base::~Base()
 {
+	// the next commented code is a wrong idea
+	//if (mParent) {
+	//	Children::iterator it = std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this);
+	//	if (it != mParent->mChildren.end()) {
+	//		// let me diiiie
+	//		onRemoveChild(*it); // not sure if it shoud be called
+	//		mChildren.erase(it);
+	//	}
+	//}
 	if (mContext && mIsContextOwner) {
 		delete mContext;
 	}
@@ -81,10 +90,17 @@ void jmg::Base::addChild(Base * child, int relx, int rely)
 	addChild(child);
 }
 
-void jmg::Base::addBelow(Base * sibling, int additionalMargin)
+void jmg::Base::setAutoAdd(int startx, int starty, int additionalMargin)
 {
-	if (mParent) {
-		mParent->addChild(sibling, mRelx, mRely + getHeight() + additionalMargin);
+	getContext().mAutoAdd = { startx,starty,additionalMargin };
+}
+
+void jmg::Base::autoAdd(Base* parent)
+{
+	if (parent) {
+		Context::AutoAdd& aa = parent->getContext().mAutoAdd;
+		parent->addChild(this, aa.mRelx, aa.mRely);
+		aa.mRely += getHeight() + aa.mAddititonalMargin;
 	}
 }
 
@@ -167,6 +183,7 @@ bool jmg::Base::cascadeHandleEvent(const ALLEGRO_EVENT& event)
 		bool deleted = false;
 
 		if ((*it)->mDeleteMe) {
+			(*it)->mParent = nullptr; // orphan it first, don't trigger auto remove
 			delete (*it);
 			deleted = true;
 		}
@@ -467,6 +484,23 @@ jmg::Label::Label(const char16_t * val)
 jmg::Label::~Label()
 {
 	al_ustr_free(mValue);
+}
+
+jmg::Label::Label(const Label & other)
+	: Base(other)
+	, mValue(al_ustr_dup(other.mValue))
+	, mFont(other.mFont)
+	, mWidth(other.mWidth)
+{
+}
+
+jmg::Label& jmg::Label::operator=(const Label & other)
+{
+	Base::operator=((const Base&)other);
+	al_ustr_assign(mValue, other.mValue);
+	mFont = other.mFont;
+	mWidth = other.mWidth;
+	return *this;
 }
 
 void jmg::Label::draw(int origx, int origy)
@@ -1206,6 +1240,7 @@ int jmg::Image::getHeight() const
 
 jmg::Context::Context()
 	: mWritingFocus(nullptr)
+	, mAutoAdd({ 0,0,0 })
 {
 }
 

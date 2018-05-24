@@ -155,7 +155,7 @@ public:
 	jmg::Root root;
 	jmg::Window win;
 	jmg::ShowHide sh;
-	std::vector<jmg::Label> labels;
+	std::vector<jmg::Label*> labels;
 
 	ExposingTest test;
 
@@ -171,21 +171,26 @@ public:
 		win.mRely = 150;
 		win.setParent(&root, false);
 
-		labels.push_back(jmg::Label("Show Hide Test"));
-		labels.push_back(jmg::Label("Hidden 1"));
-		labels.push_back(jmg::Label("Hidden 2"));
-		labels.push_back(jmg::Label("Hidden 3"));
-		labels.push_back(jmg::Label("Below 1"));
-		labels.push_back(jmg::Label("Below 2"));
+		labels.push_back(new jmg::Label("Show Hide Test"));
+		labels.push_back(new jmg::Label("Hidden 1"));
+		labels.push_back(new jmg::Label("Hidden 2"));
+		labels.push_back(new jmg::Label("Hidden 3"));
+		labels.push_back(new jmg::Label("Below 1"));
+		labels.push_back(new jmg::Label("Below 2"));
 
+		win.addChild(&sh,10,10);
 		sh.mNbObjAlwaysShow = 2;
-		sh.addChild(&labels[0]);
-		labels[0].addBelow(&labels[1]);
-		labels[1].addBelow(&labels[2]);
-		labels[2].addBelow(&labels[3]);
-		win.addChild(&labels[4], 0, labels[3].mRely);
-		labels[4].addBelow(&labels[5]);
-		win.addChild(&sh);
+		sh.setAutoAdd(10,-3,5);
+		for (unsigned int i = 0; i < labels.size(); ++i) {
+			labels[i]->autoAdd(&sh);
+		}
+	}
+
+	~JmGui() {
+		for (unsigned int i = 0; i < labels.size(); ++i) {
+			delete labels[i];
+		}
+		labels.clear();
 	}
 
 	void Draw() {
