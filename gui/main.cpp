@@ -104,6 +104,26 @@ public:
 	}
 };
 
+class ExposingTestMember {
+public:
+	int _otherInt;
+	short _otherShort;
+
+	ExposingTestMember()
+		: _otherInt(0)
+		, _otherShort(0)
+	{}
+
+	IM_AN_EXPOSER
+};
+
+#define EXPOSE_TYPE ExposingTestMember
+EXPOSE_START
+EXPOSE(_otherInt)
+EXPOSE(_otherShort)
+EXPOSE_END
+#undef EXPOSE_TYPE
+
 class ExposingTest {
 public:
 	bool _bool;
@@ -116,6 +136,7 @@ public:
 	float _float;
 	double _double;
 	std::string _string;
+	ExposingTestMember _member;
 	
 	ExposingTest()
 		: _bool(false)
@@ -145,6 +166,7 @@ EXPOSE(_uint)
 EXPOSE(_float)
 EXPOSE(_double)
 EXPOSE(_string)
+EXPOSE(_member)
 EXPOSE_END
 #undef EXPOSE_TYPE
 

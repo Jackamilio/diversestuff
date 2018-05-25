@@ -79,15 +79,17 @@ namespace Exposing {
 
 	Type defineStruct(const char* name, const StructInfo& members, unsigned int structSize);
 
-	class WatcherWindow : public jmg::Window {
+	class Watcher : public virtual jmg::Base {
 	public:
+		int calculatedHeight;
+
 		const StructComplete& mWatchedStruct;
 		void* mWatchedAddress;
 		std::vector<jmg::Label*> mNameLabels;
 		std::vector<jmg::Base*> mValueFields;
 
 		struct EditValueArgs {
-			Exposing::WatcherWindow* window;
+			Exposing::Watcher* watcher;
 			unsigned int id;
 		};
 
@@ -97,8 +99,17 @@ namespace Exposing {
 
 		void draw(int origx, int origy);
 
+		Watcher(const StructComplete& sc, void* wa, int y = 0);
+		~Watcher();
+
+		int getHeight() const;
+	};
+
+	class WatcherWindow : public Watcher, public jmg::Window {
+	public:
 		WatcherWindow(const StructComplete& sc, void* wa);
-		~WatcherWindow();
+
+		void draw(int origx, int origy);
 	};
 
 	template<class T>

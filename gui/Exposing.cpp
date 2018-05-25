@@ -35,7 +35,7 @@ Exposing::StructMember::StructMember(const char * n, Type t, unsigned int o)
 {
 }
 
-void Exposing::WatcherWindow::refreshValueForLabels()
+void Exposing::Watcher::refreshValueForLabels()
 {
 	for (unsigned int i = 0; i < (unsigned int)mValueFields.size(); ++i) {
 		char* address = (char*)mWatchedAddress + mWatchedStruct.desc[i].offset;
@@ -83,10 +83,10 @@ void Exposing::WatcherWindow::refreshValueForLabels()
 	}
 }
 
-void Exposing::WatcherWindow::draw(int origx, int origy)
+void Exposing::Watcher::draw(int origx, int origy)
 {
 	refreshValueForLabels();
-	jmg::Window::draw(origx, origy);
+	jmg::Base::draw(origx, origy);
 }
 
 void closeWatcherCallback(void* arg) {
@@ -98,13 +98,13 @@ void closeWatcherCallback(void* arg) {
 }
 
 void editValueCallback(void* a) {
-	Exposing::WatcherWindow::EditValueArgs* args = (Exposing::WatcherWindow::EditValueArgs*)a;
+	Exposing::Watcher::EditValueArgs* args = (Exposing::Watcher::EditValueArgs*)a;
 
-	char* address = (char*)args->window->mWatchedAddress + args->window->mWatchedStruct.desc[args->id].offset;
+	char* address = (char*)args->watcher->mWatchedAddress + args->watcher->mWatchedStruct.desc[args->id].offset;
 
-	jmg::Base* base = args->window->mValueFields[args->id];
+	jmg::Base* base = args->watcher->mValueFields[args->id];
 	jmg::Text* text = dynamic_cast<jmg::Text*>(base);
-	const Exposing::Type type = args->window->mWatchedStruct.desc[args->id].type;
+	const Exposing::Type type = args->watcher->mWatchedStruct.desc[args->id].type;
 	if (text) {
 		switch (type) {
 		case Exposing::INT8:	*(char*)address = text->getAsInt(); break;
@@ -126,16 +126,13 @@ void editValueCallback(void* a) {
 	}
 }
 
-Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa)
-	: jmg::InteractiveRectangle(300, 100)
-	, jmg::Window(-1, -1, sc.name.c_str())
-	, mWatchedStruct(sc)
+Exposing::Watcher::Watcher(const StructComplete & sc, void* wa, int y)
+	: mWatchedStruct(sc)
 	, mWatchedAddress(wa)
 {
-	int y = 20;
 	const int xl = 20;
 	const int xr = 150;
-	const int yStep = 25;
+	const int yStep = 20;
 	for (unsigned int i = 0; i < (unsigned int)sc.desc.size(); ++i) {
 		jmg::Label* nameLabel = new jmg::Label(sc.desc[i].name.c_str());
 		nameLabel->mRelx = xl;
@@ -159,33 +156,36 @@ Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void* wa)
 		case STRING:valueField = new jmg::Text(((std::string*)address)->c_str()); break;
 		}
 		
-		mValueArgs.push_back(new EditValueArgs{ this,i });
+
+
 		if (valueField) {
 			valueField->mEditCallback = editValueCallback;
 			valueField->mEditCallbackArgs = mValueArgs[i];
 			mValueFields.push_back(valueField);
-			addAndAdaptLabel(valueField, xr, y, 10);
+			//addAndAdaptLabel(valueField, xr, y, 10);
+			valueField->mWidth = 140;
+			addChild(valueField, xr, y);
 		}
 		else if (checkbox) {
 			checkbox->mEditCallback = editValueCallback;
 			checkbox->mEditCallbackArgs = mValueArgs[i];
 			mValueFields.push_back(checkbox);
-			checkbox->mRelx = xr;
-			checkbox->mRely = y;
-			addChild(checkbox);
+			addChild(checkbox, xr, y);
+		}
+		else {
+			const StructComplete& sc = registeredTypes[sc.desc[i].type];
+			Base* value = new Watcher(sc, address);
+			mValueFields.push_back(value);
+			addChild(value, xr, y);
+			y += 
 		}
 
 		y += yStep;
 	}
-
-	mHeight = y + yStep;
-	mWidth = 300; //wtf this doesn't work?
-
-	mBtnClose.mCallback = closeWatcherCallback;
-	mBtnClose.mCallbackArgs = (void*)this;
+	calculatedHeight = y + yStep;
 }
 
-Exposing::WatcherWindow::~WatcherWindow()
+Exposing::Watcher::~Watcher()
 {
 	for (unsigned int i = 0; i < (unsigned int)mNameLabels.size(); ++i) {
 		delete mNameLabels[i];
@@ -199,6 +199,23 @@ Exposing::WatcherWindow::~WatcherWindow()
 		delete mValueArgs[i];
 	}
 	mValueArgs.clear();
+}
+
+Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void * wa)
+	: InteractiveRectangle(300,100)
+	, Window(300,100,sc.name.c_str())
+	, Watcher(sc, wa, 20)
+{
+	mHeight = calculatedHeight;
+
+	mBtnClose.mCallback = closeWatcherCallback;
+	mBtnClose.mCallbackArgs = (void*)this;
+}
+
+void Exposing::WatcherWindow::draw(int origx, int origy)
+{
+	refreshValueForLabels();
+	Window::draw(origx, origy);
 }
 
 Exposing::StructComplete::StructComplete() : name("Struct incomplete!!")
