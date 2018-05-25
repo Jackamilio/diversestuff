@@ -180,10 +180,14 @@ public:
 
 		win.addChild(&sh,10,10);
 		sh.mNbObjAlwaysShow = 2;
-		sh.setAutoAdd(10,-3,5);
-		for (unsigned int i = 0; i < labels.size(); ++i) {
-			labels[i]->autoAdd(&sh);
-		}
+		sh.setAsAutoAddRef(10,-3,5);
+		unsigned int i = 0;
+		labels[i++]->autoAdd();
+		sh.autoAddShift(5, 0);
+		for (; i < 4; ++i) { labels[i]->autoAdd(); }
+		sh.autoAddShift(-5, 0);
+		for (; i < 6; ++i) { labels[i]->autoAdd(&win); }
+		sh.hide();
 	}
 
 	~JmGui() {

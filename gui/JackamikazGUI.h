@@ -19,9 +19,6 @@ namespace jmg
 	public:
 		typedef std::list<Base*> Children;
 	private:
-		Context * mContext;
-		bool mIsContextOwner;
-
 		void redraw(int origx, int origy);
 		void cascadeDraw(int origx, int origy, bool parentNeedsIt = false);
 		bool cascadeHandleEvent(const ALLEGRO_EVENT& event);
@@ -32,7 +29,7 @@ namespace jmg
 
 		bool mRemoveMe;
 	protected:
-		Context& getContext();
+		static Context& getContext();
 		virtual void draw(int origx, int origy);
 		virtual bool handleEvent(const ALLEGRO_EVENT& event);
 
@@ -55,8 +52,9 @@ namespace jmg
 		void addChild(Base* child);
 		void addChild(Base* child, int relx, int rely);
 
-		void setAutoAdd(int startx = 0, int starty = 0, int additionalMargin = 0);
-		void autoAdd(Base* parent);
+		void setAsAutoAddRef(int startx = 0, int starty = 0, int additionalMargin = 0);
+		void autoAdd(Base* parent = nullptr);
+		static void autoAddShift(int shiftx, int shifty);
 
 		void remove();
 
@@ -279,6 +277,8 @@ namespace jmg
 	};
 
 	class ShowHide : public Button {
+	private:
+		int mDeltaExpand;
 	public:
 		std::vector<Base*> mShowHideObjects;
 		unsigned int mNbObjAlwaysShow;
@@ -311,6 +311,7 @@ namespace jmg
 		Label * mWritingFocus;
 
 		struct AutoAdd {
+			Base* mReference;
 			int mRelx;
 			int mRely;
 			int mAddititonalMargin;

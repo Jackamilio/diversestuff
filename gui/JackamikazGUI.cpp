@@ -16,18 +16,8 @@ void jmg::Base::redraw(int origx, int origy)
 
 jmg::Context& jmg::Base::getContext()
 {
-	if (!mContext) {
-		Base* c = this;
-		while (c->mParent) {
-			c = c->mParent;
-		}
-		if (!c->mContext) {
-			c->mContext = new Context();
-			c->mIsContextOwner = true;
-		}
-		mContext = c->mContext;
-	}
-	return *mContext;
+	static Context context;
+	return context;
 }
 
 void jmg::Base::draw(int origx, int origy)
@@ -35,9 +25,7 @@ void jmg::Base::draw(int origx, int origy)
 }
 
 jmg::Base::Base(int relx, int rely, ALLEGRO_COLOR color)
-	: mContext(nullptr)
-	, mIsContextOwner(false)
-	, mParent(nullptr)
+	: mParent(nullptr)
 	, mNeedsRedraw(true)
 	, mRemoveMe(false)
 	, mRelx(relx)
@@ -58,9 +46,6 @@ jmg::Base::~Base()
 	//		mChildren.erase(it);
 	//	}
 	//}
-	if (mContext && mIsContextOwner) {
-		delete mContext;
-	}
 }
 
 bool jmg::Base::handleEvent(const ALLEGRO_EVENT & event)
@@ -90,18 +75,38 @@ void jmg::Base::addChild(Base * child, int relx, int rely)
 	addChild(child);
 }
 
-void jmg::Base::setAutoAdd(int startx, int starty, int additionalMargin)
+void jmg::Base::setAsAutoAddRef(int startx, int starty, int additionalMargin)
 {
-	getContext().mAutoAdd = { startx,starty,additionalMargin };
+	getContext().mAutoAdd = { this, startx,starty,additionalMargin };
 }
 
 void jmg::Base::autoAdd(Base* parent)
 {
+	Context::AutoAdd& aa = parent->getContext().mAutoAdd;
+	if (!parent) {
+		parent = aa.mReference;
+	}
 	if (parent) {
-		Context::AutoAdd& aa = parent->getContext().mAutoAdd;
-		parent->addChild(this, aa.mRelx, aa.mRely);
+		int x = aa.mRelx;
+		int y = aa.mRely;
+
+		Base* curRef = aa.mReference;
+		while (curRef && curRef != parent) {
+			x += curRef->mRelx;
+			y += curRef->mRely;
+			curRef = curRef->mParent;
+		}
+
+		parent->addChild(this, x, y);
 		aa.mRely += getHeight() + aa.mAddititonalMargin;
 	}
+}
+
+void jmg::Base::autoAddShift(int shiftx, int shifty)
+{
+	Context::AutoAdd& aa = getContext().mAutoAdd;
+	aa.mRelx += shiftx;
+	aa.mRely += shifty;
 }
 
 void jmg::Base::remove()
@@ -1240,7 +1245,7 @@ int jmg::Image::getHeight() const
 
 jmg::Context::Context()
 	: mWritingFocus(nullptr)
-	, mAutoAdd({ 0,0,0 })
+	, mAutoAdd({ nullptr,0,0,0 })
 {
 }
 
@@ -1316,6 +1321,14 @@ void jmg::ShowHide::show()
 		mShowHideObjects.clear();
 		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::MINUS);
 		needsRedraw(-1);
+
+		// push siblings down
+		const Children& siblings = parent()->children();
+		for (Children::const_iterator it = siblings.begin(); it != siblings.end(); ++it) {
+			if ((*it)->mRely > mRely) {
+				(*it)->mRely += mDeltaExpand;
+			}
+		}
 	}
 }
 
@@ -1323,13 +1336,32 @@ void jmg::ShowHide::hide()
 {
 	if (mShowHideObjects.size() == 0) {
 		unsigned int ignore = 0;
+		int ignoreMaxY = 0;
+		int hideMaxY = 0;
 		for (Children::const_iterator it = children().begin(); it != children().end(); ++it) {
+			int itBottom = (*it)->mRely + (*it)->getHeight();
 			if (ignore++ >= mNbObjAlwaysShow) {
 				mShowHideObjects.push_back(*it);
 				(*it)->remove();
+				if (itBottom > hideMaxY) {
+					hideMaxY = itBottom;
+				}
+			}
+			else if (itBottom > ignoreMaxY) {
+				ignoreMaxY = itBottom;
 			}
 		}
+		mDeltaExpand = hideMaxY - ignoreMaxY;
 		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::PLUS);
 		needsRedraw(-1);
+
+		// pull siblings up
+		const int vertTrigger = mRely + mDeltaExpand;
+		const Children& siblings = parent()->children();
+		for (Children::const_iterator it = siblings.begin(); it != siblings.end(); ++it) {
+			if ((*it)->mRely > vertTrigger) {
+				(*it)->mRely -= mDeltaExpand;
+			}
+		}
 	}
 }
