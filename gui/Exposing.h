@@ -85,7 +85,7 @@ namespace Exposing {
 
 		const StructComplete& mWatchedStruct;
 		void* mWatchedAddress;
-		std::vector<jmg::Label*> mNameLabels;
+		std::vector<jmg::Base*> mToDelete;
 		std::vector<jmg::Base*> mValueFields;
 
 		struct EditValueArgs {
@@ -110,6 +110,8 @@ namespace Exposing {
 		WatcherWindow(const StructComplete& sc, void* wa);
 
 		void draw(int origx, int origy);
+
+		int getHeight() const;
 	};
 
 	template<class T>

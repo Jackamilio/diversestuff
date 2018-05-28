@@ -47,7 +47,7 @@ void Exposing::Watcher::refreshValueForLabels()
 		}
 		else {
 			jmg::Text* text = dynamic_cast<jmg::Text*>(base);
-			if (!text->isEditing()) {
+			if (text && !text->isEditing()) {
 				if (mWatchedStruct.desc[i].type == Exposing::INT8) {
 					text->setFrom(*(char*)address);
 				}
@@ -130,6 +130,7 @@ Exposing::Watcher::Watcher(const StructComplete & sc, void* wa, int y)
 	: mWatchedStruct(sc)
 	, mWatchedAddress(wa)
 {
+	calculatedHeight = 0;
 	const int xl = 20;
 	const int xr = 150;
 	const int yStep = 20;
@@ -137,7 +138,7 @@ Exposing::Watcher::Watcher(const StructComplete & sc, void* wa, int y)
 		jmg::Label* nameLabel = new jmg::Label(sc.desc[i].name.c_str());
 		nameLabel->mRelx = xl;
 		nameLabel->mRely = y;
-		mNameLabels.push_back(nameLabel);
+		mToDelete.push_back(nameLabel);
 		addChild(nameLabel);
 
 		char* address = (char*)mWatchedAddress + mWatchedStruct.desc[i].offset;
@@ -156,7 +157,7 @@ Exposing::Watcher::Watcher(const StructComplete & sc, void* wa, int y)
 		case STRING:valueField = new jmg::Text(((std::string*)address)->c_str()); break;
 		}
 		
-
+		mValueArgs.push_back(new EditValueArgs({ this,i }));
 
 		if (valueField) {
 			valueField->mEditCallback = editValueCallback;
@@ -173,24 +174,29 @@ Exposing::Watcher::Watcher(const StructComplete & sc, void* wa, int y)
 			addChild(checkbox, xr, y);
 		}
 		else {
-			const StructComplete& sc = registeredTypes[sc.desc[i].type];
-			Base* value = new Watcher(sc, address);
+			nameLabel->mRelx += xl;
+			const StructComplete& sc_ = registeredTypes[sc.desc[i].type];
+			Base* value = new Watcher(sc_, address);
 			mValueFields.push_back(value);
-			addChild(value, xr, y);
-			y += 
+			jmg::ShowHide* sh = new jmg::ShowHide();
+			mToDelete.push_back(sh);
+			addChild(sh, xl, y);
+			sh->addChild(value, 0, yStep);
+			sh->mOverrideDeltaExpand = value->getHeight();
+			y += value->getHeight();
 		}
 
 		y += yStep;
 	}
-	calculatedHeight = y + yStep;
+	calculatedHeight += y;
 }
 
 Exposing::Watcher::~Watcher()
 {
-	for (unsigned int i = 0; i < (unsigned int)mNameLabels.size(); ++i) {
-		delete mNameLabels[i];
+	for (unsigned int i = 0; i < (unsigned int)mToDelete.size(); ++i) {
+		delete mToDelete[i];
 	}
-	mNameLabels.clear();
+	mToDelete.clear();
 	for (unsigned int i = 0; i < (unsigned int)mValueFields.size(); ++i) {
 		delete mValueFields[i];
 	}
@@ -199,6 +205,11 @@ Exposing::Watcher::~Watcher()
 		delete mValueArgs[i];
 	}
 	mValueArgs.clear();
+}
+
+int Exposing::Watcher::getHeight() const
+{
+	return calculatedHeight;
 }
 
 Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void * wa)
@@ -216,6 +227,11 @@ void Exposing::WatcherWindow::draw(int origx, int origy)
 {
 	refreshValueForLabels();
 	Window::draw(origx, origy);
+}
+
+int Exposing::WatcherWindow::getHeight() const
+{
+	return Window::getHeight();
 }
 
 Exposing::StructComplete::StructComplete() : name("Struct incomplete!!")

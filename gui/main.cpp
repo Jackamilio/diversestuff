@@ -108,10 +108,12 @@ class ExposingTestMember {
 public:
 	int _otherInt;
 	short _otherShort;
+	bool _otherBool;
 
 	ExposingTestMember()
 		: _otherInt(0)
 		, _otherShort(0)
+		, _otherBool(true)
 	{}
 
 	IM_AN_EXPOSER
@@ -121,6 +123,7 @@ public:
 EXPOSE_START
 EXPOSE(_otherInt)
 EXPOSE(_otherShort)
+EXPOSE(_otherBool)
 EXPOSE_END
 #undef EXPOSE_TYPE
 
@@ -161,12 +164,12 @@ EXPOSE(_char)
 EXPOSE(_uchar)
 EXPOSE(_short)
 EXPOSE(_ushort)
+EXPOSE(_member)
 EXPOSE(_int)
 EXPOSE(_uint)
 EXPOSE(_float)
 EXPOSE(_double)
 EXPOSE(_string)
-EXPOSE(_member)
 EXPOSE_END
 #undef EXPOSE_TYPE
 
@@ -221,6 +224,7 @@ public:
 
 	void Draw() {
 		test._char++;
+		test._member._otherShort--;
 		root.needsRedraw();
 		root.baseDraw();
 	}

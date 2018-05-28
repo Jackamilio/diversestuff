@@ -280,6 +280,8 @@ namespace jmg
 	private:
 		int mDeltaExpand;
 	public:
+		int mOverrideDeltaExpand;
+
 		std::vector<Base*> mShowHideObjects;
 		unsigned int mNbObjAlwaysShow;
 		Image mPlusMinus;

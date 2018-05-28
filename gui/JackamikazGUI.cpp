@@ -1304,6 +1304,7 @@ void showHideCallback(void* arg) {
 
 jmg::ShowHide::ShowHide(int nbObjAlwaysShow)
 	: InteractiveRectangle(10,10)
+	, mOverrideDeltaExpand(-1)
 	, mNbObjAlwaysShow(nbObjAlwaysShow)
 	, mPlusMinus(jmg::Image::MINUS)
 {
@@ -1351,7 +1352,7 @@ void jmg::ShowHide::hide()
 				ignoreMaxY = itBottom;
 			}
 		}
-		mDeltaExpand = hideMaxY - ignoreMaxY;
+		mDeltaExpand = mOverrideDeltaExpand < 0 ? hideMaxY - ignoreMaxY : mOverrideDeltaExpand;
 		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::PLUS);
 		needsRedraw(-1);
 
