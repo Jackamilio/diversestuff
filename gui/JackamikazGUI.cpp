@@ -121,7 +121,7 @@ void jmg::Base::remove()
 void jmg::Base::baseDraw()
 {
 	if (mParent == NULL) {
-		cascadeDraw(mRelx,mRely);
+		cascadeDraw(0, 0);
 	}
 }
 
@@ -1414,32 +1414,31 @@ jmg::Cropper::~Cropper()
 	}
 }
 
+
 void jmg::Cropper::draw(int origx, int origy)
 {
-	if (mRender && (al_get_bitmap_width(mRender) != mWidth || al_get_bitmap_height(mRender) != mHeight)) {
+	const int bw = mWidth + 1, bh = mHeight + 1;
+	if (mRender && (al_get_bitmap_width(mRender) != bw || al_get_bitmap_height(mRender) != bh)) {
 		al_destroy_bitmap(mRender);
 		mRender = nullptr;
 	}
 	if (!mRender) {
-		mRender = al_create_bitmap(mWidth, mHeight);
+		mRender = al_create_bitmap(bw, bh);
 	}
 
 	ALLEGRO_BITMAP* target = al_get_target_bitmap();
 	al_set_target_bitmap(mRender);
 	if (mRoot.needsRedraw()) {
-		DrawableRectangle::draw(-mRelx, -mRely);
+		DrawableRectangle::draw(-mRelx + 1, -mRely);
 	}
-	const int memx = mRoot.mRelx;
-	const int memy = mRoot.mRely;
-	mRoot.mRelx -= memx;
-	mRoot.mRely -= memy;
+
+	mRoot.mRelx += 1;
 	mRoot.baseDraw();
-	mRoot.mRelx += memx;
-	mRoot.mRely += memy;
+	mRoot.mRelx -= 1;
 
 	al_set_target_bitmap(target);
 
-	al_draw_bitmap(mRender, origx + mRelx, origy + mRely, 0);
+	al_draw_bitmap(mRender, origx + mRelx - 1, origy + mRely - 1, 0);
 }
 
 bool jmg::Cropper::handleEvent(const ALLEGRO_EVENT & event)
