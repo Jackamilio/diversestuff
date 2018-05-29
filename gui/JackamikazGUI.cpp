@@ -113,7 +113,7 @@ void jmg::Base::remove()
 {
 	if (mParent)
 	{
-		needsRedraw(-1);
+		requestRedraw(-1);
 		mRemoveMe = true;
 	}
 }
@@ -155,7 +155,7 @@ int jmg::Base::calcOrigY() const
 	return y;
 }
 
-void jmg::Base::needsRedraw(int depth)
+void jmg::Base::requestRedraw(int depth)
 {
 	if (depth < 0) {
 		depth = 0xFFFFFF;
@@ -219,8 +219,8 @@ bool jmg::Base::cascadeHandleEvent(const ALLEGRO_EVENT& event)
 //	al_clear_to_color(mColor);
 //}
 
-jmg::MoveableRectangle::MoveableRectangle(int w,int h)
-	: Moveable(w, h)
+jmg::MoveableDrawableRectangle::MoveableDrawableRectangle(int w,int h)
+	: MoveableRectangle(w, h)
 	, DrawableRectangle(w, h)
 	, InteractiveRectangle(w, h)
 {
@@ -244,13 +244,21 @@ jmg::Rectangle::Rectangle(int w, int h) : mWidth(w), mHeight(h)
 {
 }
 
-jmg::Moveable::Moveable(int w, int h) : InteractiveRectangle(w,h), mTarget(this), mButton(1)
+bool jmg::Moveable::catchCondition(const ALLEGRO_EVENT & event) const
+{
+	return event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN
+		&& (event.mouse.button == mButton || mButton < 0);
+}
+
+jmg::Moveable::Moveable()
+	: mTarget(this)
+	, mButton(1)
 {
 }
 
 bool jmg::Moveable::handleEvent(const ALLEGRO_EVENT & event)
 {
-	if (catchMouse(event, mButton)) {
+	if (catchCondition(event)) {
 		mDx = event.mouse.x - mTarget->calcOrigX() - mTarget->mRelx;
 		mDy = event.mouse.y - mTarget->calcOrigY() - mTarget->mRely;
 		mHeld = true;
@@ -260,7 +268,7 @@ bool jmg::Moveable::handleEvent(const ALLEGRO_EVENT & event)
 		mTarget->mRelx = event.mouse.x - mTarget->calcOrigX() - mDx;
 		mTarget->mRely = event.mouse.y - mTarget->calcOrigY() - mDy;
 
-		mTarget->needsRedraw(-1);
+		mTarget->requestRedraw(-1);
 
 		return true;
 	}
@@ -269,6 +277,27 @@ bool jmg::Moveable::handleEvent(const ALLEGRO_EVENT & event)
 	}
 	return false;
 }
+
+int jmg::Moveable::getHeight() const
+{
+	return 0;
+}
+
+bool jmg::MoveableRectangle::catchCondition(const ALLEGRO_EVENT & event) const
+{
+	return catchMouse(event, mButton);
+}
+
+jmg::MoveableRectangle::MoveableRectangle(int w, int h)
+	: InteractiveRectangle(w, h)
+{
+}
+
+int jmg::MoveableRectangle::getHeight() const
+{
+	return InteractiveRectangle::getHeight();
+}
+
 
 void callbackTest(void* arg) {
 	if (arg) {
@@ -279,7 +308,7 @@ void callbackTest(void* arg) {
 
 jmg::Window::Window(int w, int h, const char* capt)
 	: InteractiveRectangle(w,h)
-	, DrawableRectangle(w,h)
+	, DrawableRectangle(w, h)
 	, mMover(mWidth - 18, 22)
 	, mCaption(capt)
 	, mBtnClose(22,22)
@@ -313,14 +342,14 @@ void jmg::Window::open()
 {
 	if (parent()) {
 		parent()->addChild(this);
-		needsRedraw(-1);
+		requestRedraw(-1);
 	}
 }
 
 void jmg::Window::close()
 {
 	remove();
-	needsRedraw(-1);
+	requestRedraw(-1);
 }
 
 void jmg::Window::setParent(Base * p, bool startsOpen)
@@ -330,11 +359,11 @@ void jmg::Window::setParent(Base * p, bool startsOpen)
 		if (!startsOpen) {
 			remove();
 		}
-		needsRedraw(-1);
+		requestRedraw(-1);
 	}
 	else if (p && p->has(this) != startsOpen) {
 		startsOpen ? p->addChild(this) : remove();
-		needsRedraw(-1);
+		requestRedraw(-1);
 	}
 }
 
@@ -342,7 +371,7 @@ jmg::InteractiveRectangle::InteractiveRectangle(int w, int h) : Rectangle(w,h)
 {
 }
 
-bool jmg::InteractiveRectangle::isPointInside(int px, int py)
+bool jmg::InteractiveRectangle::isPointInside(int px, int py) const
 {
 	int dx = px - calcOrigX() - mRelx;
 	int dy = py - calcOrigY() - mRely;
@@ -350,10 +379,10 @@ bool jmg::InteractiveRectangle::isPointInside(int px, int py)
 	return dx >= 0 && dx < mWidth && dy >= 0 && dy < mHeight;
 }
 
-bool jmg::InteractiveRectangle::catchMouse(const ALLEGRO_EVENT & event, int button, ALLEGRO_EVENT_TYPE evType)
+bool jmg::InteractiveRectangle::catchMouse(const ALLEGRO_EVENT & event, int button, ALLEGRO_EVENT_TYPE evType) const
 {
 	// catch mouse
-	if (event.type == evType && event.mouse.button == button) {
+	if (event.type == evType && (event.mouse.button == button || button < 0)) {
 		int dx = event.mouse.x - calcOrigX() - mRelx;
 		int dy = event.mouse.y - calcOrigY() - mRely;
 
@@ -418,14 +447,14 @@ bool jmg::Button::handleEvent(const ALLEGRO_EVENT & event)
 {
 	if (catchMouse(event)) {
 		mClicking = true;
-		needsRedraw();
+		requestRedraw();
 		return true;
 	}
 	else if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
 		bool lastHovering = mHovering;
 		mHovering = isPointInside(event.mouse.x, event.mouse.y);
 		if (mHovering != lastHovering ) {
-			needsRedraw();
+			requestRedraw();
 		}
 		return mHovering;
 	}
@@ -436,7 +465,7 @@ bool jmg::Button::handleEvent(const ALLEGRO_EVENT & event)
 		}
 		mClicking = false;
 		mHovering = inside;
-		needsRedraw();
+		requestRedraw();
 		return inside;
 	}
 	return false;
@@ -557,7 +586,7 @@ void jmg::Text::insert(int keycode)
 {
 	al_ustr_insert_chr(mValue, al_ustr_offset(mValue, mTextPos), keycode);
 	mSelectionPos = ++mTextPos;
-	needsRedraw(1);
+	requestRedraw(1);
 }
 
 struct TextClickArgs {
@@ -812,7 +841,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 		if (pos >= 0) {
 			Label*& writingFocus = getContext().mWritingFocus;
 			if (writingFocus) {
-				writingFocus->needsRedraw(-1); //notify focus lost
+				writingFocus->requestRedraw(-1); //notify focus lost
 			}
 			writingFocus = this;
 			if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
@@ -821,7 +850,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 			if (pos != mTextPos) {
 				cursorXRef = event.mouse.x - mRelx - calcOrigX();
 				mTextPos = pos;
-				needsRedraw(1);
+				requestRedraw(1);
 			}
 			return true;
 		}
@@ -856,7 +885,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 				}
 
 				resetCursorXRef();
-				needsRedraw(1);
+				requestRedraw(1);
 				return true;
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
@@ -874,7 +903,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 					mTextPos = (int)vl;
 				}
 				resetCursorXRef();
-				needsRedraw(1);
+				requestRedraw(1);
 				return true;
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
@@ -883,7 +912,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 				x = cursorXRef + mRelx + calcOrigX();
 				int pos = getTextIndexFromCursorPos(x, y - al_get_font_line_height(mFont));
 				mTextPos = pos >= 0 ? pos : 0;
-				needsRedraw(1);
+				requestRedraw(1);
 				return true;
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
@@ -893,7 +922,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 				int pos = getTextIndexFromCursorPos(x, y + al_get_font_line_height(mFont));
 				if (pos > 0) {
 					mTextPos = pos;
-					needsRedraw(1);
+					requestRedraw(1);
 				}
 				return true;
 			}
@@ -905,7 +934,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 				int pos = getTextIndexFromCursorPos(x, y);
 				if (pos > 0) {
 					mTextPos = pos;
-					needsRedraw(1);
+					requestRedraw(1);
 					cursorXRef = dif;
 				}
 				return true;
@@ -916,7 +945,7 @@ bool jmg::Text::handleCursorPosEvents(const ALLEGRO_EVENT& event) {
 				x = calcOrigX();
 				int pos = getTextIndexFromCursorPos(x, y);
 				mTextPos = pos >= 0 ? pos : 0;
-				needsRedraw(1);
+				requestRedraw(1);
 				cursorXRef = -2;
 				return true;
 			}
@@ -982,29 +1011,29 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 				mSelectionPos = 0;
 				mTextPos = (int)al_ustr_length(mValue);
 				resetCursorXRef();
-				needsRedraw(1);
+				requestRedraw(1);
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
 				if (collapseSelection()) {
 					resetCursorXRef();
-					needsRedraw(1);
+					requestRedraw(1);
 				}
 				else if (mTextPos > 0) {
 					al_ustr_remove_chr(mValue, al_ustr_offset(mValue, --mTextPos));
 					mSelectionPos = mTextPos;
 					resetCursorXRef();
-					needsRedraw(1);
+					requestRedraw(1);
 				}
 				return true;
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_DELETE) {
 				if (collapseSelection()) {
 					resetCursorXRef();
-					needsRedraw(1);
+					requestRedraw(1);
 				}
 				else if (mTextPos < (int)al_ustr_length(mValue)) {
 					al_ustr_remove_chr(mValue, al_ustr_offset(mValue, mTextPos));
-					needsRedraw(1);
+					requestRedraw(1);
 				}
 				return true;
 			}
@@ -1012,7 +1041,7 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 				if (mIsNumeric) {
 					confirmEditing();
 					mSelectionPos = mTextPos;
-					needsRedraw(1);
+					requestRedraw(1);
 				}
 				else {
 					collapseSelection();
@@ -1036,7 +1065,7 @@ bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
 			else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
 				mSelectionPos = mTextPos;
 				getContext().mWritingFocus = nullptr;
-				needsRedraw(1);
+				requestRedraw(1);
 				return true;
 			}
 			else if (event.keyboard.unichar > 0) {
@@ -1321,7 +1350,7 @@ void jmg::ShowHide::show()
 		}
 		mShowHideObjects.clear();
 		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::MINUS);
-		needsRedraw(-1);
+		requestRedraw(-1);
 
 		// push siblings down
 		const Children& siblings = parent()->children();
@@ -1354,7 +1383,7 @@ void jmg::ShowHide::hide()
 		}
 		mDeltaExpand = mOverrideDeltaExpand < 0 ? hideMaxY - ignoreMaxY : mOverrideDeltaExpand;
 		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::PLUS);
-		needsRedraw(-1);
+		requestRedraw(-1);
 
 		// pull siblings up
 		const int vertTrigger = mRely + mDeltaExpand;
@@ -1364,5 +1393,83 @@ void jmg::ShowHide::hide()
 				(*it)->mRely -= mDeltaExpand;
 			}
 		}
+	}
+}
+
+jmg::Cropper::Cropper(int w, int h)
+	: DrawableRectangle(w, h)
+	, InteractiveRectangle(w, h)
+	, mRender(nullptr)
+	, mTestMover(w, 20)
+{
+	addChild(&mTestMover, 0, -mTestMover.getHeight());
+	mTestMover.mTarget = this;
+}
+
+jmg::Cropper::~Cropper()
+{
+	if (mRender) {
+		al_destroy_bitmap(mRender);
+		mRender = nullptr;
+	}
+}
+
+void jmg::Cropper::draw(int origx, int origy)
+{
+	if (mRender && (al_get_bitmap_width(mRender) != mWidth || al_get_bitmap_height(mRender) != mHeight)) {
+		al_destroy_bitmap(mRender);
+		mRender = nullptr;
+	}
+	if (!mRender) {
+		mRender = al_create_bitmap(mWidth, mHeight);
+	}
+
+	ALLEGRO_BITMAP* target = al_get_target_bitmap();
+	al_set_target_bitmap(mRender);
+	if (mRoot.needsRedraw()) {
+		DrawableRectangle::draw(-mRelx, -mRely);
+	}
+	const int memx = mRoot.mRelx;
+	const int memy = mRoot.mRely;
+	mRoot.mRelx -= memx;
+	mRoot.mRely -= memy;
+	mRoot.baseDraw();
+	mRoot.mRelx += memx;
+	mRoot.mRely += memy;
+
+	al_set_target_bitmap(target);
+
+	al_draw_bitmap(mRender, origx + mRelx, origy + mRely, 0);
+}
+
+bool jmg::Cropper::handleEvent(const ALLEGRO_EVENT & event)
+{
+	bool doRootEvent = false;
+	if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP
+	 || event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+		if (catchMouse(event, -1, event.type)) {
+			doRootEvent = true;
+		}
+	}
+	else {
+		doRootEvent = true;
+	}
+
+	bool ret = false;
+	if (doRootEvent) {
+		mRoot.mRelx += mRelx; mRoot.mRely += mRely;
+		ret = mRoot.baseHandleEvent(event);
+		mRoot.mRelx -= mRelx; mRoot.mRely -= mRely;
+	}
+	if (mRoot.needsRedraw()) {
+		requestRedraw(); // TODO : should be called if ANY root child needs redraw
+	}
+	return ret;
+}
+
+void jmg::Cropper::onAddChild(Base * child)
+{
+	if (child && child != &mRoot && child != &mTestMover) {
+		mRoot.addChild(child);
 	}
 }

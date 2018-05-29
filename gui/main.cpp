@@ -182,11 +182,19 @@ public:
 	jmg::ShowHide sh;
 	std::vector<jmg::Label*> labels;
 
+	jmg::Cropper crp;
+	jmg::Label crplbl;
+	jmg::Button crpbtn;
+	jmg::MoveableDrawableRectangle crpmvb;
+
 	ExposingTest test;
 
 	JmGui(Engine& e)
 		: engine(e)
 		, win(200, 250, "Salut les gens")
+		, crp(200,200)
+		, crplbl("Salut")
+		, crpmvb(60,20)
 	{
 		engine.overlayGraphic.AddChild(this);
 		engine.inputRoot.AddChild(this,true);
@@ -213,6 +221,11 @@ public:
 		sh.autoAddShift(-5, 0);
 		for (; i < 6; ++i) { labels[i]->autoAdd(&win); }
 		sh.hide();
+
+		root.addChild(&crp, 100, 100);
+		crp.addChild(&crplbl, 100, 100);
+		crp.addChild(&crpbtn, 50, 50);
+		crp.addChild(&crpmvb);
 	}
 
 	~JmGui() {
@@ -225,7 +238,7 @@ public:
 	void Draw() {
 		test._char++;
 		test._member._otherShort--;
-		root.needsRedraw();
+		root.requestRedraw();
 		root.baseDraw();
 	}
 

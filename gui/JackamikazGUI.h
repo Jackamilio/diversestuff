@@ -66,7 +66,8 @@ namespace jmg
 
 		virtual int getHeight() const = 0;
 
-		void needsRedraw(int depth = 0);
+		inline bool needsRedraw() const { return mNeedsRedraw; }
+		void requestRedraw(int depth = 0);
 	};
 
 	class Root : public virtual Base {
@@ -218,13 +219,13 @@ namespace jmg
 	class InteractiveRectangle : public Rectangle, public virtual Base {
 	public:
 		InteractiveRectangle(int w, int h);
-		bool isPointInside(int px, int py);
-		bool catchMouse(const ALLEGRO_EVENT& event, int button = 1, ALLEGRO_EVENT_TYPE evType = ALLEGRO_EVENT_MOUSE_BUTTON_DOWN);
+		bool isPointInside(int px, int py) const;
+		bool catchMouse(const ALLEGRO_EVENT& event, int button = 1, ALLEGRO_EVENT_TYPE evType = ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) const;
 		void addAndAdaptLabel(Label* label, int leftMargin = 0, int topMargin = -1, int rightMargin = -1); // -1 means : copy leftMargin
 		int getHeight() const;
 	};
 
-	class Moveable : public virtual InteractiveRectangle {
+	class Moveable : public virtual Base {
 	private:
 		bool mHeld;
 		int mDx;
@@ -233,8 +234,21 @@ namespace jmg
 		Base * mTarget;
 		unsigned int mButton;
 
-		Moveable(int w, int h);
+		virtual bool catchCondition(const ALLEGRO_EVENT& event) const;
+
+		Moveable();
 		bool handleEvent(const ALLEGRO_EVENT& event);
+
+		int getHeight() const;
+	};
+
+	class MoveableRectangle : public Moveable, public virtual InteractiveRectangle {
+	public:
+		bool catchCondition(const ALLEGRO_EVENT& event) const;
+
+		MoveableRectangle(int w, int h);
+
+		int getHeight() const;
 	};
 
 	class DrawableRectangle : public virtual InteractiveRectangle {
@@ -245,9 +259,9 @@ namespace jmg
 		unsigned char mOutline;
 	};
 
-	class MoveableRectangle : public Moveable, public DrawableRectangle {
+	class MoveableDrawableRectangle : public MoveableRectangle, public DrawableRectangle {
 	public:
-		MoveableRectangle(int w,int h);
+		MoveableDrawableRectangle(int w,int h);
 	};
 
 	class Button : public DrawableRectangle {
@@ -292,9 +306,26 @@ namespace jmg
 		void hide();
 	};
 
+	class Cropper : public virtual DrawableRectangle {
+	private:
+		ALLEGRO_BITMAP * mRender;
+		MoveableDrawableRectangle mTestMover;
+
+	public:
+		Moveable mRoot;
+
+		Cropper(int w, int h);
+		~Cropper();
+
+		void draw(int origx, int origy);
+		bool handleEvent(const ALLEGRO_EVENT& event);
+
+		void onAddChild(Base* child);
+	};
+
 	class Window : public DrawableRectangle {
 	public:
-		MoveableRectangle mMover;
+		MoveableDrawableRectangle mMover;
 		Button mBtnClose;
 		Image mBtnImage;
 		Label mCaption;
