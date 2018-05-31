@@ -66,16 +66,45 @@ namespace Exposing {
 
 	typedef std::vector<StructMember> StructInfo;
 
-	class StructComplete {
+	class StructBase {
 	public:
-		std::string name;
-		Exposing::StructInfo desc;
+		class Iterator {
+		public:
+			virtual Type getType() const = 0;
+			virtual void* getAddress() const = 0;
 
-		StructComplete();
-		StructComplete(const char* n, const Exposing::StructInfo& d);
+			virtual bool next() = 0;
+		};
+	
+		std::string name;
+
+		StructBase(const char* n);
+
+		virtual Iterator* begin(void* address) const = 0;
 	};
 
-	extern std::map<Exposing::Type, StructComplete> registeredTypes;
+	class StructContainer {
+
+	};
+
+	class StructComplete : public StructBase {
+	private:
+		Exposing::StructInfo desc;
+
+		class IteratorComplete : public Iterator {
+		public:
+			const Exposing::StructInfo& desc;
+			int index;
+		};
+
+	public:
+		StructComplete();
+		StructComplete(const char* n, const Exposing::StructInfo& d);
+
+		Iterator* begin(void* address) const;
+	};
+
+	extern std::map<Exposing::Type, StructBase*> registeredTypes;
 
 	Type defineStruct(const char* name, const StructInfo& members, unsigned int structSize);
 
@@ -83,7 +112,7 @@ namespace Exposing {
 	public:
 		int calculatedHeight;
 
-		const StructComplete& mWatchedStruct;
+		const StructBase& mWatchedStruct;
 		void* mWatchedAddress;
 		std::vector<jmg::Base*> mToDelete;
 		std::vector<jmg::Base*> mValueFields;
@@ -99,7 +128,7 @@ namespace Exposing {
 
 		void draw(int origx, int origy);
 
-		Watcher(const StructComplete& sc, void* wa, int y = 0);
+		Watcher(const StructBase& sc, void* wa, int y = 0);
 		~Watcher();
 
 		int getHeight() const;
@@ -107,7 +136,7 @@ namespace Exposing {
 
 	class WatcherWindow : public Watcher, public jmg::Window {
 	public:
-		WatcherWindow(const StructComplete& sc, void* wa);
+		WatcherWindow(const StructBase& sc, void* wa);
 
 		void draw(int origx, int origy);
 
@@ -151,11 +180,13 @@ Exposing::Type EXPOSE_TYPE::__getType() { \
 
 #define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, __VA_ARGS__)
 
-#define EXPOSE_AS(type, ...) __EXPOSE(TW_TYPE_ ## type, __VA_ARGS__)
+#define EXPOSE_AS(type, ...) __EXPOSE(Exposing:: ## type, __VA_ARGS__)
 
-#define EXPOSE_PARENT(p, ...) \
-	tmp = { "parent" ## "(" ## #p ## ")", Exposing::getType<p>(), 0, "" ## __VA_ARGS__}; \
-	vec.push_back(tmp);
+#define EXPOSE_CONTAINER()
+
+//#define EXPOSE_PARENT(p, ...) \
+//	tmp = { "parent" ## "(" ## #p ## ")", Exposing::getType<p>(), 0, "" ## __VA_ARGS__}; \
+// 	vec.push_back(tmp);
 
 #define EXPOSE_END \
 	type = Exposing::defineStruct(STR(EXPOSE_TYPE), vec, sizeof(EXPOSE_TYPE)); \

@@ -11,13 +11,13 @@ template<> Exposing::Type Exposing::getType<float>() { return Exposing::FLOAT; }
 template<> Exposing::Type Exposing::getType<double>() { return Exposing::DOUBLE; }
 template<> Exposing::Type Exposing::getType<std::string>() { return Exposing::STRING; }
 
-std::map<Exposing::Type, Exposing::StructComplete> Exposing::registeredTypes;
+std::map<Exposing::Type, Exposing::StructBase*> Exposing::registeredTypes;
 unsigned int typeCount = (unsigned int)Exposing::MAX;
 
 Exposing::Type Exposing::defineStruct(const char * name, const Exposing::StructInfo& members, unsigned int structSize)
 {
 	Exposing::Type newType = (Exposing::Type)++typeCount;
-	registeredTypes[newType] = StructComplete(name, members);
+	registeredTypes[newType] = new StructComplete(name, members);
 	return newType;
 }
 
@@ -126,7 +126,7 @@ void editValueCallback(void* a) {
 	}
 }
 
-Exposing::Watcher::Watcher(const StructComplete & sc, void* wa, int y)
+Exposing::Watcher::Watcher(const StructBase & sc, void* wa, int y)
 	: mWatchedStruct(sc)
 	, mWatchedAddress(wa)
 {
@@ -212,7 +212,7 @@ int Exposing::Watcher::getHeight() const
 	return calculatedHeight;
 }
 
-Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, void * wa)
+Exposing::WatcherWindow::WatcherWindow(const StructBase & sc, void * wa)
 	: InteractiveRectangle(300,100)
 	, Window(300,100,sc.name.c_str())
 	, Watcher(sc, wa, 20)
@@ -234,10 +234,14 @@ int Exposing::WatcherWindow::getHeight() const
 	return Window::getHeight();
 }
 
-Exposing::StructComplete::StructComplete() : name("Struct incomplete!!")
+Exposing::StructComplete::StructComplete() : StructBase("Struct incomplete!!")
 {
 }
 
-Exposing::StructComplete::StructComplete(const char * n, const Exposing::StructInfo & d) : name(n), desc(d)
+Exposing::StructComplete::StructComplete(const char * n, const Exposing::StructInfo & d) : StructBase(n), desc(d)
+{
+}
+
+Exposing::StructBase::StructBase(const char * n) : name(n)
 {
 }

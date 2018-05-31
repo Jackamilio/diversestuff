@@ -309,7 +309,6 @@ namespace jmg
 	class Cropper : public virtual DrawableRectangle {
 	private:
 		ALLEGRO_BITMAP * mRender;
-		MoveableDrawableRectangle mTestMover;
 
 	public:
 		Moveable mRoot;

@@ -1400,10 +1400,8 @@ jmg::Cropper::Cropper(int w, int h)
 	: DrawableRectangle(w, h)
 	, InteractiveRectangle(w, h)
 	, mRender(nullptr)
-	, mTestMover(w, 20)
 {
-	addChild(&mTestMover, 0, -mTestMover.getHeight());
-	mTestMover.mTarget = this;
+	mRoot.mButton = 3;
 }
 
 jmg::Cropper::~Cropper()
@@ -1468,7 +1466,7 @@ bool jmg::Cropper::handleEvent(const ALLEGRO_EVENT & event)
 
 void jmg::Cropper::onAddChild(Base * child)
 {
-	if (child && child != &mRoot && child != &mTestMover) {
+	if (child && child != &mRoot) {
 		mRoot.addChild(child);
 	}
 }
