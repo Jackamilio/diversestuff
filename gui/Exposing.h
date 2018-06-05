@@ -66,60 +66,59 @@ namespace Exposing {
 
 	typedef std::vector<StructMember> StructInfo;
 
-	class StructBase {
+	class StructComplete {
 	public:
-		class Iterator {
-		public:
-			virtual Type getType() const = 0;
-			virtual void* getAddress() const = 0;
-
-			virtual bool next() = 0;
-		};
-	
 		std::string name;
+		StructInfo desc;
 
-		StructBase(const char* n);
-
-		virtual Iterator* begin(void* address) const = 0;
-	};
-
-	class StructContainer {
-
-	};
-
-	class StructComplete : public StructBase {
-	private:
-		Exposing::StructInfo desc;
-
-		class IteratorComplete : public Iterator {
-		public:
-			const Exposing::StructInfo& desc;
-			int index;
-		};
-
-	public:
 		StructComplete();
-		StructComplete(const char* n, const Exposing::StructInfo& d);
-
-		Iterator* begin(void* address) const;
+		StructComplete(const char* n, const StructInfo& d);
 	};
 
-	extern std::map<Exposing::Type, StructBase*> registeredTypes;
+	extern std::map<Exposing::Type, StructComplete> registeredTypes;
 
-	Type defineStruct(const char* name, const StructInfo& members, unsigned int structSize);
+	Type defineStruct(const char* name, const StructInfo& members);
+
+	class WatchedAddress {
+	public:
+		virtual char* calculateAddress() const = 0;
+	};
+
+	class WatchedAddressRoot : public WatchedAddress {
+	public:
+		char* address;
+		char* calculateAddress() const { return address; }
+		WatchedAddressRoot(char* address) : address(address) {}
+	};
+
+	class WatchedAddressOffset : public WatchedAddress {
+	public:
+		const WatchedAddress * owner;
+		unsigned int offset;
+		char* calculateAddress() const { return owner->calculateAddress() + offset; }
+		WatchedAddressOffset(const WatchedAddress* owner, unsigned int offset) : owner(owner), offset(offset) {}
+	};
+
+	template<typename container>
+	class WatchedAddressIndexedContainer : public WatchedAddress {
+	public:
+		const WatchedAddress* owner;
+		int index;
+		char* calculateAddress() const { return &((container*)owner->calculateAddress())[index]; }
+	};
 
 	class Watcher : public virtual jmg::Base {
 	public:
 		int calculatedHeight;
 
-		const StructBase& mWatchedStruct;
-		void* mWatchedAddress;
+		const StructInfo& mWatchedStruct;
+		WatchedAddress* mWatchedAddress;
 		std::vector<jmg::Base*> mToDelete;
-		std::vector<jmg::Base*> mValueFields;
 
 		struct EditValueArgs {
-			Exposing::Watcher* watcher;
-			unsigned int id;
+			WatchedAddress* address;
+			Type type;
+			jmg::Base* field;
 		};
 
 		std::vector<EditValueArgs*> mValueArgs;
@@ -128,7 +127,7 @@ namespace Exposing {
 
 		void draw(int origx, int origy);
 
-		Watcher(const StructBase& sc, void* wa, int y = 0);
+		Watcher(const StructInfo& sc, WatchedAddress* wa, int y = 0);
 		~Watcher();
 
 		int getHeight() const;
@@ -136,7 +135,7 @@ namespace Exposing {
 
 	class WatcherWindow : public Watcher, public jmg::Window {
 	public:
-		WatcherWindow(const StructBase& sc, void* wa);
+		WatcherWindow(const StructComplete& sc, WatchedAddress* wa);
 
 		void draw(int origx, int origy);
 
@@ -155,7 +154,7 @@ jmg::Window * Exposing::createWatcherFor(T& obj)
 
 	const StructComplete& sc = registeredTypes[typeToWatch];
 
-	jmg::Window* window = new WatcherWindow(sc, (void*)&obj);
+	jmg::Window* window = new WatcherWindow(sc, new WatchedAddressRoot((char*)&obj));
 
 	return window;
 }
@@ -180,16 +179,14 @@ Exposing::Type EXPOSE_TYPE::__getType() { \
 
 #define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, __VA_ARGS__)
 
-#define EXPOSE_AS(type, ...) __EXPOSE(Exposing:: ## type, __VA_ARGS__)
+#define EXPOSE_AS(type, ...) __EXPOSE(TW_TYPE_ ## type, __VA_ARGS__)
 
-#define EXPOSE_CONTAINER()
-
-//#define EXPOSE_PARENT(p, ...) \
-//	tmp = { "parent" ## "(" ## #p ## ")", Exposing::getType<p>(), 0, "" ## __VA_ARGS__}; \
-// 	vec.push_back(tmp);
+#define EXPOSE_PARENT(p, ...) \
+	tmp = { "parent" ## "(" ## #p ## ")", Exposing::getType<p>(), 0, "" ## __VA_ARGS__}; \
+	vec.push_back(tmp);
 
 #define EXPOSE_END \
-	type = Exposing::defineStruct(STR(EXPOSE_TYPE), vec, sizeof(EXPOSE_TYPE)); \
+	type = Exposing::defineStruct(STR(EXPOSE_TYPE), vec); \
 	return type; \
 }
 
