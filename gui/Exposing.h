@@ -173,17 +173,13 @@ Exposing::Type EXPOSE_TYPE::__getType() { \
 	Exposing::StructMember tmp;
 
 //tmp = { #var, type, offsetof(EXPOSE_TYPE, var), "" ## __VA_ARGS__};
-#define __EXPOSE(type, var, ...) \
-	tmp = Exposing::StructMember(#var, type, offsetof(EXPOSE_TYPE, var)); \
+#define __EXPOSE(type, var, iic, ...) \
+	tmp = Exposing::StructMember(#var, type, offsetof(EXPOSE_TYPE, var), iic); \
 	vec.push_back(tmp);
 
-#define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, __VA_ARGS__)
+#define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, false, __VA_ARGS__)
 
-#define EXPOSE_AS(type, ...) __EXPOSE(TW_TYPE_ ## type, __VA_ARGS__)
-
-#define EXPOSE_PARENT(p, ...) \
-	tmp = { "parent" ## "(" ## #p ## ")", Exposing::getType<p>(), 0, "" ## __VA_ARGS__}; \
-	vec.push_back(tmp);
+#define EXPOSE_INDEXED_CONTAINER(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, true, __VA_ARGS__)
 
 #define EXPOSE_END \
 	type = Exposing::defineStruct(STR(EXPOSE_TYPE), vec); \
@@ -192,3 +188,18 @@ Exposing::Type EXPOSE_TYPE::__getType() { \
 
 #endif
 
+/*
+Notes pour continuer
+
+1) définir un Exposing::getType alternatif pour les containers indexés
+2) polymorphiser StructComplete pour avoir les types différents
+     - le type "StructComplete" qui va simplement encapsuler le vecteur
+	 - un autre type genre "StructIndexedContainer" cqfd
+3) créér un itérateur polymorphe simpliste pour parcourir tout ça
+4) adapter le constructeur de Watcher : le WatchedAddressOffset devra être remplacé par un genre
+de "generateWatchAddress" depuis l'itérateur
+
+attention au mind fuck "polymorphiser StructInfo ou StructComplete???"
+  -> StructComplete est simplement un StructInfo avec un nom collé avec
+
+*/
