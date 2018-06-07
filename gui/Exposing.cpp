@@ -11,14 +11,18 @@ template<> Exposing::Type Exposing::getType<float>() { return Exposing::FLOAT; }
 template<> Exposing::Type Exposing::getType<double>() { return Exposing::DOUBLE; }
 template<> Exposing::Type Exposing::getType<std::string>() { return Exposing::STRING; }
 
-std::map<Exposing::Type, Exposing::StructComplete> Exposing::registeredTypes;
+std::map<Exposing::Type, Exposing::StructDescBase*> Exposing::registeredTypes;
 unsigned int typeCount = (unsigned int)Exposing::MAX;
+
+Exposing::Type Exposing::registerNewType(const char* name, Exposing::StructDescBase* desc) {
+	Exposing::Type newType = (Exposing::Type)++typeCount;
+	registeredTypes[newType] = desc;
+	return newType;
+}
 
 Exposing::Type Exposing::defineStruct(const char * name, const Exposing::StructInfo& members)
 {
-	Exposing::Type newType = (Exposing::Type)++typeCount;
-	registeredTypes[newType] = StructComplete(name, members);
-	return newType;
+	return registerNewType(name, new StructDesc(name, members));
 }
 
 Exposing::StructMember::StructMember()
@@ -130,7 +134,7 @@ void editValueCallback(void* a) {
 	}
 }
 
-Exposing::Watcher::Watcher(const StructInfo & sc, WatchedAddress* wa, int y)
+Exposing::Watcher::Watcher(StructDescBase* sc, WatchedAddress* wa, int y)
 	: mWatchedStruct(sc)
 	, mWatchedAddress(wa)
 {
@@ -138,18 +142,19 @@ Exposing::Watcher::Watcher(const StructInfo & sc, WatchedAddress* wa, int y)
 	const int xl = 20;
 	const int xr = 150;
 	const int yStep = 20;
-	for (StructInfo::const_iterator it = sc.begin(); it != sc.end(); ++it) {
-		jmg::Label* nameLabel = new jmg::Label(it->name.c_str());
+	StructDescBase::Iterator* it = sc->generateIterator(wa);
+	for (; !it->isAtEnd(); it->next()) {
+		jmg::Label* nameLabel = new jmg::Label(it->getName().c_str());
 		nameLabel->mRelx = xl;
 		nameLabel->mRely = y;
 		mToDelete.push_back(nameLabel);
 		addChild(nameLabel);
 
-		WatchedAddress* address = new WatchedAddressOffset(mWatchedAddress, it->offset);
+		WatchedAddress* address = it->generateWatchedAddress(mWatchedAddress);
 		char* calculatedAddress = address->calculateAddress();
 		jmg::Text* valueField = nullptr;
 		jmg::CheckBox* checkbox = nullptr;
-		switch (it->type) {
+		switch (it->getType()) {
 		case BOOL:	checkbox = new jmg::CheckBox(*(bool*)calculatedAddress); break;
 		case INT8:	valueField = new jmg::Numeric(*(char*)calculatedAddress); break;
 		case UINT8:	valueField = new jmg::Numeric(*(unsigned char*)calculatedAddress); break;
@@ -162,7 +167,7 @@ Exposing::Watcher::Watcher(const StructInfo & sc, WatchedAddress* wa, int y)
 		case STRING:valueField = new jmg::Text(((std::string*)calculatedAddress)->c_str()); break;
 		}
 		
-		EditValueArgs* newValueArgs = new EditValueArgs({ address, it->type, nullptr });
+		EditValueArgs* newValueArgs = new EditValueArgs({ address, it->getType(), nullptr });
 		mValueArgs.push_back(newValueArgs);
 
 		if (valueField) {
@@ -183,8 +188,8 @@ Exposing::Watcher::Watcher(const StructInfo & sc, WatchedAddress* wa, int y)
 		}
 		else {
 			nameLabel->mRelx += xl;
-			const StructComplete& sc_ = registeredTypes[it->type];
-			Base* value = new Watcher(sc_.desc, newValueArgs->address);
+			StructDescBase* sc_ = registeredTypes[it->getType()];
+			Base* value = new Watcher(sc_, newValueArgs->address);
 			mToDelete.push_back(value);
 			jmg::ShowHide* sh = new jmg::ShowHide();
 			mToDelete.push_back(sh);
@@ -222,10 +227,10 @@ int Exposing::Watcher::getHeight() const
 	return calculatedHeight;
 }
 
-Exposing::WatcherWindow::WatcherWindow(const StructComplete & sc, WatchedAddress * wa)
+Exposing::WatcherWindow::WatcherWindow(StructDescBase* sc, WatchedAddress * wa)
 	: InteractiveRectangle(300,100)
-	, Window(300,100,sc.name.c_str())
-	, Watcher(sc.desc, wa, 20)
+	, Window(300,100,sc->name.c_str())
+	, Watcher(sc, wa, 20)
 {
 	mHeight = calculatedHeight;
 
@@ -244,10 +249,48 @@ int Exposing::WatcherWindow::getHeight() const
 	return Window::getHeight();
 }
 
-Exposing::StructComplete::StructComplete() : name("Struct incomplete!!")
+Exposing::StructDescBase::StructDescBase(const char * n) : name(n)
 {
 }
 
-Exposing::StructComplete::StructComplete(const char * n, const Exposing::StructInfo & d) : name(n), desc(d)
+Exposing::StructDesc::StructDesc(const char * n, const StructInfo & d)
+	: StructDescBase(n)
+	, desc(d)
 {
+}
+
+Exposing::StructDescBase::Iterator * Exposing::StructDesc::generateIterator(WatchedAddress* from)
+{
+	return new Iterator_(desc);
+}
+
+Exposing::StructDesc::Iterator_::Iterator_(const StructInfo & desc)
+	: desc(desc)
+	, index(0)
+{
+}
+
+void Exposing::StructDesc::Iterator_::next()
+{
+	++index;
+}
+
+bool Exposing::StructDesc::Iterator_::isAtEnd() const
+{
+	return index >= (int)desc.size();
+}
+
+Exposing::WatchedAddress * Exposing::StructDesc::Iterator_::generateWatchedAddress(WatchedAddress* owner)
+{
+	return new WatchedAddressOffset(owner, desc[index].offset);
+}
+
+std::string Exposing::StructDesc::Iterator_::getName() const
+{
+	return desc[index].name;
+}
+
+Exposing::Type Exposing::StructDesc::Iterator_::getType() const
+{
+	return desc[index].type;
 }

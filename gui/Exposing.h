@@ -53,32 +53,6 @@ namespace Exposing {
 	template<> Type getType<double>();
 	template<> Type getType<std::string>();
 
-	class StructMember {
-	public:
-		std::string name;
-		Type type;
-		unsigned int offset;
-		// options?
-
-		StructMember();
-		StructMember(const char* n, Type t, unsigned int o);
-	};
-
-	typedef std::vector<StructMember> StructInfo;
-
-	class StructComplete {
-	public:
-		std::string name;
-		StructInfo desc;
-
-		StructComplete();
-		StructComplete(const char* n, const StructInfo& d);
-	};
-
-	extern std::map<Exposing::Type, StructComplete> registeredTypes;
-
-	Type defineStruct(const char* name, const StructInfo& members);
-
 	class WatchedAddress {
 	public:
 		virtual char* calculateAddress() const = 0;
@@ -107,11 +81,121 @@ namespace Exposing {
 		char* calculateAddress() const { return &((container*)owner->calculateAddress())[index]; }
 	};
 
+	class StructMember {
+	public:
+		std::string name;
+		Type type;
+		unsigned int offset;
+		// options?
+
+		StructMember();
+		StructMember(const char* n, Type t, unsigned int o);
+	};
+
+	class StructDescBase {
+	public:
+		std::string name;
+
+		StructDescBase(const char* n = "struct has no name");
+
+		class Iterator {
+		public:
+			virtual void next() = 0;
+			virtual bool isAtEnd() const = 0;
+			virtual WatchedAddress* generateWatchedAddress(WatchedAddress* owner) = 0;
+			virtual std::string getName() const = 0;
+			virtual Type getType() const = 0;
+		};
+
+		virtual Iterator* generateIterator(WatchedAddress* from) = 0;
+	};
+
+	//class StructComplete {
+	//public:
+	//	std::string name;
+	//	StructInfo desc;
+	//
+	//	StructComplete();
+	//	StructComplete(const char* n, const StructInfo& d);
+	//};
+
+	typedef std::vector<StructMember> StructInfo;
+
+	class StructDesc : public StructDescBase {
+	public:
+		StructInfo desc;
+
+		StructDesc(const char* n, const StructInfo& d);
+
+		class Iterator_ : public Iterator {
+		public:
+			const StructInfo& desc;
+			int index;
+
+			Iterator_(const StructInfo& desc);
+
+			void next();
+			bool isAtEnd() const;
+			WatchedAddress* generateWatchedAddress(WatchedAddress* owner);
+			std::string getName() const;
+			Type getType() const;
+		};
+
+		Iterator* generateIterator(WatchedAddress* from);
+	};
+
+	template<class C>
+	class StructDescIndexedContainer : public StructDescBase {
+	public:
+		StructDescIndexedContainer(const char* n) : StructDescBase(n) {}
+
+		class Iterator_ : public Iterator {
+		public:
+			WatchedAddress * watchedContainer;
+			int index;
+
+			Iterator_(WatchedAddress* from) : index(0), watchedContainer(from) {}
+
+			inline C& container() const { return *((C*)watchedContainer->calculateAddress()); }
+
+			void next(){
+				++index;
+			};
+			bool isAtEnd() const {
+				return index < (int)container().size();
+			}
+			WatchedAddress* generateWatchedAddress(WatchedAddress* owner) {
+				return new WatchedAddressIndexedContainer<C>(owner);
+			}
+			std::string getName() const {
+				return std::string("[") + std::to_string(index) + std::string("]");
+			}
+			Type getType() const {
+				return Exposing::getType<decltype(container()[0])>();
+			}
+		};
+
+		Iterator* generateIterator(WatchedAddress* from) {
+			return new Iterator_(from);
+		}
+	};
+
+	template<class T>
+	Type getIndexedContainerType() {
+		static Type thisContainerType = registerNewType("IndexedContainer", new StructDescIndexedContainer<T>("IndexedContainer"));
+		return thisContainerType;
+	}
+
+	extern std::map<Exposing::Type, StructDescBase*> registeredTypes;
+
+	Type registerNewType(const char* name, StructDescBase* desc);
+	Type defineStruct(const char* name, const StructInfo& members);
+
 	class Watcher : public virtual jmg::Base {
 	public:
 		int calculatedHeight;
 
-		const StructInfo& mWatchedStruct;
+		StructDescBase* mWatchedStruct;
 		WatchedAddress* mWatchedAddress;
 		std::vector<jmg::Base*> mToDelete;
 
@@ -127,7 +211,7 @@ namespace Exposing {
 
 		void draw(int origx, int origy);
 
-		Watcher(const StructInfo& sc, WatchedAddress* wa, int y = 0);
+		Watcher(StructDescBase* sc, WatchedAddress* wa, int y = 0);
 		~Watcher();
 
 		int getHeight() const;
@@ -135,7 +219,7 @@ namespace Exposing {
 
 	class WatcherWindow : public Watcher, public jmg::Window {
 	public:
-		WatcherWindow(const StructComplete& sc, WatchedAddress* wa);
+		WatcherWindow(StructDescBase* sc, WatchedAddress* wa);
 
 		void draw(int origx, int origy);
 
@@ -152,7 +236,7 @@ jmg::Window * Exposing::createWatcherFor(T& obj)
 {
 	Exposing::Type typeToWatch = Exposing::getType<T>();
 
-	const StructComplete& sc = registeredTypes[typeToWatch];
+	StructDescBase* sc = registeredTypes[typeToWatch];
 
 	jmg::Window* window = new WatcherWindow(sc, new WatchedAddressRoot((char*)&obj));
 
@@ -173,13 +257,13 @@ Exposing::Type EXPOSE_TYPE::__getType() { \
 	Exposing::StructMember tmp;
 
 //tmp = { #var, type, offsetof(EXPOSE_TYPE, var), "" ## __VA_ARGS__};
-#define __EXPOSE(type, var, iic, ...) \
-	tmp = Exposing::StructMember(#var, type, offsetof(EXPOSE_TYPE, var), iic); \
+#define __EXPOSE(type, var, ...) \
+	tmp = Exposing::StructMember(#var, type, offsetof(EXPOSE_TYPE, var)); \
 	vec.push_back(tmp);
 
-#define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, false, __VA_ARGS__)
+#define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, __VA_ARGS__)
 
-#define EXPOSE_INDEXED_CONTAINER(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, true, __VA_ARGS__)
+#define EXPOSE_INDEXED_CONTAINER(var, ...) __EXPOSE(Exposing::getIndexedContainerType<decltype(var)>(), var, __VA_ARGS__)
 
 #define EXPOSE_END \
 	type = Exposing::defineStruct(STR(EXPOSE_TYPE), vec); \
