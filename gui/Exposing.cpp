@@ -1,4 +1,5 @@
 #include "Exposing.h"
+#include <memory>
 
 template<> Exposing::Type Exposing::getType<bool>() { return Exposing::BOOL; }
 template<> Exposing::Type Exposing::getType<char>() { return Exposing::INT8; }
@@ -39,15 +40,113 @@ Exposing::StructMember::StructMember(const char * n, Type t, unsigned int o)
 {
 }
 
+void editValueCallback(void* a) {
+	Exposing::Watcher::EditValueArgs* args = (Exposing::Watcher::EditValueArgs*)a;
+
+	char* address = args->address->calculateAddress();
+
+	jmg::Base* base = args->field;
+	jmg::Text* text = dynamic_cast<jmg::Text*>(base);
+	const Exposing::Type type = args->type;
+	if (text) {
+		switch (type) {
+		case Exposing::INT8:	*(char*)address = text->getAsInt(); break;
+		case Exposing::UINT8:	*(unsigned char*)address = text->getAsInt(); break;
+		case Exposing::INT16:	*(short*)address = text->getAsInt(); break;
+		case Exposing::UINT16:	*(unsigned short*)address = text->getAsInt(); break;
+		case Exposing::INT:		*(int*)address = text->getAsInt(); break;
+		case Exposing::UINT:	*(unsigned int*)address = text->getAsInt(); break;
+		case Exposing::FLOAT:	*(float*)address = text->getAsFloat(); break;
+		case Exposing::DOUBLE:	*(double*)address = text->getAsDouble(); break;
+		case Exposing::STRING:	*(std::string*)address = text->getValue(); break;
+		}
+	}
+	else if (type == Exposing::BOOL) {
+		jmg::CheckBox* checkBox = dynamic_cast<jmg::CheckBox*>(base);
+		if (checkBox) {
+			*(bool*)address = checkBox->mChecked;
+		}
+	}
+}
+
+const int yStep = 20;
+
+int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
+{
+	const int xl = 20;
+	const int xr = 150;
+
+	jmg::Label* nameLabel = new jmg::Label(it->getName().c_str());
+	nameLabel->mRelx = xl;
+	nameLabel->mRely = y;
+	addChild(nameLabel);
+
+	WatchedAddress* address = it->generateWatchedAddress();
+	char* calculatedAddress = address->calculateAddress();
+	jmg::Text* valueField = nullptr;
+	jmg::CheckBox* checkbox = nullptr;
+	switch (it->getType()) {
+	case BOOL:	checkbox = new jmg::CheckBox(*(bool*)calculatedAddress); break;
+	case INT8:	valueField = new jmg::Numeric(*(char*)calculatedAddress); break;
+	case UINT8:	valueField = new jmg::Numeric(*(unsigned char*)calculatedAddress); break;
+	case INT16:	valueField = new jmg::Numeric(*(short*)calculatedAddress); break;
+	case UINT16:valueField = new jmg::Numeric(*(unsigned short*)calculatedAddress); break;
+	case INT:	valueField = new jmg::Numeric(*(int*)calculatedAddress); break;
+	case UINT:	valueField = new jmg::Numeric(*(unsigned int*)calculatedAddress); break;
+	case FLOAT:	valueField = new jmg::Numeric(*(float*)calculatedAddress); break;
+	case DOUBLE:valueField = new jmg::Numeric(*(double*)calculatedAddress); break;
+	case STRING:valueField = new jmg::Text(((std::string*)calculatedAddress)->c_str()); break;
+	}
+
+	EditValueArgs* newValueArgs = new EditValueArgs(address, it->getType());
+	newValueArgs->label = nameLabel;
+	mValueArgs.push_back(newValueArgs);
+
+	if (valueField) {
+		valueField->mEditCallback = editValueCallback;
+		valueField->mEditCallbackArgs = newValueArgs;
+		newValueArgs->field = valueField;
+		valueField->mWidth = 140;
+		addChild(valueField, xr, y);
+	}
+	else if (checkbox) {
+		checkbox->mEditCallback = editValueCallback;
+		checkbox->mEditCallbackArgs = newValueArgs;
+		newValueArgs->field = checkbox;
+		addChild(checkbox, xr, y);
+	}
+	else {
+		nameLabel->mRelx += xl;
+		StructDescBase* sc_ = registeredTypes[it->getType()];
+		Base* value = new Watcher(sc_, newValueArgs->address);
+		newValueArgs->field = value;
+		jmg::ShowHide* sh = new jmg::ShowHide();
+		newValueArgs->sh = sh;
+		addChild(sh, xl, y);
+		sh->addChild(value, 0, yStep);
+		sh->mOverrideDeltaExpand = value->getHeight();
+		return value->getHeight() + yStep;
+	}
+	return yStep;
+}
+
 void Exposing::Watcher::refreshValueForLabels()
 {
-	for (std::vector<EditValueArgs*>::iterator it = mValueArgs.begin(); it != mValueArgs.end(); ++it) {
-		char* address = (*it)->address->calculateAddress();
-		if (address) {
-			;//(char*)mWatchedAddress + (*it)->structMember->offset;
+	std::unique_ptr<StructDescBase::Iterator> structIt(mWatchedStruct->generateIterator(mWatchedAddress));
+	std::vector<EditValueArgs*>::iterator argsIt = mValueArgs.begin();
+	while (!structIt->isAtEnd() && argsIt != mValueArgs.end()) {
+		char* address = (*argsIt)->address->calculateAddress();
 
-			jmg::Base* base = (*it)->field;
-			const Type type = (*it)->type;
+		// check if we're watching the same thing
+		// update name label if not
+		if (address != std::unique_ptr<WatchedAddress>(structIt->generateWatchedAddress())->calculateAddress()) {
+			(*argsIt)->label->setValue(structIt->getName().c_str());
+		}
+
+		// update the field
+		if (address) {
+			jmg::Base* base = (*argsIt)->field;
+			const Type type = (*argsIt)->type;
 
 			if (type == Exposing::BOOL) {
 				dynamic_cast<jmg::CheckBox*>(base)->mChecked = *(bool*)address;
@@ -88,6 +187,41 @@ void Exposing::Watcher::refreshValueForLabels()
 				}
 			}
 		}
+
+		//iterate!
+		if (argsIt != mValueArgs.end()) {
+			++argsIt;
+		}
+		if (!structIt->isAtEnd()) {
+			structIt->next();
+		}
+	}
+
+	if (argsIt != mValueArgs.end()) {
+		//delete the surplus of args
+		int count = 0;
+		for (; argsIt != mValueArgs.end();++argsIt) {
+			calculatedHeight -= (*argsIt)->field->getHeight();
+			(*argsIt)->field->mDeleteMe = true;
+			(*argsIt)->field = nullptr;
+			(*argsIt)->label->mDeleteMe = true;
+			(*argsIt)->label = nullptr;
+			if ((*argsIt)->sh) {
+				(*argsIt)->sh->mDeleteMe = true;
+				(*argsIt)->sh = nullptr;
+			}
+			delete *argsIt;
+			++count;
+		}
+		if (count > 0) {
+			mValueArgs.erase(mValueArgs.begin() + (mValueArgs.size() - count), mValueArgs.end());
+		}
+	}
+	else {
+		//add more fields if necessary
+		for (; !structIt->isAtEnd(); structIt->next()) {
+			calculatedHeight += pushNewField(structIt.get(), calculatedHeight);
+		}
 	}
 }
 
@@ -105,121 +239,22 @@ void closeWatcherCallback(void* arg) {
 	}
 }
 
-void editValueCallback(void* a) {
-	Exposing::Watcher::EditValueArgs* args = (Exposing::Watcher::EditValueArgs*)a;
-
-	char* address = args->address->calculateAddress();//(char*)args->watcher->mWatchedAddress + args->structMember->offset;//args->watcher->mWatchedStruct.desc[args->id].offset;
-
-	jmg::Base* base = args->field;// args->watcher->mValueFields[args->id];
-	jmg::Text* text = dynamic_cast<jmg::Text*>(base);
-	const Exposing::Type type = args->type;//args->watcher->mWatchedStruct.desc[args->id].type;
-	if (text) {
-		switch (type) {
-		case Exposing::INT8:	*(char*)address = text->getAsInt(); break;
-		case Exposing::UINT8:	*(unsigned char*)address = text->getAsInt(); break;
-		case Exposing::INT16:	*(short*)address = text->getAsInt(); break;
-		case Exposing::UINT16:	*(unsigned short*)address = text->getAsInt(); break;
-		case Exposing::INT:		*(int*)address = text->getAsInt(); break;
-		case Exposing::UINT:	*(unsigned int*)address = text->getAsInt(); break;
-		case Exposing::FLOAT:	*(float*)address = text->getAsFloat(); break;
-		case Exposing::DOUBLE:	*(double*)address = text->getAsDouble(); break;
-		case Exposing::STRING:	*(std::string*)address = text->getValue(); break;
-		}
-	}
-	else if (type == Exposing::BOOL) {
-		jmg::CheckBox* checkBox = dynamic_cast<jmg::CheckBox*>(base);
-		if (checkBox) {
-			*(bool*)address = checkBox->mChecked;
-		}
-	}
-}
-
 Exposing::Watcher::Watcher(StructDescBase* sc, WatchedAddress* wa, int y)
 	: mWatchedStruct(sc)
 	, mWatchedAddress(wa)
 {
-	calculatedHeight = 0;
-	const int xl = 20;
-	const int xr = 150;
-	const int yStep = 20;
-	StructDescBase::Iterator* it = sc->generateIterator(wa);
-	for (; !it->isAtEnd(); it->next()) {
-		jmg::Label* nameLabel = new jmg::Label(it->getName().c_str());
-		nameLabel->mRelx = xl;
-		nameLabel->mRely = y;
-		mToDelete.push_back(nameLabel);
-		addChild(nameLabel);
-
-		WatchedAddress* address = it->generateWatchedAddress();
-		char* calculatedAddress = address->calculateAddress();
-		jmg::Text* valueField = nullptr;
-		jmg::CheckBox* checkbox = nullptr;
-		switch (it->getType()) {
-		case BOOL:	checkbox = new jmg::CheckBox(*(bool*)calculatedAddress); break;
-		case INT8:	valueField = new jmg::Numeric(*(char*)calculatedAddress); break;
-		case UINT8:	valueField = new jmg::Numeric(*(unsigned char*)calculatedAddress); break;
-		case INT16:	valueField = new jmg::Numeric(*(short*)calculatedAddress); break;
-		case UINT16:valueField = new jmg::Numeric(*(unsigned short*)calculatedAddress); break;
-		case INT:	valueField = new jmg::Numeric(*(int*)calculatedAddress); break;
-		case UINT:	valueField = new jmg::Numeric(*(unsigned int*)calculatedAddress); break;
-		case FLOAT:	valueField = new jmg::Numeric(*(float*)calculatedAddress); break;
-		case DOUBLE:valueField = new jmg::Numeric(*(double*)calculatedAddress); break;
-		case STRING:valueField = new jmg::Text(((std::string*)calculatedAddress)->c_str()); break;
-		}
-		
-		EditValueArgs* newValueArgs = new EditValueArgs({ address, it->getType(), nullptr });
-		mValueArgs.push_back(newValueArgs);
-
-		if (valueField) {
-			valueField->mEditCallback = editValueCallback;
-			valueField->mEditCallbackArgs = newValueArgs;
-			mToDelete.push_back(valueField);
-			newValueArgs->field = valueField;
-			//addAndAdaptLabel(valueField, xr, y, 10);
-			valueField->mWidth = 140;
-			addChild(valueField, xr, y);
-		}
-		else if (checkbox) {
-			checkbox->mEditCallback = editValueCallback;
-			checkbox->mEditCallbackArgs = newValueArgs;
-			mToDelete.push_back(checkbox);
-			newValueArgs->field = checkbox;
-			addChild(checkbox, xr, y);
-		}
-		else {
-			nameLabel->mRelx += xl;
-			StructDescBase* sc_ = registeredTypes[it->getType()];
-			Base* value = new Watcher(sc_, newValueArgs->address);
-			mToDelete.push_back(value);
-			jmg::ShowHide* sh = new jmg::ShowHide();
-			mToDelete.push_back(sh);
-			addChild(sh, xl, y);
-			sh->addChild(value, 0, yStep);
-			sh->mOverrideDeltaExpand = value->getHeight();
-			y += value->getHeight();
-		}
-
-		y += yStep;
+	calculatedHeight = y;
+	for (std::unique_ptr<StructDescBase::Iterator> it(sc->generateIterator(wa)); !it->isAtEnd(); it->next()) {
+		calculatedHeight += pushNewField(it.get(), calculatedHeight);
 	}
-	calculatedHeight += y;
 }
 
 Exposing::Watcher::~Watcher()
 {
-	for (unsigned int i = 0; i < (unsigned int)mToDelete.size(); ++i) {
-		delete mToDelete[i];
-	}
-	mToDelete.clear();
-	for (unsigned int i = 0; i < (unsigned int)mValueArgs.size(); ++i) {
-		if (mValueArgs[i]->address) {
-			delete mValueArgs[i]->address;
-		}
-		delete mValueArgs[i];
+	for (auto ptr : mValueArgs) {
+		delete ptr;
 	}
 	mValueArgs.clear();
-	if (dynamic_cast<WatchedAddressRoot*>(mWatchedAddress)) {
-		delete mWatchedAddress;
-	}
 }
 
 int Exposing::Watcher::getHeight() const
@@ -228,14 +263,20 @@ int Exposing::Watcher::getHeight() const
 }
 
 Exposing::WatcherWindow::WatcherWindow(StructDescBase* sc, WatchedAddress * wa)
-	: InteractiveRectangle(300,100)
-	, Window(300,100,sc->name.c_str())
+	: InteractiveRectangle(300, 100)
+	, Window(300, 100, sc->name.c_str())
 	, Watcher(sc, wa, 20)
 {
 	mHeight = calculatedHeight;
 
 	mBtnClose.mCallback = closeWatcherCallback;
 	mBtnClose.mCallbackArgs = (void*)this;
+}
+
+Exposing::WatcherWindow::~WatcherWindow()
+{
+	// the window is responsible for the memory management of the address, and this should be a root version
+	delete mWatchedAddress;
 }
 
 void Exposing::WatcherWindow::draw(int origx, int origy)
@@ -294,4 +335,22 @@ std::string Exposing::StructDesc::Iterator_::getName() const
 Exposing::Type Exposing::StructDesc::Iterator_::getType() const
 {
 	return desc[index].type;
+}
+
+Exposing::Watcher::EditValueArgs::EditValueArgs(WatchedAddress* address, Type type)
+	: address(address)
+	, type(type)
+	, field(nullptr)
+	, label(nullptr)
+	, sh(nullptr)
+{
+}
+
+Exposing::Watcher::EditValueArgs::~EditValueArgs()
+{
+	// omg just learned that it was safe to delete null pointers!
+	delete address;
+	delete field;
+	delete label;
+	delete sh;
 }

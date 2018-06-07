@@ -187,6 +187,23 @@ EXPOSE_IC(_vectorMember)
 EXPOSE_END
 #undef EXPOSE_TYPE
 
+void callbackAdd(void* exptest) {
+	ExposingTest& et = *(ExposingTest*)exptest;
+	if (et._vector.empty()) {
+		et._vector.push_back(0);
+	}
+	else {
+		int val = (*et._vector.rbegin());
+		et._vector.push_back(val + 1);
+	}
+}
+void callbackRem(void* exptest) {
+	ExposingTest& et = *(ExposingTest*)exptest;
+	if (!et._vector.empty()) {
+		et._vector.erase(et._vector.begin());
+	}
+}
+
 class JmGui : public Engine::Graphic, public Engine::Input {
 public:
 	Engine & engine;
@@ -203,12 +220,17 @@ public:
 
 	ExposingTest test;
 
+	jmg::Button add;
+	jmg::Button rem;
+
 	JmGui(Engine& e)
 		: engine(e)
 		, win(200, 250, "Salut les gens")
 		, crp(200,200)
 		, crplbl("Salut")
 		, crpmvb(60,20)
+		, add(30,30)
+		, rem(30,30)
 	{
 		engine.overlayGraphic.AddChild(this);
 		engine.inputRoot.AddChild(this,true);
@@ -240,6 +262,11 @@ public:
 		crp.addChild(&crplbl, 100, 100);
 		crp.addChild(&crpbtn, 50, 50);
 		crp.addChild(&crpmvb);
+
+		add.mCallback = callbackAdd;
+		add.mCallbackArgs = (void*)&test;
+		rem.mCallback = callbackRem;
+		rem.mCallbackArgs = (void*)&test;
 	}
 
 	~JmGui() {
@@ -265,6 +292,8 @@ public:
 			else if (event.keyboard.keycode == ALLEGRO_KEY_F2) {
 				jmg::Window* watcher = Exposing::createWatcherFor(test);
 				watcher->setParent(&root, true);
+				watcher->addChild(&add, 0, 0);
+				watcher->addChild(&rem, 30, 0);
 			}
 		}
 		return root.baseHandleEvent(event);

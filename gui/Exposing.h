@@ -111,15 +111,6 @@ namespace Exposing {
 		virtual Iterator* generateIterator(WatchedAddress* from) = 0;
 	};
 
-	//class StructComplete {
-	//public:
-	//	std::string name;
-	//	StructInfo desc;
-	//
-	//	StructComplete();
-	//	StructComplete(const char* n, const StructInfo& d);
-	//};
-
 	typedef std::vector<StructMember> StructInfo;
 
 	class StructDesc : public StructDescBase {
@@ -199,22 +190,29 @@ namespace Exposing {
 
 		StructDescBase* mWatchedStruct;
 		WatchedAddress* mWatchedAddress;
-		std::vector<jmg::Base*> mToDelete;
 
-		struct EditValueArgs {
+		class EditValueArgs {
+		public:
 			WatchedAddress* address;
 			Type type;
 			jmg::Base* field;
+			jmg::Label* label;
+			jmg::ShowHide* sh;
+
+			EditValueArgs(WatchedAddress* address, Type type);
+			~EditValueArgs();
 		};
 
 		std::vector<EditValueArgs*> mValueArgs;
+
+		int pushNewField(StructDescBase::Iterator* it, int y);
 
 		void refreshValueForLabels();
 
 		void draw(int origx, int origy);
 
 		Watcher(StructDescBase* sc, WatchedAddress* wa, int y = 0);
-		~Watcher();
+		virtual ~Watcher();
 
 		int getHeight() const;
 	};
@@ -222,6 +220,7 @@ namespace Exposing {
 	class WatcherWindow : public Watcher, public jmg::Window {
 	public:
 		WatcherWindow(StructDescBase* sc, WatchedAddress* wa);
+		~WatcherWindow();
 
 		void draw(int origx, int origy);
 
@@ -273,19 +272,3 @@ Exposing::Type EXPOSE_TYPE::__getType() { \
 }
 
 #endif
-
-/*
-Notes pour continuer
-
-1) définir un Exposing::getType alternatif pour les containers indexés
-2) polymorphiser StructComplete pour avoir les types différents
-     - le type "StructComplete" qui va simplement encapsuler le vecteur
-	 - un autre type genre "StructIndexedContainer" cqfd
-3) créér un itérateur polymorphe simpliste pour parcourir tout ça
-4) adapter le constructeur de Watcher : le WatchedAddressOffset devra être remplacé par un genre
-de "generateWatchAddress" depuis l'itérateur
-
-attention au mind fuck "polymorphiser StructInfo ou StructComplete???"
-  -> StructComplete est simplement un StructInfo avec un nom collé avec
-
-*/
