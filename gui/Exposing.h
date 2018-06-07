@@ -73,12 +73,13 @@ namespace Exposing {
 		WatchedAddressOffset(const WatchedAddress* owner, unsigned int offset) : owner(owner), offset(offset) {}
 	};
 
-	template<typename container>
+	template<typename C>
 	class WatchedAddressIndexedContainer : public WatchedAddress {
 	public:
 		const WatchedAddress* owner;
 		int index;
-		char* calculateAddress() const { return &((container*)owner->calculateAddress())[index]; }
+		char* calculateAddress() const { return (char*)&(*((C*)owner->calculateAddress()))[index]; }
+		WatchedAddressIndexedContainer(const WatchedAddress* owner, int index) : owner(owner), index(index) {}
 	};
 
 	class StructMember {
@@ -102,7 +103,7 @@ namespace Exposing {
 		public:
 			virtual void next() = 0;
 			virtual bool isAtEnd() const = 0;
-			virtual WatchedAddress* generateWatchedAddress(WatchedAddress* owner) = 0;
+			virtual WatchedAddress* generateWatchedAddress() = 0;
 			virtual std::string getName() const = 0;
 			virtual Type getType() const = 0;
 		};
@@ -130,13 +131,14 @@ namespace Exposing {
 		class Iterator_ : public Iterator {
 		public:
 			const StructInfo& desc;
+			WatchedAddress * watchedStruct;
 			int index;
 
-			Iterator_(const StructInfo& desc);
+			Iterator_(const StructInfo& desc, WatchedAddress * watchedStruct);
 
 			void next();
 			bool isAtEnd() const;
-			WatchedAddress* generateWatchedAddress(WatchedAddress* owner);
+			WatchedAddress* generateWatchedAddress();
 			std::string getName() const;
 			Type getType() const;
 		};
@@ -144,7 +146,7 @@ namespace Exposing {
 		Iterator* generateIterator(WatchedAddress* from);
 	};
 
-	template<class C>
+	template<typename C>
 	class StructDescIndexedContainer : public StructDescBase {
 	public:
 		StructDescIndexedContainer(const char* n) : StructDescBase(n) {}
@@ -162,16 +164,16 @@ namespace Exposing {
 				++index;
 			};
 			bool isAtEnd() const {
-				return index < (int)container().size();
+				return index >= (int)container().size();
 			}
-			WatchedAddress* generateWatchedAddress(WatchedAddress* owner) {
-				return new WatchedAddressIndexedContainer<C>(owner);
+			WatchedAddress* generateWatchedAddress() {
+				return new WatchedAddressIndexedContainer<C>(watchedContainer,index);
 			}
 			std::string getName() const {
 				return std::string("[") + std::to_string(index) + std::string("]");
 			}
 			Type getType() const {
-				return Exposing::getType<decltype(container()[0])>();
+				return Exposing::getType<std::remove_reference<decltype(container()[0])>::type>();
 			}
 		};
 
@@ -263,7 +265,7 @@ Exposing::Type EXPOSE_TYPE::__getType() { \
 
 #define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, __VA_ARGS__)
 
-#define EXPOSE_INDEXED_CONTAINER(var, ...) __EXPOSE(Exposing::getIndexedContainerType<decltype(var)>(), var, __VA_ARGS__)
+#define EXPOSE_IC(var, ...) __EXPOSE(Exposing::getIndexedContainerType<decltype(var)>(), var, __VA_ARGS__)
 
 #define EXPOSE_END \
 	type = Exposing::defineStruct(STR(EXPOSE_TYPE), vec); \

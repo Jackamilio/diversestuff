@@ -150,7 +150,7 @@ Exposing::Watcher::Watcher(StructDescBase* sc, WatchedAddress* wa, int y)
 		mToDelete.push_back(nameLabel);
 		addChild(nameLabel);
 
-		WatchedAddress* address = it->generateWatchedAddress(mWatchedAddress);
+		WatchedAddress* address = it->generateWatchedAddress();
 		char* calculatedAddress = address->calculateAddress();
 		jmg::Text* valueField = nullptr;
 		jmg::CheckBox* checkbox = nullptr;
@@ -261,11 +261,12 @@ Exposing::StructDesc::StructDesc(const char * n, const StructInfo & d)
 
 Exposing::StructDescBase::Iterator * Exposing::StructDesc::generateIterator(WatchedAddress* from)
 {
-	return new Iterator_(desc);
+	return new Iterator_(desc, from);
 }
 
-Exposing::StructDesc::Iterator_::Iterator_(const StructInfo & desc)
+Exposing::StructDesc::Iterator_::Iterator_(const StructInfo & desc, WatchedAddress * watchedStruct)
 	: desc(desc)
+	, watchedStruct(watchedStruct)
 	, index(0)
 {
 }
@@ -280,9 +281,9 @@ bool Exposing::StructDesc::Iterator_::isAtEnd() const
 	return index >= (int)desc.size();
 }
 
-Exposing::WatchedAddress * Exposing::StructDesc::Iterator_::generateWatchedAddress(WatchedAddress* owner)
+Exposing::WatchedAddress * Exposing::StructDesc::Iterator_::generateWatchedAddress()
 {
-	return new WatchedAddressOffset(owner, desc[index].offset);
+	return new WatchedAddressOffset(watchedStruct, desc[index].offset);
 }
 
 std::string Exposing::StructDesc::Iterator_::getName() const

@@ -141,6 +141,7 @@ public:
 	std::string _string;
 	ExposingTestMember _member;
 	std::vector<int> _vector;
+	std::vector<ExposingTestMember> _vectorMember;
 	
 	ExposingTest()
 		: _bool(false)
@@ -156,7 +157,13 @@ public:
 	{
 		_vector.push_back(0);
 		_vector.push_back(1);
-		_vector.push_back(2);
+
+		ExposingTestMember member;
+		_vectorMember.push_back(member);
+		member._otherInt = 1;
+		_vectorMember.push_back(member);
+		member._otherBool = true;
+		_vectorMember.push_back(member);
 	}
 
 	IM_AN_EXPOSER
@@ -175,7 +182,8 @@ EXPOSE(_uint)
 EXPOSE(_float)
 EXPOSE(_double)
 EXPOSE(_string)
-EXPOSE_INDEXED_CONTAINER(_vector)
+EXPOSE_IC(_vector)
+EXPOSE_IC(_vectorMember)
 EXPOSE_END
 #undef EXPOSE_TYPE
 
@@ -244,6 +252,7 @@ public:
 	void Draw() {
 		test._char++;
 		test._member._otherShort--;
+		test._vectorMember[2]._otherShort++;
 		root.requestRedraw();
 		root.baseDraw();
 	}
