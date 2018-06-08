@@ -75,6 +75,70 @@ void jmg::Base::addChild(Base * child, int relx, int rely)
 	addChild(child);
 }
 
+void jmg::Base::addChild(Base * child, Edge pos, int xory)
+{
+	int edge = getEdge(pos);
+
+	int add = 0;
+	switch (pos) {
+	case TOP:
+		add = -child->getHeight();
+	case BOTTOM:
+		child->mRelx = xory;
+		child->mRely = edge + add;
+		break;
+	case LEFT:
+		add = 0; // todo -child->getWidth();
+	case RIGHT:
+		child->mRelx = edge + add;
+		child->mRely = xory;
+		break;
+	}
+	
+	addChild(child);
+}
+
+int jmg::Base::getEdge(Edge edge) const
+{
+	int Base::*compVal;
+	int Base::*otherVal;
+	bool lessThan = false;
+
+	switch (edge) {
+	case TOP:
+		lessThan = true;
+	case BOTTOM:
+		compVal = &Base::mRely;
+		otherVal = &Base::mRelx;
+		break;
+	case LEFT:
+		lessThan = true;
+	case RIGHT:
+		compVal = &Base::mRelx;
+		otherVal = &Base::mRely;
+		break;
+	}
+
+	int comp = 0;
+	Base* bComp = nullptr;
+	for (auto obj : mChildren) {
+		if (lessThan ? obj->*compVal <= comp : obj->*compVal >= comp) {
+			comp = obj->*compVal;
+			bComp = obj;
+		}
+	}
+
+	int add = 0;
+	if (bComp) {
+		if (BOTTOM) { add = bComp->getHeight(); }
+		else if (RIGHT) {
+			add = 0;// todo add = bComp->getWidth();
+		}
+	}
+
+	return comp + add;
+}
+
 void jmg::Base::setAsAutoAddRef(int startx, int starty, int additionalMargin)
 {
 	getContext().mAutoAdd = { this, startx,starty,additionalMargin };
@@ -577,9 +641,10 @@ double jmg::Label::getAsDouble() const
 
 int jmg::Label::getHeight() const
 {
-	int bbx, bby, bbw, bbh;
-	al_get_ustr_dimensions(mFont, mValue, &bbx, &bby, &bbw, &bbh);
-	return bbh;
+	//int bbx, bby, bbw, bbh;
+	//al_get_ustr_dimensions(mFont, mValue, &bbx, &bby, &bbw, &bbh);
+	//return bbh;
+	return al_get_font_line_height(mFont);
 }
 
 void jmg::Text::insert(int keycode)
@@ -1323,18 +1388,24 @@ void jmg::Editable::editHappened()
 void showHideCallback(void* arg) {
 	jmg::ShowHide* sh = (jmg::ShowHide*)arg;
 
-	if (sh->mShowHideObjects.size() == 0) {
-		sh->hide();
-	}
-	else {
-		sh->show();
-	}
+	sh->toggle();
+	//if (sh->mShowHideObjects.size() == 0) {
+	//	sh->hide();
+	//}
+	//else {
+	//	sh->show();
+	//}
 }
 
-jmg::ShowHide::ShowHide(int nbObjAlwaysShow)
-	: InteractiveRectangle(10,10)
-	, mOverrideDeltaExpand(-1)
-	, mNbObjAlwaysShow(nbObjAlwaysShow)
+//jmg::ShowHide::ShowHide(int nbObjAlwaysShow)
+//	: InteractiveRectangle(10,10)
+//	, mOverrideDeltaExpand(-1)
+//	, mNbObjAlwaysShow(nbObjAlwaysShow)
+//	, mPlusMinus(jmg::Image::MINUS)
+jmg::ShowHide::ShowHide()
+	: InteractiveRectangle(10, 10)
+	, mRememberParent(nullptr)
+	, mShowHideObject(nullptr)
 	, mPlusMinus(jmg::Image::MINUS)
 {
 	addChild(&mPlusMinus);
@@ -1344,27 +1415,35 @@ jmg::ShowHide::ShowHide(int nbObjAlwaysShow)
 
 void jmg::ShowHide::show()
 {
-	if (mShowHideObjects.size() > 0) {
+	/*if (mShowHideObjects.size() > 0) {
 		for (unsigned int i = 0; i < mShowHideObjects.size(); ++i) {
 			addChild(mShowHideObjects[i]);
 		}
 		mShowHideObjects.clear();
-		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::MINUS);
-		requestRedraw(-1);
+
+		int delta = mDeltaExpand;*/
+
+	if (mRememberParent && mShowHideObject) {
+		int delta = mShowHideObject->getHeight();
 
 		// push siblings down
-		const Children& siblings = parent()->children();
+		const Children& siblings = mRememberParent->children();
 		for (Children::const_iterator it = siblings.begin(); it != siblings.end(); ++it) {
-			if ((*it)->mRely > mRely) {
-				(*it)->mRely += mDeltaExpand;
+			if ((*it)->mRely >= mShowHideObject->mRely && *it != this) {
+				(*it)->mRely += delta;
 			}
 		}
+
+		mRememberParent->addChild(mShowHideObject);
+		mRememberParent = nullptr;
+		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::MINUS);
+		requestRedraw(-1);
 	}
 }
 
 void jmg::ShowHide::hide()
 {
-	if (mShowHideObjects.size() == 0) {
+	/*if (mShowHideObjects.size() == 0) {
 		unsigned int ignore = 0;
 		int ignoreMaxY = 0;
 		int hideMaxY = 0;
@@ -1381,18 +1460,33 @@ void jmg::ShowHide::hide()
 				ignoreMaxY = itBottom;
 			}
 		}
-		mDeltaExpand = mOverrideDeltaExpand < 0 ? hideMaxY - ignoreMaxY : mOverrideDeltaExpand;
-		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::PLUS);
-		requestRedraw(-1);
+		mDeltaExpand = mOverrideDeltaExpand < 0 ? hideMaxY - ignoreMaxY : mOverrideDeltaExpand;*/
+
+	if (mShowHideObject) {
+		mRememberParent = mShowHideObject->parent();
+		int delta = mShowHideObject->getHeight();
 
 		// pull siblings up
-		const int vertTrigger = mRely + mDeltaExpand;
-		const Children& siblings = parent()->children();
+		const Children& siblings = mRememberParent->children();
 		for (Children::const_iterator it = siblings.begin(); it != siblings.end(); ++it) {
-			if ((*it)->mRely > vertTrigger) {
-				(*it)->mRely -= mDeltaExpand;
+			if ((*it)->mRely > mShowHideObject->mRely) {
+				(*it)->mRely -= delta;
 			}
 		}
+
+		mShowHideObject->remove();
+		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::PLUS);
+		requestRedraw(-1);
+	}
+}
+
+void jmg::ShowHide::toggle()
+{
+	if (mRememberParent) {
+		show();
+	}
+	else {
+		hide();
 	}
 }
 

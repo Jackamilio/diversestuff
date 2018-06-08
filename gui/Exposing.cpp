@@ -69,7 +69,7 @@ void editValueCallback(void* a) {
 	}
 }
 
-const int yStep = 20;
+//const int yStep = 20;
 
 int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
 {
@@ -77,9 +77,8 @@ int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
 	const int xr = 150;
 
 	jmg::Label* nameLabel = new jmg::Label(it->getName().c_str());
-	nameLabel->mRelx = xl;
-	nameLabel->mRely = y;
-	addChild(nameLabel);
+	addChild(nameLabel, BOTTOM, xl);
+	y = nameLabel->mRely;
 
 	WatchedAddress* address = it->generateWatchedAddress();
 	char* calculatedAddress = address->calculateAddress();
@@ -108,12 +107,14 @@ int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
 		newValueArgs->field = valueField;
 		valueField->mWidth = 140;
 		addChild(valueField, xr, y);
+		//addChild(valueField, Base::BOTTOM, xr);
 	}
 	else if (checkbox) {
 		checkbox->mEditCallback = editValueCallback;
 		checkbox->mEditCallbackArgs = newValueArgs;
 		newValueArgs->field = checkbox;
 		addChild(checkbox, xr, y);
+		//addChild(checkbox, Base::BOTTOM, xr);
 	}
 	else {
 		nameLabel->mRelx += xl;
@@ -122,12 +123,16 @@ int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
 		newValueArgs->field = value;
 		jmg::ShowHide* sh = new jmg::ShowHide();
 		newValueArgs->sh = sh;
+		//sh->addChild(value, 0, yStep);
+		addChild(value, BOTTOM, xl);
+		sh->mShowHideObject = value;
+		//sh->addChild(value, Base::BOTTOM, 0);
+		//sh->mOverrideDeltaExpand = value->getHeight();
 		addChild(sh, xl, y);
-		sh->addChild(value, 0, yStep);
-		sh->mOverrideDeltaExpand = value->getHeight();
-		return value->getHeight() + yStep;
+		//addChild(sh, Base::BOTTOM, xl);
+		//return value->getHeight() +yStep;
 	}
-	return yStep;
+	return 0;// yStep;
 }
 
 void Exposing::Watcher::refreshValueForLabels()
@@ -259,7 +264,8 @@ Exposing::Watcher::~Watcher()
 
 int Exposing::Watcher::getHeight() const
 {
-	return calculatedHeight;
+	//return calculatedHeight;
+	return getEdge(BOTTOM);
 }
 
 Exposing::WatcherWindow::WatcherWindow(StructDescBase* sc, WatchedAddress * wa)
@@ -267,7 +273,8 @@ Exposing::WatcherWindow::WatcherWindow(StructDescBase* sc, WatchedAddress * wa)
 	, Window(300, 100, sc->name.c_str())
 	, Watcher(sc, wa, 20)
 {
-	mHeight = calculatedHeight;
+	//mHeight = calculatedHeight;
+	mHeight = getEdge(BOTTOM);
 
 	mBtnClose.mCallback = closeWatcherCallback;
 	mBtnClose.mCallbackArgs = (void*)this;

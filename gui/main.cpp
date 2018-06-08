@@ -248,7 +248,7 @@ public:
 		labels.push_back(new jmg::Label("Below 2"));
 
 		win.addChild(&sh,10,10);
-		sh.mNbObjAlwaysShow = 2;
+		//sh.mNbObjAlwaysShow = 2;
 		sh.setAsAutoAddRef(10,-3,5);
 		unsigned int i = 0;
 		labels[i++]->autoAdd();

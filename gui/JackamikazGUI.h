@@ -49,8 +49,11 @@ namespace jmg
 
 		bool has(const Base* child) const;
 
+		enum Edge { TOP, BOTTOM, LEFT, RIGHT };
 		void addChild(Base* child);
 		void addChild(Base* child, int relx, int rely);
+		void addChild(Base* child, Edge pos, int xory);
+		int getEdge(Edge edge) const;
 
 		void setAsAutoAddRef(int startx = 0, int starty = 0, int additionalMargin = 0);
 		void autoAdd(Base* parent = nullptr);
@@ -73,6 +76,11 @@ namespace jmg
 	class Root : public virtual Base {
 	public:
 		int getHeight() const { return 0; }
+	};
+
+	class Container : public virtual Base {
+	public:
+		int getHeight() const { return getEdge(BOTTOM); }
 	};
 
 	//class WallPaper : public virtual Base{
@@ -292,18 +300,22 @@ namespace jmg
 
 	class ShowHide : public Button {
 	private:
-		int mDeltaExpand;
+		//int mDeltaExpand;
+		Base * mRememberParent;
 	public:
-		int mOverrideDeltaExpand;
+		//int mOverrideDeltaExpand;
 
-		std::vector<Base*> mShowHideObjects;
-		unsigned int mNbObjAlwaysShow;
+		//std::vector<Base*> mShowHideObjects;
+		//unsigned int mNbObjAlwaysShow;
+		Base* mShowHideObject;
 		Image mPlusMinus;
 
-		ShowHide(int nbObjAlwaysShow = 1);
+		//ShowHide(int nbObjAlwaysShow = 1);
+		ShowHide();
 
 		void show();
 		void hide();
+		void toggle();
 	};
 
 	class Cropper : public virtual DrawableRectangle {
