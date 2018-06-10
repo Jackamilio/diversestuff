@@ -58,6 +58,8 @@ namespace jmg
 		bool mDeleteMe;
 
 		std::list<EventCallback> mEventSubs[EventCallback::size];
+
+		static void purgeRemoveList();
 	protected:
 		static Context& getContext();
 		virtual void draw(int origx, int origy);

@@ -1,5 +1,6 @@
 #include "JackamikazGUI.h"
 #include <map>
+#include <stack>
 #include <algorithm>
 #include <allegro5\allegro.h>
 #include <allegro5\allegro_primitives.h>
@@ -129,7 +130,7 @@ int jmg::Base::getEdge(Edge edge) const
 	int comp = 0;
 	Base* bComp = nullptr;
 	for (auto obj : mChildren) {
-		if (lessThan ? obj->*compVal <= comp : obj->*compVal >= comp) {
+		if (!obj->mRemoveMe && (lessThan ? obj->*compVal <= comp : obj->*compVal >= comp)) {
 			comp = obj->*compVal;
 			bComp = obj;
 		}
@@ -187,7 +188,7 @@ struct RemoveData {
 	BaseList::iterator it;
 };
 
-std::vector<RemoveData> toRemove;
+std::stack<RemoveData> toRemove;
 
 void jmg::Base::remove(bool del)
 {
@@ -196,7 +197,7 @@ void jmg::Base::remove(bool del)
 		requestRedraw(-1);
 		mRemoveMe = true;
 		mDeleteMe = del;
-		toRemove.push_back({ mParent, std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this) });
+		toRemove.push({ mParent, std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this) });
 		mParent = nullptr;
 	}
 }
@@ -204,35 +205,39 @@ void jmg::Base::remove(bool del)
 void jmg::Base::baseDraw()
 {
 	if (mParent == nullptr) {
+		purgeRemoveList();
 		cascadeDraw(0, 0);
 	}
+}
+
+void jmg::Base::purgeRemoveList() {
+	static int callId = 0;
+	++callId;
+	if (callId == 1) {
+		while (!toRemove.empty()) {
+			RemoveData& rem = toRemove.top();
+			Base* obj = (Base*)*rem.it;
+
+			rem.remover->triggerEvent(EventCallback::childRemoved, { rem.remover , obj });
+			obj->triggerEvent(EventCallback::removed, { obj, rem.remover });
+
+			obj->mRemoveMe = false;
+			rem.remover->mChildren.erase(rem.it);
+
+			if (obj->mDeleteMe) {
+				delete obj;
+			}
+			toRemove.pop();
+		}
+	}
+	--callId;
 }
 
 bool jmg::Base::baseHandleEvent(const ALLEGRO_EVENT& event)
 {
 	if (mParent == nullptr) {
 		bool ret = cascadeHandleEvent(event);
-
-		static int callId = 0;
-		++callId;
-		if (callId == 1) {
-			for (auto rem : toRemove) {
-				Base* obj = (Base*)*rem.it;
-
-				rem.remover->triggerEvent(EventCallback::childRemoved, { rem.remover , obj});
-				obj->triggerEvent(EventCallback::removed, { obj, rem.remover });
-
-				obj->mRemoveMe = false;
-				rem.remover->mChildren.erase(rem.it);
-
-				if (obj->mDeleteMe) {
-					delete obj;
-				}
-			}
-			toRemove.clear();
-		}
-		--callId;
-
+		purgeRemoveList();
 		return ret;
 	}
 	return false;
@@ -1489,7 +1494,7 @@ void jmg::ShowHide::toggle()
 
 void jmg::ShowHide::shiftSiblings(int amount)
 {
-	if (mShowHideObject->parent()) {
+	if (amount != 0 && mShowHideObject->parent()) {
 		for (auto sibling : mShowHideObject->parent()->children()) {
 			if (sibling->mRely >= mShowHideObject->mRely && sibling != this && sibling != mShowHideObject) {
 				sibling->mRely += amount;
