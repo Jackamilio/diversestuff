@@ -187,7 +187,7 @@ EXPOSE_IC(_vectorMember)
 EXPOSE_END
 #undef EXPOSE_TYPE
 
-void callbackAdd(void* exptest) {
+void callbackAdd(const jmg::EventCallback::Details& details, void* exptest) {
 	ExposingTest& et = *(ExposingTest*)exptest;
 	if (et._vector.empty()) {
 		et._vector.push_back(0);
@@ -197,7 +197,7 @@ void callbackAdd(void* exptest) {
 		et._vector.push_back(val + 1);
 	}
 }
-void callbackRem(void* exptest) {
+void callbackRem(const jmg::EventCallback::Details& details, void* exptest) {
 	ExposingTest& et = *(ExposingTest*)exptest;
 	if (!et._vector.empty()) {
 		et._vector.erase(et._vector.begin());
@@ -263,10 +263,12 @@ public:
 		crp.addChild(&crpbtn, 50, 50);
 		crp.addChild(&crpmvb);
 
-		add.mCallback = callbackAdd;
-		add.mCallbackArgs = (void*)&test;
-		rem.mCallback = callbackRem;
-		rem.mCallbackArgs = (void*)&test;
+		//add.mCallback = callbackAdd;
+		//add.mCallbackArgs = (void*)&test;
+		//rem.mCallback = callbackRem;
+		//rem.mCallbackArgs = (void*)&test;
+		add.subscribeToEvent(jmg::EventCallback::clicked, { callbackAdd, &test });
+		rem.subscribeToEvent(jmg::EventCallback::clicked, { callbackRem, &test });
 	}
 
 	~JmGui() {

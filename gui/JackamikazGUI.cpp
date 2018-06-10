@@ -48,6 +48,13 @@ bool jmg::Base::handleEvent(const ALLEGRO_EVENT & event)
 	return false;
 }
 
+void jmg::Base::triggerEvent(EventCallback::Type type, const EventCallback::Details& details)
+{
+	for (auto ev : mEventSubs[type]) {
+		ev.mFunction(details, ev.mArgs);
+	}
+}
+
 bool jmg::Base::has(const Base * child) const
 {
 	return std::find(mChildren.begin(), mChildren.end(), child) != mChildren.end();
@@ -62,7 +69,9 @@ void jmg::Base::addChild(Base * child)
 		}
 		child->mParent = this;
 		child->mRemoveMe = false;
-		onAddChild(child);
+		//onAddChild(child);
+		triggerEvent(EventCallback::childAdded, { this, child } );
+		child->triggerEvent(EventCallback::added, { child, this });
 	}
 }
 
@@ -210,8 +219,10 @@ bool jmg::Base::baseHandleEvent(const ALLEGRO_EVENT& event)
 			for (auto rem : toRemove) {
 				Base* obj = (Base*)*rem.it;
 
+				rem.remover->triggerEvent(EventCallback::childRemoved, { rem.remover , obj});
+				obj->triggerEvent(EventCallback::removed, { obj, rem.remover });
+
 				obj->mRemoveMe = false;
-				rem.remover->onRemoveChild(obj);
 				rem.remover->mChildren.erase(rem.it);
 
 				if (obj->mDeleteMe) {
@@ -259,6 +270,17 @@ void jmg::Base::requestRedraw(int depth)
 		farthestParent = farthestParent->mParent;
 	}
 	farthestParent->mNeedsRedraw = true;
+}
+
+void jmg::Base::subscribeToEvent(EventCallback::Type type, EventCallback callback)
+{
+	mEventSubs[type].push_back(callback);
+}
+
+void jmg::Base::unsubscribeToEvent(EventCallback::Type type, EventCallback callback)
+{
+	std::list<EventCallback>& l = mEventSubs[type];
+	l.erase(std::find(l.begin(), l.end(), callback));
 }
 
 void jmg::Base::cascadeDraw(int origx, int origy, bool parentNeedsIt)
@@ -363,7 +385,7 @@ int jmg::MoveableRectangle::getHeight() const
 }
 
 
-void callbackTest(void* arg) {
+void callbackTest(const	jmg::EventCallback::Details& details, void* arg) {
 	if (arg) {
 		jmg::Window* win = (jmg::Window*)arg;
 		win->close();
@@ -388,8 +410,9 @@ jmg::Window::Window(int w, int h, const char* capt)
 	mMover.addChild(&mCaption);
 	mBtnClose.mRelx = mMover.mRelx + mMover.mWidth;
 	mBtnClose.mRely = mMover.mRely;
-	mBtnClose.mCallback = callbackTest;
-	mBtnClose.mCallbackArgs = (void*)this;
+	//mBtnClose.mCallback = callbackTest;
+	//mBtnClose.mCallbackArgs = (void*)this;
+	mBtnClose.subscribeToEvent(EventCallback::clicked, { callbackTest, (void*)this });
 	mBtnClose.addChild(&mBtnImage);
 	mRelx = 2;
 	mRely = 22;
@@ -475,8 +498,8 @@ jmg::Button::Button()
 	, DrawableRectangle(20,20)
 	, mHovering(false)
 	, mClicking(false)
-	, mCallback(NULL)
-	, mCallbackArgs(NULL)
+//	, mCallback(NULL)
+//	, mCallbackArgs(NULL)
 {
 }
 
@@ -485,8 +508,8 @@ jmg::Button::Button(int w, int h)
 	, DrawableRectangle(w,h)
 	,mHovering(false)
 	,mClicking(false)
-	,mCallback(NULL)
-	,mCallbackArgs(NULL)
+//	,mCallback(NULL)
+//	,mCallbackArgs(NULL)
 {
 }
 
@@ -518,8 +541,15 @@ bool jmg::Button::handleEvent(const ALLEGRO_EVENT & event)
 	}
 	else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
 		bool inside = isPointInside(event.mouse.x, event.mouse.y);
-		if (inside && mClicking && mCallback) {
-			mCallback(mCallbackArgs);
+		//if (inside && mClicking && mCallback) {
+		//	mCallback(mCallbackArgs);
+		//}
+		if (inside && mClicking) {
+			EventCallback::Details det;
+			det.source = this;
+			det.clickx = event.mouse.x;
+			det.clicky = event.mouse.y;
+			triggerEvent(EventCallback::clicked, det);
 		}
 		mClicking = false;
 		mHovering = inside;
@@ -1047,7 +1077,8 @@ void jmg::Text::confirmEditing()
 			}
 		}
 	}
-	editHappened();
+	//editHappened();
+	triggerEvent(EventCallback::edited, { this });
 }
 
 bool jmg::Text::handleEvent(const ALLEGRO_EVENT & event)
@@ -1337,7 +1368,7 @@ jmg::Context::Context()
 {
 }
 
-void checkTheBox(void* arg) {
+void checkTheBox(const jmg::EventCallback::Details& details, void* arg) {
 	jmg::CheckBox* checkBox = (jmg::CheckBox*)arg;
 	if (checkBox->mChecked) {
 		checkBox->mChecked = false;
@@ -1347,7 +1378,8 @@ void checkTheBox(void* arg) {
 		checkBox->mChecked = true;
 		checkBox->addChild(&checkBox->mImage);
 	}
-	checkBox->editHappened();
+	//checkBox->editHappened();
+	checkBox->triggerEvent(jmg::EventCallback::edited, { checkBox });
 }
 
 jmg::CheckBox::CheckBox(bool startsChecked)
@@ -1356,9 +1388,10 @@ jmg::CheckBox::CheckBox(bool startsChecked)
 	, mImage(jmg::Image::CHECK)
 	, mChecked(!startsChecked)
 {
-	checkTheBox((void*)this);
-	mCallback = checkTheBox;
-	mCallbackArgs = (void*)this;
+	checkTheBox({ nullptr }, (void*)this);
+	//mCallback = checkTheBox;
+	//mCallbackArgs = (void*)this;
+	subscribeToEvent(EventCallback::clicked, { checkTheBox, this });
 }
 
 void jmg::CheckBox::draw(int origx, int origy)
@@ -1366,70 +1399,66 @@ void jmg::CheckBox::draw(int origx, int origy)
 	jmg::Button::draw(origx, origy);
 }
 
-jmg::Editable::Editable()
-	: mEditCallback(nullptr)
-	, mEditCallbackArgs(nullptr)
-{
-}
-
-void jmg::Editable::editHappened()
-{
-	if (mEditCallback) {
-		mEditCallback(mEditCallbackArgs);
-	}
-}
-
-void showHideCallback(void* arg) {
+void showHideCallback(const jmg::EventCallback::Details& details, void* arg) {
 	jmg::ShowHide* sh = (jmg::ShowHide*)arg;
 
 	sh->toggle();
-	//if (sh->mShowHideObjects.size() == 0) {
-	//	sh->hide();
-	//}
-	//else {
-	//	sh->show();
-	//}
 }
 
-//jmg::ShowHide::ShowHide(int nbObjAlwaysShow)
-//	: InteractiveRectangle(10,10)
-//	, mOverrideDeltaExpand(-1)
-//	, mNbObjAlwaysShow(nbObjAlwaysShow)
-//	, mPlusMinus(jmg::Image::MINUS)
 jmg::ShowHide::ShowHide()
 	: InteractiveRectangle(10, 10)
 	, mRememberParent(nullptr)
 	, mShowHideObject(nullptr)
+	, mShowHideHeight(0)
 	, mPlusMinus(jmg::Image::MINUS)
 {
 	addChild(&mPlusMinus);
-	mCallback = showHideCallback;
-	mCallbackArgs = (void*)this;
+	subscribeToEvent(EventCallback::clicked, { showHideCallback, this });
+}
+
+jmg::ShowHide::~ShowHide()
+{
+	setShowHideObject(nullptr);
+}
+
+void jmg::ShowHide::addRemCallback(const jmg::EventCallback::Details & details, void * arg) {
+	jmg::ShowHide* sh = (jmg::ShowHide*)arg;
+
+	if (sh->mShowHideObject) {
+		int newHeight = sh->mShowHideObject->getHeight();
+		sh->shiftSiblings(newHeight - sh->mShowHideHeight);
+		sh->mShowHideHeight = newHeight;
+		sh->requestRedraw(-1);
+	}
+}
+
+void jmg::ShowHide::setShowHideObject(Base * obj)
+{
+	mRememberParent = nullptr;
+	EventCallback callback = { addRemCallback, this};
+	if (mShowHideObject) {
+		mShowHideObject->unsubscribeToEvent(EventCallback::childAdded, callback);
+		mShowHideObject->unsubscribeToEvent(EventCallback::childRemoved, callback);
+	}
+	mShowHideObject = obj;
+	if (mShowHideObject) {
+		mShowHideObject->subscribeToEvent(EventCallback::childAdded, callback);
+		mShowHideObject->subscribeToEvent(EventCallback::childRemoved, callback);
+		mShowHideHeight = mShowHideObject->getHeight();
+	}
+	else {
+		mShowHideHeight = 0;
+	}
 }
 
 void jmg::ShowHide::show()
 {
-	/*if (mShowHideObjects.size() > 0) {
-		for (unsigned int i = 0; i < mShowHideObjects.size(); ++i) {
-			addChild(mShowHideObjects[i]);
-		}
-		mShowHideObjects.clear();
-
-		int delta = mDeltaExpand;*/
-
-	if (mRememberParent && mShowHideObject) {
-		int delta = mShowHideObject->getHeight();
-
-		// push siblings down
-		const Children& siblings = mRememberParent->children();
-		for (Children::const_iterator it = siblings.begin(); it != siblings.end(); ++it) {
-			if ((*it)->mRely >= mShowHideObject->mRely && *it != this) {
-				(*it)->mRely += delta;
-			}
-		}
-
+	if (mShowHideObject && mRememberParent) {
 		mRememberParent->addChild(mShowHideObject);
-		mRememberParent = nullptr;
+		// push siblings down
+		mShowHideHeight = mShowHideObject->getHeight();
+		shiftSiblings(mShowHideHeight);
+
 		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::MINUS);
 		requestRedraw(-1);
 	}
@@ -1437,37 +1466,11 @@ void jmg::ShowHide::show()
 
 void jmg::ShowHide::hide()
 {
-	/*if (mShowHideObjects.size() == 0) {
-		unsigned int ignore = 0;
-		int ignoreMaxY = 0;
-		int hideMaxY = 0;
-		for (Children::const_iterator it = children().begin(); it != children().end(); ++it) {
-			int itBottom = (*it)->mRely + (*it)->getHeight();
-			if (ignore++ >= mNbObjAlwaysShow) {
-				mShowHideObjects.push_back(*it);
-				(*it)->remove();
-				if (itBottom > hideMaxY) {
-					hideMaxY = itBottom;
-				}
-			}
-			else if (itBottom > ignoreMaxY) {
-				ignoreMaxY = itBottom;
-			}
-		}
-		mDeltaExpand = mOverrideDeltaExpand < 0 ? hideMaxY - ignoreMaxY : mOverrideDeltaExpand;*/
-
 	if (mShowHideObject) {
-		mRememberParent = mShowHideObject->parent();
-		int delta = mShowHideObject->getHeight();
-
 		// pull siblings up
-		const Children& siblings = mRememberParent->children();
-		for (Children::const_iterator it = siblings.begin(); it != siblings.end(); ++it) {
-			if ((*it)->mRely > mShowHideObject->mRely) {
-				(*it)->mRely -= delta;
-			}
-		}
+		shiftSiblings(-mShowHideHeight);
 
+		mRememberParent = mShowHideObject->parent();
 		mShowHideObject->remove();
 		mPlusMinus.mImage = jmg::Image::getImage(jmg::Image::PLUS);
 		requestRedraw(-1);
@@ -1476,11 +1479,29 @@ void jmg::ShowHide::hide()
 
 void jmg::ShowHide::toggle()
 {
-	if (mRememberParent) {
-		show();
+	if (mShowHideObject->parent()) {
+		hide();
 	}
 	else {
-		hide();
+		show();
+	}
+}
+
+void jmg::ShowHide::shiftSiblings(int amount)
+{
+	if (mShowHideObject->parent()) {
+		for (auto sibling : mShowHideObject->parent()->children()) {
+			if (sibling->mRely >= mShowHideObject->mRely && sibling != this && sibling != mShowHideObject) {
+				sibling->mRely += amount;
+			}
+		}
+	}
+}
+
+void addChildCallback(const jmg::EventCallback::Details& details, void* arg) {
+	jmg::Cropper* crp = (jmg::Cropper*)arg;
+	if (details.addedChild && details.addedChild != &crp->mRoot) {
+		crp->mRoot.addChild(details.addedChild);
 	}
 }
 
@@ -1490,6 +1511,7 @@ jmg::Cropper::Cropper(int w, int h)
 	, mRender(nullptr)
 {
 	mRoot.mButton = 3;
+	subscribeToEvent(EventCallback::childAdded, { addChildCallback, this });
 }
 
 jmg::Cropper::~Cropper()
@@ -1499,7 +1521,6 @@ jmg::Cropper::~Cropper()
 		mRender = nullptr;
 	}
 }
-
 
 void jmg::Cropper::draw(int origx, int origy)
 {
@@ -1552,9 +1573,3 @@ bool jmg::Cropper::handleEvent(const ALLEGRO_EVENT & event)
 	return ret;
 }
 
-void jmg::Cropper::onAddChild(Base * child)
-{
-	if (child && child != &mRoot) {
-		mRoot.addChild(child);
-	}
-}

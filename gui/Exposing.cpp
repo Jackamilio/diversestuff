@@ -40,7 +40,7 @@ Exposing::StructMember::StructMember(const char * n, Type t, unsigned int o)
 {
 }
 
-void editValueCallback(void* a) {
+void editValueCallback(const jmg::EventCallback::Details& details, void* a) {
 	Exposing::Watcher::EditValueArgs* args = (Exposing::Watcher::EditValueArgs*)a;
 
 	char* address = args->address->calculateAddress();
@@ -102,16 +102,18 @@ int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
 	mValueArgs.push_back(newValueArgs);
 
 	if (valueField) {
-		valueField->mEditCallback = editValueCallback;
-		valueField->mEditCallbackArgs = newValueArgs;
+		//valueField->mEditCallback = editValueCallback;
+		//valueField->mEditCallbackArgs = newValueArgs;
+		valueField->subscribeToEvent(jmg::EventCallback::edited, { editValueCallback, newValueArgs});
 		newValueArgs->field = valueField;
 		valueField->mWidth = 140;
 		addChild(valueField, xr, y);
 		//addChild(valueField, Base::BOTTOM, xr);
 	}
 	else if (checkbox) {
-		checkbox->mEditCallback = editValueCallback;
-		checkbox->mEditCallbackArgs = newValueArgs;
+		//checkbox->mEditCallback = editValueCallback;
+		//checkbox->mEditCallbackArgs = newValueArgs;
+		checkbox->subscribeToEvent(jmg::EventCallback::edited, { editValueCallback, newValueArgs });
 		newValueArgs->field = checkbox;
 		addChild(checkbox, xr, y);
 		//addChild(checkbox, Base::BOTTOM, xr);
@@ -125,7 +127,7 @@ int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
 		newValueArgs->sh = sh;
 		//sh->addChild(value, 0, yStep);
 		addChild(value, BOTTOM, xl);
-		sh->mShowHideObject = value;
+		sh->setShowHideObject(value);
 		//sh->addChild(value, Base::BOTTOM, 0);
 		//sh->mOverrideDeltaExpand = value->getHeight();
 		addChild(sh, xl, y);
@@ -208,6 +210,7 @@ void Exposing::Watcher::refreshValueForLabels()
 		for (; argsIt != mValueArgs.end();++argsIt) {
 			calculatedHeight -= (*argsIt)->field->getHeight();
 			(*argsIt)->field->remove(true);
+			(*argsIt)->field->unsubscribeToEvent(jmg::EventCallback::edited, { editValueCallback, nullptr });
 			(*argsIt)->field = nullptr;
 			(*argsIt)->label->remove(true);
 			(*argsIt)->label = nullptr;
@@ -236,7 +239,7 @@ void Exposing::Watcher::draw(int origx, int origy)
 	jmg::Base::draw(origx, origy);
 }
 
-void closeWatcherCallback(void* arg) {
+void closeWatcherCallback(const jmg::EventCallback::Details& details, void* arg) {
 	if (arg) {
 		Exposing::WatcherWindow* win = (Exposing::WatcherWindow*)arg;
 		win->remove(true);
@@ -276,8 +279,9 @@ Exposing::WatcherWindow::WatcherWindow(StructDescBase* sc, WatchedAddress * wa)
 	//mHeight = calculatedHeight;
 	mHeight = getEdge(BOTTOM);
 
-	mBtnClose.mCallback = closeWatcherCallback;
-	mBtnClose.mCallbackArgs = (void*)this;
+	//mBtnClose.mCallback = closeWatcherCallback;
+	//mBtnClose.mCallbackArgs = (void*)this;
+	mBtnClose.subscribeToEvent(jmg::EventCallback::clicked, { closeWatcherCallback , (void*)this });
 }
 
 Exposing::WatcherWindow::~WatcherWindow()

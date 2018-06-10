@@ -13,6 +13,33 @@
 
 namespace jmg
 {
+	class Base;
+
+	struct EventCallback {
+		enum Type {
+			clicked, edited, added, removed, childAdded, childRemoved
+
+			, size
+		};
+		struct Details {
+			Base* source;
+			union {
+				Base* addedFrom;
+				Base* removedFrom;
+				Base* addedChild;
+				Base* removedChild;
+				struct {
+					int clickx;
+					int clicky;
+				};
+			};
+		};
+		void(*mFunction)(const Details& details,void*);
+		void* mArgs;
+
+		inline bool operator==(const EventCallback& rhs) { return mFunction == rhs.mFunction; }
+	};
+
 	class Context;
 	
 	class Base {
@@ -29,13 +56,15 @@ namespace jmg
 
 		bool mRemoveMe;
 		bool mDeleteMe;
+
+		std::list<EventCallback> mEventSubs[EventCallback::size];
 	protected:
 		static Context& getContext();
 		virtual void draw(int origx, int origy);
 		virtual bool handleEvent(const ALLEGRO_EVENT& event);
 
-		virtual void onAddChild(Base* child) {}
-		virtual void onRemoveChild(Base* child) {}
+		//virtual void onAddChild(Base* child) {}
+		//virtual void onRemoveChild(Base* child) {}
 	public:
 		int mRelx;
 		int mRely;
@@ -71,6 +100,10 @@ namespace jmg
 
 		inline bool needsRedraw() const { return mNeedsRedraw; }
 		void requestRedraw(int depth = 0);
+
+		void subscribeToEvent(EventCallback::Type type, EventCallback callback);
+		void unsubscribeToEvent(EventCallback::Type type, EventCallback callback);
+		void triggerEvent(EventCallback::Type type, const EventCallback::Details& details);
 	};
 
 	class Root : public virtual Base {
@@ -116,14 +149,14 @@ namespace jmg
 		int getHeight() const;
 	};
 
-	class Editable {
-	public:
-		void(*mEditCallback)(void*);
-		void* mEditCallbackArgs;
+	//class Editable {
+	//public:
+	//	void(*mEditCallback)(void*);
+	//	void* mEditCallbackArgs;
 
-		Editable();
-		void editHappened();
-	};
+	//	Editable();
+	//	void editHappened();
+	//};
 
 	class Label : public virtual Base {
 	protected:
@@ -170,7 +203,7 @@ namespace jmg
 		}
 	}
 
-	class Text : public Label, public Editable {
+	class Text : public Label {//, public Editable {
 	private:
 		void insert(int keycode);
 		int getTextIndexFromCursorPos(int fromx, int fromy) const;
@@ -284,11 +317,11 @@ namespace jmg
 		void draw(int origx, int origy);
 		bool handleEvent(const ALLEGRO_EVENT& event);
 
-		void(*mCallback)(void*);
-		void* mCallbackArgs;
+		//void(*mCallback)(void*);
+		//void* mCallbackArgs;
 	};
 
-	class CheckBox : public Button, public Editable {
+	class CheckBox : public Button {//, public Editable {
 	public:
 		bool mChecked;
 		Image mImage;
@@ -300,22 +333,23 @@ namespace jmg
 
 	class ShowHide : public Button {
 	private:
-		//int mDeltaExpand;
 		Base * mRememberParent;
-	public:
-		//int mOverrideDeltaExpand;
-
-		//std::vector<Base*> mShowHideObjects;
-		//unsigned int mNbObjAlwaysShow;
 		Base* mShowHideObject;
+		int mShowHideHeight;
+
+		static void addRemCallback(const EventCallback::Details& details, void* arg);
+	public:
 		Image mPlusMinus;
 
-		//ShowHide(int nbObjAlwaysShow = 1);
 		ShowHide();
+		~ShowHide();
 
+		void setShowHideObject(Base* obj);
 		void show();
 		void hide();
 		void toggle();
+		void shiftSiblings(int amount);
+		
 	};
 
 	class Cropper : public virtual DrawableRectangle {
@@ -331,7 +365,7 @@ namespace jmg
 		void draw(int origx, int origy);
 		bool handleEvent(const ALLEGRO_EVENT& event);
 
-		void onAddChild(Base* child);
+		//void onAddChild(Base* child);
 	};
 
 	class Window : public DrawableRectangle {
