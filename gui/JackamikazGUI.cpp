@@ -37,15 +37,10 @@ jmg::Base::Base(int relx, int rely, ALLEGRO_COLOR color)
 
 jmg::Base::~Base()
 {
-	// the next commented code is a wrong idea
-	//if (mParent) {
-	//	Children::iterator it = std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this);
-	//	if (it != mParent->mChildren.end()) {
-	//		// let me diiiie
-	//		onRemoveChild(*it); // not sure if it shoud be called
-	//		mChildren.erase(it);
-	//	}
-	//}
+	for (auto child : mChildren) {
+		child->mParent = nullptr;
+		// onRemoveChild(*it); // not sure if it shoud be called
+	}
 }
 
 bool jmg::Base::handleEvent(const ALLEGRO_EVENT & event)
@@ -62,6 +57,9 @@ void jmg::Base::addChild(Base * child)
 {
 	if (child && !has(child)) {
 		mChildren.push_back(child);
+		if (child->mParent) {
+			child->remove(); // orphan from old parent
+		}
 		child->mParent = this;
 		child->mRemoveMe = false;
 		onAddChild(child);
@@ -173,26 +171,58 @@ void jmg::Base::autoAddShift(int shiftx, int shifty)
 	aa.mRely += shifty;
 }
 
-void jmg::Base::remove()
+typedef std::list<jmg::Base*> BaseList;
+
+struct RemoveData {
+	jmg::Base* remover;
+	BaseList::iterator it;
+};
+
+std::vector<RemoveData> toRemove;
+
+void jmg::Base::remove(bool del)
 {
 	if (mParent)
 	{
 		requestRedraw(-1);
 		mRemoveMe = true;
+		mDeleteMe = del;
+		toRemove.push_back({ mParent, std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this) });
+		mParent = nullptr;
 	}
 }
 
 void jmg::Base::baseDraw()
 {
-	if (mParent == NULL) {
+	if (mParent == nullptr) {
 		cascadeDraw(0, 0);
 	}
 }
 
 bool jmg::Base::baseHandleEvent(const ALLEGRO_EVENT& event)
 {
-	if (mParent == NULL) {
-		return cascadeHandleEvent(event);
+	if (mParent == nullptr) {
+		bool ret = cascadeHandleEvent(event);
+
+		static int callId = 0;
+		++callId;
+		if (callId == 1) {
+			for (auto rem : toRemove) {
+				Base* obj = (Base*)*rem.it;
+
+				obj->mRemoveMe = false;
+				rem.remover->onRemoveChild(obj);
+				rem.remover->mChildren.erase(rem.it);
+
+				if (obj->mDeleteMe) {
+					delete obj;
+				}
+			}
+			toRemove.clear();
+		}
+		--callId;
+
+		return ret;
 	}
 	return false;
 }
@@ -231,8 +261,6 @@ void jmg::Base::requestRedraw(int depth)
 	farthestParent->mNeedsRedraw = true;
 }
 
-typedef std::list<jmg::Base*> BaseList;
-
 void jmg::Base::cascadeDraw(int origx, int origy, bool parentNeedsIt)
 {
 	if (!mRemoveMe && !mDeleteMe) {
@@ -246,42 +274,14 @@ void jmg::Base::cascadeDraw(int origx, int origy, bool parentNeedsIt)
 
 bool jmg::Base::cascadeHandleEvent(const ALLEGRO_EVENT& event)
 {
-	for (BaseList::reverse_iterator it = mChildren.rbegin(); it != mChildren.rend();) {
-		bool eventIntercepted = (*it)->cascadeHandleEvent(event);
-
-		bool deleted = false;
-
-		if ((*it)->mDeleteMe) {
-			(*it)->mParent = nullptr; // orphan it first, don't trigger auto remove
-			delete (*it);
-			deleted = true;
-		}
-
-		if (deleted || (*it)->mRemoveMe || (*it)->mParent != this) {
-			if (!deleted) {
-				(*it)->mRemoveMe = false;
-			}
-			onRemoveChild(*it);
-			mChildren.erase(std::next(it).base());
-		}
-		else {
-			++it;
-		}
-
-		if (eventIntercepted) {
+	for (BaseList::reverse_iterator it = mChildren.rbegin(); it != mChildren.rend(); ++it) {
+		if ((*it)->cascadeHandleEvent(event)) {
 			return true;
 		}
 	}
+
 	return handleEvent(event);
 }
-
-//jmg::WallPaper::WallPaper(const ALLEGRO_COLOR & color) : Base(0,0,color)
-//{
-//}
-
-//void jmg::WallPaper::draw(int, int) {
-//	al_clear_to_color(mColor);
-//}
 
 jmg::MoveableDrawableRectangle::MoveableDrawableRectangle(int w,int h)
 	: MoveableRectangle(w, h)
@@ -373,6 +373,7 @@ void callbackTest(void* arg) {
 jmg::Window::Window(int w, int h, const char* capt)
 	: InteractiveRectangle(w,h)
 	, DrawableRectangle(w, h)
+	, mContext(nullptr)
 	, mMover(mWidth - 18, 22)
 	, mCaption(capt)
 	, mBtnClose(22,22)
@@ -404,8 +405,8 @@ bool jmg::Window::handleEvent(const ALLEGRO_EVENT & event)
 
 void jmg::Window::open()
 {
-	if (parent()) {
-		parent()->addChild(this);
+	if (mContext && !parent()) {
+		mContext->addChild(this);
 		requestRedraw(-1);
 	}
 }
@@ -416,18 +417,11 @@ void jmg::Window::close()
 	requestRedraw(-1);
 }
 
-void jmg::Window::setParent(Base * p, bool startsOpen)
+void jmg::Window::setContext(Base * context, bool startsOpen)
 {
-	if (p != parent()) {
-		p->addChild(this);
-		if (!startsOpen) {
-			remove();
-		}
-		requestRedraw(-1);
-	}
-	else if (p && p->has(this) != startsOpen) {
-		startsOpen ? p->addChild(this) : remove();
-		requestRedraw(-1);
+	mContext = context;
+	if (startsOpen) {
+		open();
 	}
 }
 

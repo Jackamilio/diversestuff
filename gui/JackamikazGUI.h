@@ -28,6 +28,7 @@ namespace jmg
 		bool mNeedsRedraw;
 
 		bool mRemoveMe;
+		bool mDeleteMe;
 	protected:
 		static Context& getContext();
 		virtual void draw(int origx, int origy);
@@ -39,7 +40,6 @@ namespace jmg
 		int mRelx;
 		int mRely;
 		ALLEGRO_COLOR mColor;
-		bool mDeleteMe;
 
 		Base(int relx=0, int rely=0, ALLEGRO_COLOR color=al_map_rgb(255,255,255));
 		virtual ~Base();
@@ -59,7 +59,7 @@ namespace jmg
 		void autoAdd(Base* parent = nullptr);
 		static void autoAddShift(int shiftx, int shifty);
 
-		void remove();
+		void remove(bool del = false);
 
 		void baseDraw();
 		bool baseHandleEvent(const ALLEGRO_EVENT& event);
@@ -335,6 +335,8 @@ namespace jmg
 	};
 
 	class Window : public DrawableRectangle {
+	private:
+		Base * mContext;
 	public:
 		MoveableDrawableRectangle mMover;
 		Button mBtnClose;
@@ -347,7 +349,7 @@ namespace jmg
 		void open();
 		void close();
 
-		void setParent(Base* parent, bool startsOpen);
+		void setContext(Base* context, bool startsOpen);
 	};
 
 	class Context {

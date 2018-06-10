@@ -238,7 +238,7 @@ public:
 		win.mOutline = 1;
 		win.mRelx = 300;
 		win.mRely = 150;
-		win.setParent(&root, false);
+		win.setContext(&root, false);
 
 		labels.push_back(new jmg::Label("Show Hide Test"));
 		labels.push_back(new jmg::Label("Hidden 1"));
@@ -291,7 +291,7 @@ public:
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_F2) {
 				jmg::Window* watcher = Exposing::createWatcherFor(test);
-				watcher->setParent(&root, true);
+				watcher->setContext(&root, true);
 				watcher->addChild(&add, 0, 0);
 				watcher->addChild(&rem, 30, 0);
 			}

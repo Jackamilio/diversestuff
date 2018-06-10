@@ -207,12 +207,12 @@ void Exposing::Watcher::refreshValueForLabels()
 		int count = 0;
 		for (; argsIt != mValueArgs.end();++argsIt) {
 			calculatedHeight -= (*argsIt)->field->getHeight();
-			(*argsIt)->field->mDeleteMe = true;
+			(*argsIt)->field->remove(true);
 			(*argsIt)->field = nullptr;
-			(*argsIt)->label->mDeleteMe = true;
+			(*argsIt)->label->remove(true);
 			(*argsIt)->label = nullptr;
 			if ((*argsIt)->sh) {
-				(*argsIt)->sh->mDeleteMe = true;
+				(*argsIt)->sh->remove(true);
 				(*argsIt)->sh = nullptr;
 			}
 			delete *argsIt;
@@ -239,7 +239,7 @@ void Exposing::Watcher::draw(int origx, int origy)
 void closeWatcherCallback(void* arg) {
 	if (arg) {
 		Exposing::WatcherWindow* win = (Exposing::WatcherWindow*)arg;
-		win->mDeleteMe = true;
+		win->remove(true);
 		win->close();
 	}
 }
