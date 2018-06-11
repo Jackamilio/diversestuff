@@ -142,6 +142,12 @@ public:
 	ExposingTestMember _member;
 	std::vector<int> _vector;
 	std::vector<ExposingTestMember> _vectorMember;
+
+	struct NotExposed {
+		int val;
+	};
+
+	NotExposed _notExposed;
 	
 	ExposingTest()
 		: _bool(false)
@@ -177,13 +183,14 @@ EXPOSE(_uchar)
 EXPOSE(_short)
 EXPOSE(_ushort)
 EXPOSE(_member)
+EXPOSE(_notExposed)
 EXPOSE(_int)
 EXPOSE(_uint)
 EXPOSE(_float)
 EXPOSE(_double)
 EXPOSE(_string)
-EXPOSE_IC(_vector)
-EXPOSE_IC(_vectorMember)
+EXPOSE(_vector)
+EXPOSE(_vectorMember)
 EXPOSE_END
 #undef EXPOSE_TYPE
 

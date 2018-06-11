@@ -84,6 +84,7 @@ int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
 	char* calculatedAddress = address->calculateAddress();
 	jmg::Text* valueField = nullptr;
 	jmg::CheckBox* checkbox = nullptr;
+	jmg::Label* notfound = nullptr;
 	switch (it->getType()) {
 	case BOOL:	checkbox = new jmg::CheckBox(*(bool*)calculatedAddress); break;
 	case INT8:	valueField = new jmg::Numeric(*(char*)calculatedAddress); break;
@@ -95,6 +96,7 @@ int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
 	case FLOAT:	valueField = new jmg::Numeric(*(float*)calculatedAddress); break;
 	case DOUBLE:valueField = new jmg::Numeric(*(double*)calculatedAddress); break;
 	case STRING:valueField = new jmg::Text(((std::string*)calculatedAddress)->c_str()); break;
+	case UNDEF:	notfound = new jmg::Label("Type not exposed"); break;
 	}
 
 	EditValueArgs* newValueArgs = new EditValueArgs(address, it->getType());
@@ -102,21 +104,19 @@ int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
 	mValueArgs.push_back(newValueArgs);
 
 	if (valueField) {
-		//valueField->mEditCallback = editValueCallback;
-		//valueField->mEditCallbackArgs = newValueArgs;
 		valueField->subscribeToEvent(jmg::EventCallback::edited, { editValueCallback, newValueArgs});
 		newValueArgs->field = valueField;
 		valueField->mWidth = 140;
 		addChild(valueField, xr, y);
-		//addChild(valueField, Base::BOTTOM, xr);
 	}
 	else if (checkbox) {
-		//checkbox->mEditCallback = editValueCallback;
-		//checkbox->mEditCallbackArgs = newValueArgs;
 		checkbox->subscribeToEvent(jmg::EventCallback::edited, { editValueCallback, newValueArgs });
 		newValueArgs->field = checkbox;
 		addChild(checkbox, xr, y);
-		//addChild(checkbox, Base::BOTTOM, xr);
+	}
+	else if (notfound) {
+		newValueArgs->field = notfound;
+		addChild(notfound, xr, y);
 	}
 	else {
 		nameLabel->mRelx += xl;
@@ -125,14 +125,9 @@ int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
 		newValueArgs->field = value;
 		jmg::ShowHide* sh = new jmg::ShowHide();
 		newValueArgs->sh = sh;
-		//sh->addChild(value, 0, yStep);
 		addChild(value, BOTTOM, xl);
 		sh->setShowHideObject(value);
-		//sh->addChild(value, Base::BOTTOM, 0);
-		//sh->mOverrideDeltaExpand = value->getHeight();
 		addChild(sh, xl, y);
-		//addChild(sh, Base::BOTTOM, xl);
-		//return value->getHeight() +yStep;
 	}
 	return 0;// yStep;
 }
