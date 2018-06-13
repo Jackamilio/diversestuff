@@ -37,45 +37,44 @@ namespace Exposing {
 		//DIR3D
 	};
 
+	template<typename T> class StructDescIndexedContainer;
+
 	// what a mindfuck. Plz C++ gods, make metaprogramming simpler!!
 	// thanks to :
 	// https://stackoverflow.com/questions/12015195/how-to-call-member-function-only-if-object-happens-to-have-it
 	template< typename T>
 	struct has_Type_getType
 	{
-		/* SFINAE __getType-exists :) */
+		struct type_ok {};
+		struct type_fail {};
+		
+		// SFINAE __getType-exists :)
 		template <typename A>
-		static std::true_type
-			test(decltype(&A::__getType), void *) {
-			return std::true_type();
+		static type_ok test(decltype(&A::__getType), void *) {
+			return type_ok();
 		}
 
-		/* SFINAE game over :( */
+		// SFINAE game over :(
 		template<typename A>
-		static std::false_type test(...) {
-			return std::false_type();
+		static type_fail test(...) {
+			return type_fail();
 		}
 
-		/* This will be either `std::true_type` or `std::false_type` */
+		// This will be either `std::true_type` or `std::false_type`
 		typedef decltype(test<T>(0, 0)) type;
 
-		static const bool value = type::value; /* Which is it? */
-
-											   /*  `eval(std::true_type)`
-											   delegates to `T::__getType()` when `type` == `std::true_type`
-											   */
-		static Type _eval(std::true_type) {
+		static Type _eval(type_ok) {
 			return T::__getType();
 		}
-		/* `eval(...)` is a no-op for otherwise unmatched arguments */
+
+		// `eval(...)` is a no-op for otherwise unmatched arguments
 		static Type _eval(...) {
 			return UNDEF;
 		}
 
-		/* `eval()` delegates to :-
-		- `eval(type())` when `type` == `std::true_type`
-		- `eval(...)` otherwise
-		*/
+		// `eval()` delegates to :-
+		//- `eval(type())` when `type` == `std::true_type`
+		//- `eval(...)` otherwise
 		static Type eval() {
 			return _eval(type());
 		}
@@ -288,63 +287,6 @@ jmg::Window * Exposing::createWatcherFor(T& obj)
 	return window;
 }
 
-// check if a type is a container
-namespace ContainerType {
-	enum Type {
-		NONE = 0, INDEXED, SEQUENTIAL, ASSOCIATIVE
-	};
-
-	namespace impl {
-		template <typename T>
-		struct check {
-			static constexpr ContainerType::Type const value = ContainerType::NONE;
-		};
-		template <typename... Args>
-		struct check<std::vector<Args...> > {
-			static constexpr ContainerType::Type const value = ContainerType::INDEXED;
-		};
-		/*template <typename T, typename A>
-		struct check<std::array<T, A> > {
-			static const ContainerType::Type value = ContainerType::INDEXED;
-		};
-		template <typename T, typename A>
-		struct check<std::vector<T, A> > {
-			static const ContainerType::Type value = ContainerType::INDEXED;
-		};
-		template <typename T, typename A>
-		struct check<std::list<T, A> > {
-			static const ContainerType::Type value = ContainerType::SEQUENTIAL;
-		};
-		/*template <typename T, typename A>
-		struct check<std::forward_list<T, A> > {
-			static const ContainerType::Type value = ContainerType::SEQUENTIAL;
-		};
-		template <typename T, typename A>
-		struct check<std::set<T, A> > {
-			static const ContainerType::Type value = ContainerType::ASSOCIATIVE;
-		};
-		template <typename T, typename A>
-		struct check<std::multiset<T, A> > {
-			static const ContainerType::Type value = ContainerType::ASSOCIATIVE;
-		};
-		template <typename T, typename A>
-		struct check<std::map<T, A> > {
-			static const ContainerType::Type value = ContainerType::ASSOCIATIVE;
-		};
-		template <typename T, typename A>
-		struct check<std::multimap<T, A> > {
-			static const ContainerType::Type value = ContainerType::ASSOCIATIVE;
-		};*/
-	}
-
-	template <typename T> struct check {
-		static constexpr Type const value = impl::check<std::decay_t<T>>::value;
-	};
-}
-
-
-
-
 #define IM_AN_EXPOSER static Exposing::Type __getType();
 
 // must define EXPOSE_TYPE first
@@ -362,16 +304,7 @@ Exposing::Type EXPOSE_TYPE::__getType() { \
 	tmp = Exposing::StructMember(#var, type, offsetof(EXPOSE_TYPE, var)); \
 	vec.push_back(tmp);
 
-#define EXPOSE(var, ...) \
-	Exposing::Type type = Exposing::UNDEF; \
-	ContainerType::Type ct = ContainerType::check<decltype(var)>::value; \
-	if (ct) { \
-		if (ct = ContainerType::INDEXED) {type = Exposing::getIndexedContainerType<decltype(var)>();} \
-	} \
-	else { \
-		type = Exposing::getType<decltype(var)>(); \
-	} \
-	__EXPOSE(type, var, __VA_ARGS__)
+#define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, __VA_ARGS__)
 
 //#define EXPOSE_IC(var, ...) __EXPOSE(Exposing::getIndexedContainerType<decltype(var)>(), var, __VA_ARGS__)
 
