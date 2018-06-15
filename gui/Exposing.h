@@ -272,6 +272,29 @@ namespace Exposing {
 
 	template<class T>
 	jmg::Window* createWatcherFor(T& obj);
+
+	// type detection to have correct behaviour
+	struct regular_type {};
+	struct indexed_container {};
+	template<typename T> struct detect_type : public regular_type {};
+
+	template<typename T, typename A>
+	struct detect_type<std::vector<T, A>> : public indexed_container {};
+
+	template <typename T>
+	class CorrectGetType {
+	private:
+		static Type getType(indexed_container) {
+			return Exposing::getIndexedContainerType<T>();
+		}
+		static Type getType(regular_type) {
+			return Exposing::getType<T>();
+		}
+	public:
+		static Type getType() {
+			return getType(detect_type<T>{});
+		}
+	};
 };
 
 
@@ -304,7 +327,8 @@ Exposing::Type EXPOSE_TYPE::__getType() { \
 	tmp = Exposing::StructMember(#var, type, offsetof(EXPOSE_TYPE, var)); \
 	vec.push_back(tmp);
 
-#define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, __VA_ARGS__)
+//#define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, __VA_ARGS__)
+#define EXPOSE(var, ...) __EXPOSE(Exposing::CorrectGetType<decltype(var)>::getType(), var, __VA_ARGS__)
 
 //#define EXPOSE_IC(var, ...) __EXPOSE(Exposing::getIndexedContainerType<decltype(var)>(), var, __VA_ARGS__)
 
