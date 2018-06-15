@@ -301,7 +301,7 @@ namespace Exposing {
 template<class T>
 jmg::Window * Exposing::createWatcherFor(T& obj)
 {
-	Exposing::Type typeToWatch = Exposing::getType<T>();
+	Exposing::Type typeToWatch = Exposing::CorrectGetType<T>::getType();
 
 	StructDescBase* sc = registeredTypes[typeToWatch];
 
@@ -322,15 +322,11 @@ Exposing::Type EXPOSE_TYPE::__getType() { \
 	std::vector<Exposing::StructMember> vec; \
 	Exposing::StructMember tmp;
 
-//tmp = { #var, type, offsetof(EXPOSE_TYPE, var), "" ## __VA_ARGS__};
 #define __EXPOSE(type, var, ...) \
 	tmp = Exposing::StructMember(#var, type, offsetof(EXPOSE_TYPE, var)); \
 	vec.push_back(tmp);
 
-//#define EXPOSE(var, ...) __EXPOSE(Exposing::getType<decltype(var)>(), var, __VA_ARGS__)
 #define EXPOSE(var, ...) __EXPOSE(Exposing::CorrectGetType<decltype(var)>::getType(), var, __VA_ARGS__)
-
-//#define EXPOSE_IC(var, ...) __EXPOSE(Exposing::getIndexedContainerType<decltype(var)>(), var, __VA_ARGS__)
 
 #define EXPOSE_END \
 	type = Exposing::defineStruct(STR(EXPOSE_TYPE), vec); \
