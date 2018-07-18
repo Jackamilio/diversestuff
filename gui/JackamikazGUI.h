@@ -188,21 +188,26 @@ namespace jmg
 		float getAsFloat() const;
 		double getAsDouble() const;
 
+		inline void setFrom(const char* cstr, int maxDecimals = 999999);
 		template<typename T>
 		void setFrom(T val, int maxDecimals = 999999);
 
 		int getHeight() const;
 	};
 
-	template<typename T>
-	inline void Label::setFrom(T val, int maxDecimals)
-	{
-		setValue(std::to_string(val).c_str());
+	inline void Label::setFrom(const char* cstr, int maxDecimals) {
+		setValue(cstr);
 		const int pointPos = al_ustr_find_chr(mValue, 0, '.');
 		const int size = (int)al_ustr_size(mValue);
 		if (pointPos >= 0 && size - pointPos > maxDecimals) {
 			al_ustr_remove_range(mValue, pointPos, size);
 		}
+	}
+
+	template<typename T>
+	inline void Label::setFrom(T val, int maxDecimals)
+	{
+		setFrom(std::to_string(val).c_str(), maxDecimals);
 	}
 
 	class Text : public Label {//, public Editable {

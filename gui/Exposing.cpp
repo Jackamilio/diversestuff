@@ -1,5 +1,6 @@
 #include "Exposing.h"
 #include <memory>
+#include "tinyxml2.h"
 
 template<> Exposing::Type Exposing::getType<bool>() { return Exposing::BOOL; }
 template<> Exposing::Type Exposing::getType<char>() { return Exposing::INT8; }
@@ -14,6 +15,42 @@ template<> Exposing::Type Exposing::getType<std::string>() { return Exposing::ST
 
 std::map<Exposing::Type, Exposing::StructDescBase*> Exposing::registeredTypes;
 unsigned int typeCount = (unsigned int)Exposing::MAX;
+
+std::string getBasicTypeAsString(Exposing::Type type, char* address) {
+	if (type == Exposing::BOOL) {
+		return std::string((*(bool*)address) ? "true" : "false");
+	}
+	else if (type == Exposing::INT8) {
+		return std::to_string(*(char*)address);
+	}
+	else if (type == Exposing::UINT8) {
+		return std::to_string(*(unsigned char*)address);
+	}
+	else if (type == Exposing::INT16) {
+		return std::to_string(*(short*)address);
+	}
+	else if (type == Exposing::UINT16) {
+		return std::to_string(*(unsigned short*)address);
+	}
+	else if (type == Exposing::INT) {
+		return std::to_string(*(int*)address);
+	}
+	else if (type == Exposing::UINT) {
+		return std::to_string(*(unsigned int*)address);
+	}
+	else if (type == Exposing::FLOAT) {
+		return std::to_string(*(float*)address);
+	}
+	else if (type == Exposing::DOUBLE) {
+		return std::to_string(*(double*)address);
+	}
+	else if (type == Exposing::STRING) {
+		return *(std::string*)address;
+	}
+	else {
+		return "NotBasic_ConvFail";
+	}
+}
 
 Exposing::Type Exposing::registerNewType(const char* name, Exposing::StructDescBase* desc) {
 	Exposing::Type newType = (Exposing::Type)++typeCount;
@@ -156,7 +193,7 @@ void Exposing::Watcher::refreshValueForLabels()
 			else {
 				jmg::Text* text = dynamic_cast<jmg::Text*>(base);
 				if (text && !text->isEditing()) {
-					if (type == Exposing::INT8) {
+					/*if (type == Exposing::INT8) {
 						text->setFrom(*(char*)address);
 					}
 					else if (type == Exposing::UINT8) {
@@ -185,7 +222,8 @@ void Exposing::Watcher::refreshValueForLabels()
 					}
 					else {
 						text->setValue("undef conv");
-					}
+					}*/
+					text->setFrom(getBasicTypeAsString(type, address).c_str());
 				}
 			}
 		}
@@ -359,4 +397,33 @@ Exposing::Watcher::EditValueArgs::~EditValueArgs()
 	delete field;
 	delete label;
 	delete sh;
+}
+
+void saveToFileRecursive(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent, Exposing::StructDescBase * sc, Exposing::WatchedAddress * wa) {
+
+	for (std::unique_ptr<Exposing::StructDescBase::Iterator> it(sc->generateIterator(wa)); !it->isAtEnd(); it->next()) {
+		tinyxml2::XMLElement* el = doc.NewElement(it->getName().c_str());
+		Exposing::Type t = it->getType();
+		Exposing::WatchedAddress* mwa = it->generateWatchedAddress();
+		if (t < Exposing::MAX) {
+			el->SetText(getBasicTypeAsString(t, mwa->calculateAddress()).c_str());
+		}
+		else {
+			saveToFileRecursive(doc, el, Exposing::registeredTypes[t], mwa);
+		}
+		delete mwa;
+		parent->InsertEndChild(el);
+	}
+}
+
+void Exposing::saveToFile(StructDescBase * sc, WatchedAddress * wa, const char * f)
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* root = doc.NewElement(sc->name.c_str());
+
+	saveToFileRecursive(doc, root, sc, wa);
+
+	doc.InsertEndChild(root);
+
+	doc.SaveFile(f);
 }

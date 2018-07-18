@@ -210,6 +210,10 @@ void callbackRem(const jmg::EventCallback::Details& details, void* exptest) {
 		et._vector.erase(et._vector.begin());
 	}
 }
+void callbackTestSave(const jmg::EventCallback::Details& details, void* exptest) {
+	ExposingTest& et = *(ExposingTest*)exptest;
+	Exposing::saveToFile(et,"testsave.xml");
+}
 
 class JmGui : public Engine::Graphic, public Engine::Input {
 public:
@@ -229,6 +233,7 @@ public:
 
 	jmg::Button add;
 	jmg::Button rem;
+	jmg::Button sav;
 
 	JmGui(Engine& e)
 		: engine(e)
@@ -238,6 +243,7 @@ public:
 		, crpmvb(60,20)
 		, add(30,30)
 		, rem(30,30)
+		, sav(30,30)
 	{
 		engine.overlayGraphic.AddChild(this);
 		engine.inputRoot.AddChild(this,true);
@@ -276,6 +282,7 @@ public:
 		//rem.mCallbackArgs = (void*)&test;
 		add.subscribeToEvent(jmg::EventCallback::clicked, { callbackAdd, &test });
 		rem.subscribeToEvent(jmg::EventCallback::clicked, { callbackRem, &test });
+		sav.subscribeToEvent(jmg::EventCallback::clicked, { callbackTestSave, &test });
 	}
 
 	~JmGui() {
@@ -303,6 +310,7 @@ public:
 				watcher->setContext(&root, true);
 				watcher->addChild(&add, 0, 0);
 				watcher->addChild(&rem, 30, 0);
+				watcher->addChild(&sav, 60, 0);
 			}
 		}
 		return root.baseHandleEvent(event);

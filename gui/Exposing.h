@@ -273,6 +273,10 @@ namespace Exposing {
 	template<class T>
 	jmg::Window* createWatcherFor(T& obj);
 
+	template<class T>
+	void saveToFile(T& obj, const char* filename);
+	void saveToFile(StructDescBase* sc, WatchedAddress* wa, const char* f);
+
 	// type detection to have correct behaviour
 	struct regular_type {};
 	struct indexed_container {};
@@ -308,6 +312,15 @@ jmg::Window * Exposing::createWatcherFor(T& obj)
 	jmg::Window* window = new WatcherWindow(sc, new WatchedAddressRoot((char*)&obj));
 
 	return window;
+}
+
+template<class T>
+void Exposing::saveToFile(T& obj, const char* filename)
+{
+	Exposing::Type typeToWatch = Exposing::CorrectGetType<T>::getType();
+	StructDescBase* sc = registeredTypes[typeToWatch];
+
+	saveToFile(sc, new WatchedAddressRoot((char*)&obj), filename);
 }
 
 #define IM_AN_EXPOSER static Exposing::Type __getType();

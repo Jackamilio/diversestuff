@@ -162,6 +162,7 @@
     <ClCompile Include="OrthoMatrix.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="tinyxml2.cpp" />
     <ClCompile Include="UndoRedoer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -180,6 +181,7 @@
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="UndoRedoer.h" />
   </ItemGroup>
   <ItemGroup>
