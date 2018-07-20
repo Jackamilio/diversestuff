@@ -221,6 +221,10 @@ void callbackTestSave(const jmg::EventCallback::Details& details, void* exptest)
 	ExposingTest& et = *(ExposingTest*)exptest;
 	Exposing::saveToFile(et,"testsave.xml");
 }
+void callbackTestLoad(const jmg::EventCallback::Details& details, void* exptest) {
+	ExposingTest& et = *(ExposingTest*)exptest;
+	Exposing::loadFromFile(et, "testsave.xml");
+}
 
 class JmGui : public Engine::Graphic, public Engine::Input {
 public:
@@ -240,7 +244,8 @@ public:
 
 	jmg::Button add;
 	jmg::Button rem;
-	jmg::Button sav;
+	jmg::Button save;
+	jmg::Button load;
 
 	JmGui(Engine& e)
 		: engine(e)
@@ -250,7 +255,8 @@ public:
 		, crpmvb(60,20)
 		, add(30,30)
 		, rem(30,30)
-		, sav(30,30)
+		, save(30,30)
+		, load(30,30)
 	{
 		engine.overlayGraphic.AddChild(this);
 		engine.inputRoot.AddChild(this,true);
@@ -289,7 +295,8 @@ public:
 		//rem.mCallbackArgs = (void*)&test;
 		add.subscribeToEvent(jmg::EventCallback::clicked, { callbackAdd, &test });
 		rem.subscribeToEvent(jmg::EventCallback::clicked, { callbackRem, &test });
-		sav.subscribeToEvent(jmg::EventCallback::clicked, { callbackTestSave, &test });
+		save.subscribeToEvent(jmg::EventCallback::clicked, { callbackTestSave, &test });
+		load.subscribeToEvent(jmg::EventCallback::clicked, { callbackTestLoad, &test });
 	}
 
 	~JmGui() {
@@ -315,9 +322,10 @@ public:
 			else if (event.keyboard.keycode == ALLEGRO_KEY_F2) {
 				jmg::Window* watcher = Exposing::createWatcherFor(test);
 				watcher->setContext(&root, true);
-				watcher->addChild(&add, 0, 0);
-				watcher->addChild(&rem, 30, 0);
-				watcher->addChild(&sav, 60, 0);
+				watcher->addChild(&add,  0,  0);
+				watcher->addChild(&rem,  0, 30);
+				watcher->addChild(&save, 0, 60);
+				watcher->addChild(&load, 0, 90);
 			}
 		}
 		return root.baseHandleEvent(event);

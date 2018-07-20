@@ -155,6 +155,7 @@ namespace Exposing {
 		};
 
 		virtual Iterator* generateIterator(WatchedAddress* from) = 0;
+		virtual bool isContainer() const { return true; }
 	};
 
 	typedef std::vector<StructMember> StructInfo;
@@ -181,6 +182,7 @@ namespace Exposing {
 		};
 
 		Iterator* generateIterator(WatchedAddress* from);
+		bool isContainer() const { return false; }
 	};
 
 	template<typename C>
@@ -207,7 +209,7 @@ namespace Exposing {
 				return new WatchedAddressIndexedContainer<C>(watchedContainer,index);
 			}
 			std::string getName() const {
-				return std::string("[") + std::to_string(index) + std::string("]");
+				return std::to_string(index);
 			}
 			Type getType() const {
 				return Exposing::getType<std::remove_reference<decltype(container()[0])>::type>();
@@ -294,7 +296,7 @@ namespace Exposing {
 
 		std::vector<EditValueArgs*> mValueArgs;
 
-		int pushNewField(StructDescBase::Iterator* it, int y);
+		int pushNewField(StructDescBase::Iterator* it, int y, bool nameIsIndex);
 
 		void refreshValueForLabels();
 
@@ -322,6 +324,10 @@ namespace Exposing {
 	template<class T>
 	void saveToFile(T& obj, const char* filename);
 	void saveToFile(StructDescBase* sc, WatchedAddress* wa, const char* f);
+
+	template<class T>
+	bool loadFromFile(T& obj, const char* filename);
+	bool loadFromFile(StructDescBase* sc, WatchedAddress* wa, const char* f);
 
 	// type detection to have correct behaviour
 	struct regular_type {};
@@ -373,7 +379,16 @@ void Exposing::saveToFile(T& obj, const char* filename)
 	Exposing::Type typeToWatch = Exposing::CorrectGetType<T>::getType();
 	StructDescBase* sc = registeredTypes[typeToWatch];
 
-	saveToFile(sc, new WatchedAddressRoot((char*)&obj), filename);
+	saveToFile(sc, &WatchedAddressRoot((char*)&obj), filename);
+}
+
+template<class T>
+bool Exposing::loadFromFile(T& obj, const char* filename)
+{
+	Exposing::Type typeToWatch = Exposing::CorrectGetType<T>::getType();
+	StructDescBase* sc = registeredTypes[typeToWatch];
+
+	return loadFromFile(sc, &WatchedAddressRoot((char*)&obj), filename);
 }
 
 #define IM_AN_EXPOSER static Exposing::Type __getType();

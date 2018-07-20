@@ -108,12 +108,12 @@ void editValueCallback(const jmg::EventCallback::Details& details, void* a) {
 
 //const int yStep = 20;
 
-int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y)
+int Exposing::Watcher::pushNewField(StructDescBase::Iterator * it, int y, bool nameIsIndex)
 {
 	const int xl = 20;
 	const int xr = 150;
 
-	jmg::Label* nameLabel = new jmg::Label(it->getName().c_str());
+	jmg::Label* nameLabel = new jmg::Label((std::string(nameIsIndex ? "[" : "") + it->getName() + std::string(nameIsIndex ? "]" : "")).c_str());
 	addChild(nameLabel, BOTTOM, xl);
 	y = nameLabel->mRely;
 
@@ -261,7 +261,7 @@ void Exposing::Watcher::refreshValueForLabels()
 	else {
 		//add more fields if necessary
 		for (; !structIt->isAtEnd(); structIt->next()) {
-			calculatedHeight += pushNewField(structIt.get(), calculatedHeight);
+			calculatedHeight += pushNewField(structIt.get(), calculatedHeight, mWatchedStruct->isContainer());
 		}
 	}
 }
@@ -286,7 +286,7 @@ Exposing::Watcher::Watcher(StructDescBase* sc, WatchedAddress* wa, int y)
 {
 	calculatedHeight = y;
 	for (std::unique_ptr<StructDescBase::Iterator> it(sc->generateIterator(wa)); !it->isAtEnd(); it->next()) {
-		calculatedHeight += pushNewField(it.get(), calculatedHeight);
+		calculatedHeight += pushNewField(it.get(), calculatedHeight, sc->isContainer());
 	}
 }
 
@@ -402,7 +402,7 @@ Exposing::Watcher::EditValueArgs::~EditValueArgs()
 void saveToFileRecursive(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent, Exposing::StructDescBase * sc, Exposing::WatchedAddress * wa) {
 
 	for (std::unique_ptr<Exposing::StructDescBase::Iterator> it(sc->generateIterator(wa)); !it->isAtEnd(); it->next()) {
-		tinyxml2::XMLElement* el = doc.NewElement(it->getName().c_str());
+		tinyxml2::XMLElement* el = doc.NewElement((std::string(sc->isContainer() ? "_" : "") + it->getName()).c_str());
 		Exposing::Type t = it->getType();
 		Exposing::WatchedAddress* mwa = it->generateWatchedAddress();
 		if (t < Exposing::MAX) {
@@ -416,8 +416,7 @@ void saveToFileRecursive(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* paren
 	}
 }
 
-void Exposing::saveToFile(StructDescBase * sc, WatchedAddress * wa, const char * f)
-{
+void Exposing::saveToFile(StructDescBase * sc, WatchedAddress * wa, const char * f) {
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement* root = doc.NewElement(sc->name.c_str());
 
@@ -426,4 +425,11 @@ void Exposing::saveToFile(StructDescBase * sc, WatchedAddress * wa, const char *
 	doc.InsertEndChild(root);
 
 	doc.SaveFile(f);
+}
+
+bool Exposing::loadFromFile(StructDescBase * sc, WatchedAddress * wa, const char * f) {
+	tinyxml2::XMLDocument doc;
+	doc.LoadFile(f);
+
+	return false;
 }
