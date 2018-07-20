@@ -10,6 +10,7 @@
 #include "Dump.h"
 #include "Editorcamera.h"
 #include "Exposing.h"
+#include <map>
 
 class TestCamera : public Engine::Input, public Engine::Update {
 public:
@@ -142,6 +143,7 @@ public:
 	ExposingTestMember _member;
 	std::vector<int> _vector;
 	std::vector<ExposingTestMember> _vectorMember;
+	std::map<std::string, int> _mapMember;
 
 	struct NotExposed {
 		int val;
@@ -170,6 +172,10 @@ public:
 		_vectorMember.push_back(member);
 		member._otherBool = true;
 		_vectorMember.push_back(member);
+
+		_mapMember["one"] = 1;
+		_mapMember["two"] = 2;
+		_mapMember["three"] = 3;
 	}
 
 	IM_AN_EXPOSER
@@ -177,6 +183,7 @@ public:
 
 #define EXPOSE_TYPE ExposingTest
 EXPOSE_START
+EXPOSE(_mapMember)
 EXPOSE(_bool)
 EXPOSE(_char)
 EXPOSE(_uchar)

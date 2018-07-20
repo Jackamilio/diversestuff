@@ -96,6 +96,8 @@ namespace Exposing {
 	template<> Type getType<double>();
 	template<> Type getType<std::string>();
 
+	std::string getBasicTypeAsString(Exposing::Type type, char* address);
+
 	class WatchedAddress {
 	public:
 		virtual char* calculateAddress() const = 0;
@@ -116,13 +118,13 @@ namespace Exposing {
 		WatchedAddressOffset(const WatchedAddress* owner, unsigned int offset) : owner(owner), offset(offset) {}
 	};
 
-	template<typename C>
+	template<typename C, typename I = int>
 	class WatchedAddressIndexedContainer : public WatchedAddress {
 	public:
 		const WatchedAddress* owner;
-		int index;
+		I index;
 		char* calculateAddress() const { return (char*)&(*((C*)owner->calculateAddress()))[index]; }
-		WatchedAddressIndexedContainer(const WatchedAddress* owner, int index) : owner(owner), index(index) {}
+		WatchedAddressIndexedContainer(const WatchedAddress* owner, I& index) : owner(owner), index(index) {}
 	};
 
 	class StructMember {
@@ -144,6 +146,7 @@ namespace Exposing {
 
 		class Iterator {
 		public:
+			virtual ~Iterator() {};
 			virtual void next() = 0;
 			virtual bool isAtEnd() const = 0;
 			virtual WatchedAddress* generateWatchedAddress() = 0;
@@ -196,7 +199,7 @@ namespace Exposing {
 
 			void next(){
 				++index;
-			};
+			}
 			bool isAtEnd() const {
 				return index >= (int)container().size();
 			}
@@ -216,9 +219,52 @@ namespace Exposing {
 		}
 	};
 
+	template<typename C>
+	class StructDescMapContainer : public StructDescBase {
+	public:
+		StructDescMapContainer(const char* n) : StructDescBase(n) {}
+
+		class Iterator_ : public Iterator {
+		public:
+			WatchedAddress * watchedContainer;
+			typename C::iterator it;
+
+			inline C& container() const { return *((C*)watchedContainer->calculateAddress()); }
+			Iterator_(WatchedAddress* from) : watchedContainer(from){
+				it = container().begin();
+			}
+
+			virtual void next(){
+				++it;
+			}
+			virtual bool isAtEnd() const {
+				return (it == container().end());
+			}
+			virtual WatchedAddress* generateWatchedAddress() {
+				return new WatchedAddressIndexedContainer<C, std::remove_reference_t<decltype(it->first)>>(watchedContainer, it->first);
+			}
+			virtual std::string getName() const {
+				return getBasicTypeAsString(Exposing::getType<std::remove_const_t<std::remove_reference_t<decltype(it->first)>>>(), (char*)&it->first);
+			}
+			virtual Type getType() const {
+				return Exposing::getType<std::remove_reference_t<decltype(it->second)>>();
+			}
+		};
+
+		Iterator* generateIterator(WatchedAddress* from) {
+			return new Iterator_(from);
+		}
+	};
+
 	template<class T>
 	Type getIndexedContainerType() {
 		static Type thisContainerType = registerNewType("IndexedContainer", new StructDescIndexedContainer<T>("IndexedContainer"));
+		return thisContainerType;
+	}
+
+	template<class T>
+	Type getMapContainerType() {
+		static Type thisContainerType = registerNewType("MapContainer", new StructDescMapContainer<T>("MapContainer"));
 		return thisContainerType;
 	}
 
@@ -280,14 +326,21 @@ namespace Exposing {
 	// type detection to have correct behaviour
 	struct regular_type {};
 	struct indexed_container {};
+	struct map_container {};
 	template<typename T> struct detect_type : public regular_type {};
 
 	template<typename T, typename A>
 	struct detect_type<std::vector<T, A>> : public indexed_container {};
 
+	template<typename K, typename T, typename C, typename A>
+	struct detect_type<std::map<K, T, C, A>> : public map_container {};
+
 	template <typename T>
 	class CorrectGetType {
 	private:
+		static Type getType(map_container) {
+			return Exposing::getMapContainerType<T>();
+		}
 		static Type getType(indexed_container) {
 			return Exposing::getIndexedContainerType<T>();
 		}

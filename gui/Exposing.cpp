@@ -16,7 +16,7 @@ template<> Exposing::Type Exposing::getType<std::string>() { return Exposing::ST
 std::map<Exposing::Type, Exposing::StructDescBase*> Exposing::registeredTypes;
 unsigned int typeCount = (unsigned int)Exposing::MAX;
 
-std::string getBasicTypeAsString(Exposing::Type type, char* address) {
+std::string Exposing::getBasicTypeAsString(Exposing::Type type, char* address) {
 	if (type == Exposing::BOOL) {
 		return std::string((*(bool*)address) ? "true" : "false");
 	}
@@ -393,10 +393,10 @@ Exposing::Watcher::EditValueArgs::EditValueArgs(WatchedAddress* address, Type ty
 Exposing::Watcher::EditValueArgs::~EditValueArgs()
 {
 	// omg just learned that it was safe to delete null pointers!
+	delete sh;
 	delete address;
 	delete field;
 	delete label;
-	delete sh;
 }
 
 void saveToFileRecursive(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent, Exposing::StructDescBase * sc, Exposing::WatchedAddress * wa) {

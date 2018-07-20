@@ -196,10 +196,11 @@ void jmg::Base::remove(bool del)
 	{
 		requestRedraw(-1);
 		mRemoveMe = true;
-		mDeleteMe = del;
 		toRemove.push({ mParent, std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this) });
 		mParent = nullptr;
 	}
+
+	mDeleteMe = mDeleteMe || del;
 }
 
 void jmg::Base::baseDraw()
