@@ -184,9 +184,9 @@ namespace jmg
 
 		void draw(int origx, int origy);
 
-		int getAsInt() const;
-		float getAsFloat() const;
-		double getAsDouble() const;
+		//int getAsInt() const;
+		//float getAsFloat() const;
+		//double getAsDouble() const;
 
 		inline void setFrom(const char* cstr, int maxDecimals = 999999);
 		template<typename T>

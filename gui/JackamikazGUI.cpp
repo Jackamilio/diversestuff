@@ -6,6 +6,7 @@
 #include <allegro5\allegro_primitives.h>
 #include <allegro5\allegro_ttf.h>
 #include <limits>
+#include "Dump.h"
 
 void jmg::Base::redraw(int origx, int origy)
 {
@@ -639,7 +640,7 @@ void jmg::Label::draw(int origx, int origy)
 		(float)al_get_font_line_height(mFont), 0, mValue);
 }
 
-int jmg::Label::getAsInt() const
+/*int jmg::Label::getAsInt() const
 {
 	try {
 		return std::stoi(std::string(al_cstr(mValue)));
@@ -667,7 +668,7 @@ double jmg::Label::getAsDouble() const
 	catch (std::exception) {
 		return 0.0;
 	}
-}
+}*/
 
 int jmg::Label::getHeight() const
 {
@@ -1074,7 +1075,7 @@ void jmg::Text::confirmEditing()
 			setFrom((double)0.0, mMaxDecimals);
 		}
 		else {
-			const double val = getAsDouble();
+			const double val = strToVal<double>(getValue());//getAsDouble();
 			if (val > mMaxValue) {
 				setFrom(mMaxValue, mMaxDecimals);
 			}

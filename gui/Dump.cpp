@@ -7,6 +7,27 @@
 //#include <FL/glu.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "TextureManager.h"
+#include <locale>
+
+std::string tolower(const std::string& str)
+{
+	std::locale loc;
+	std::string ret(str);
+	for (auto &c : ret) {
+		c = std::tolower(c, loc);
+	}
+	return ret;
+}
+
+std::string toupper(const std::string& str)
+{
+	std::locale loc;
+	std::string ret(str);
+	for (auto &c : ret) {
+		c = std::toupper(c, loc);
+	}
+	return ret;
+}
 
 bool linePlaneIntersection(const glm::vec3& plane_center, const glm::vec3& plane_normal, const glm::vec3& line_origin, const glm::vec3& line_direction, bool lineasray, glm::vec3* res)
 {

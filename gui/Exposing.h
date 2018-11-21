@@ -97,6 +97,7 @@ namespace Exposing {
 	template<> Type getType<std::string>();
 
 	std::string getBasicTypeAsString(Exposing::Type type, char* address);
+	bool setBasicTypeFromString(Exposing::Type type, char* address, const std::string& str);
 
 	class WatchedAddress {
 	public:
@@ -158,7 +159,7 @@ namespace Exposing {
 		virtual bool isContainer() const { return true; }
 	};
 
-	typedef std::vector<StructMember> StructInfo;
+	typedef std::vector<StructMember> StructInfo; // use map instead of vector?
 
 	class StructDesc : public StructDescBase {
 	public:

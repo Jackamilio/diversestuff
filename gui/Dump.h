@@ -37,6 +37,9 @@ inline T strToVal(const char * str)
 	return(strToVal<T>(std::string(str)));
 }
 
+std::string tolower(const std::string& str);
+std::string toupper(const std::string& str);
+
 void DrawGlWireCube(float neg, float pos);
 void DrawGlWireCapsule(float radius, float height, int turns = 3);
 

@@ -1,6 +1,7 @@
 #include "Exposing.h"
 #include <memory>
 #include "tinyxml2.h"
+#include "Dump.h"
 
 template<> Exposing::Type Exposing::getType<bool>() { return Exposing::BOOL; }
 template<> Exposing::Type Exposing::getType<char>() { return Exposing::INT8; }
@@ -52,6 +53,23 @@ std::string Exposing::getBasicTypeAsString(Exposing::Type type, char* address) {
 	}
 }
 
+bool Exposing::setBasicTypeFromString(Exposing::Type type, char* address, const std::string& str) {
+	switch (type) {
+	case Exposing::BOOL:	*(bool*)address = (tolower(str).compare("true") == 0); break;
+	case Exposing::INT8:	*(char*)address = (char)strToVal<int>(str); break;
+	case Exposing::UINT8:	*(unsigned char*)address = (unsigned char)strToVal<int>(str); break;
+	case Exposing::INT16:	*(short*)address = strToVal<short>(str); break;
+	case Exposing::UINT16:	*(unsigned short*)address = strToVal<unsigned short>(str); break;
+	case Exposing::INT:		*(int*)address = strToVal<int>(str); break;
+	case Exposing::UINT:	*(unsigned int*)address = strToVal<unsigned int>(str); break;
+	case Exposing::FLOAT:	*(float*)address = strToVal<float>(str); break;
+	case Exposing::DOUBLE:	*(double*)address = strToVal<double>(str); break;
+	case Exposing::STRING:	*(std::string*)address = str; break;
+	default: return false;
+	}
+	return true;
+}
+
 Exposing::Type Exposing::registerNewType(const char* name, Exposing::StructDescBase* desc) {
 	Exposing::Type newType = (Exposing::Type)++typeCount;
 	registeredTypes[newType] = desc;
@@ -85,7 +103,7 @@ void editValueCallback(const jmg::EventCallback::Details& details, void* a) {
 	jmg::Base* base = args->field;
 	jmg::Text* text = dynamic_cast<jmg::Text*>(base);
 	const Exposing::Type type = args->type;
-	if (text) {
+	/*if (text) {
 		switch (type) {
 		case Exposing::INT8:	*(char*)address = text->getAsInt(); break;
 		case Exposing::UINT8:	*(unsigned char*)address = text->getAsInt(); break;
@@ -98,11 +116,14 @@ void editValueCallback(const jmg::EventCallback::Details& details, void* a) {
 		case Exposing::STRING:	*(std::string*)address = text->getValue(); break;
 		}
 	}
-	else if (type == Exposing::BOOL) {
+	else */if (type == Exposing::BOOL) {
 		jmg::CheckBox* checkBox = dynamic_cast<jmg::CheckBox*>(base);
 		if (checkBox) {
 			*(bool*)address = checkBox->mChecked;
 		}
+	}
+	else {
+		setBasicTypeFromString(type, address, std::string(text->getValue()));
 	}
 }
 
@@ -402,7 +423,7 @@ Exposing::Watcher::EditValueArgs::~EditValueArgs()
 void saveToFileRecursive(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent, Exposing::StructDescBase * sc, Exposing::WatchedAddress * wa) {
 
 	for (std::unique_ptr<Exposing::StructDescBase::Iterator> it(sc->generateIterator(wa)); !it->isAtEnd(); it->next()) {
-		tinyxml2::XMLElement* el = doc.NewElement((std::string(sc->isContainer() ? "_" : "") + it->getName()).c_str());
+		tinyxml2::XMLElement* el = doc.NewElement((std::string(sc->isContainer() ? "id_" : "") + it->getName()).c_str());
 		Exposing::Type t = it->getType();
 		Exposing::WatchedAddress* mwa = it->generateWatchedAddress();
 		if (t < Exposing::MAX) {
@@ -430,6 +451,8 @@ void Exposing::saveToFile(StructDescBase * sc, WatchedAddress * wa, const char *
 bool Exposing::loadFromFile(StructDescBase * sc, WatchedAddress * wa, const char * f) {
 	tinyxml2::XMLDocument doc;
 	doc.LoadFile(f);
+
+	tinyxml2::XMLElement* root = doc.RootElement();
 
 	return false;
 }
