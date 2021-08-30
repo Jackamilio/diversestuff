@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Model.h"
 #include "editorcamera.h"
-#include <btBulletDynamicsCommon.h>
+#include <bullet/btBulletDynamicsCommon.h>
 #include "LevelData.h"
 #include "TextureManager.h"
 #include <FL/Fl.h>
@@ -98,7 +98,7 @@ public:
 	}
 
 	void Draw() {
-		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4());
+		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(1.0));
 		model->Draw();
 	}
 };
@@ -263,7 +263,7 @@ public:
 
 	void Draw() {
 		btTransform tr = body->getCenterOfMassTransform();
-		glm::mat4 mat;
+		glm::mat4 mat(1.0);
 		tr.getOpenGLMatrix(&mat[0].x);
 
 		glPushMatrix();
@@ -316,7 +316,7 @@ public:
 	}
 
 	void Draw() {
-		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4());
+		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(1.0));
 		model.Draw(fpose);
 	}
 
@@ -333,7 +333,7 @@ void AppTest::run()
 	FPSCounter fc(*engine);
 	TestCube tc(*engine);
 	TestCamera cam(*engine);
-	TestModel tm(*engine, "personnage.fbx", "Cours");
+	//TestModel tm(*engine, "personnage.fbx", "Cours");
 	cam.trackbody = tc.body;
 
 	engine->Get<TestCamera*>() = &cam;

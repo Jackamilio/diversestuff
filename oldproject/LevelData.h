@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 #include "UndoRedoer.h"
-#define GLM_SWIZZLE
+#define GLM_FORCE_SWIZZLE
 #include <glm/vec3.hpp>
 #include <iostream>
 #include <fstream>

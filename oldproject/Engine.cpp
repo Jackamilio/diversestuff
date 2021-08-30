@@ -4,6 +4,7 @@
 #include <allegro5/allegro_font.h>
 #include "gui.h"
 #include "GameData.h"
+#include <glm/gtc/type_ptr.hpp>
 
 Engine::Engine()
 	: inputRoot()
@@ -257,9 +258,9 @@ void Engine::MainGraphic::Draw()
 	glViewport(0, 0, al_get_display_width(engine.display), al_get_display_height(engine.display));
 
 	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(engine.graphics.proj[0].data);
+	glLoadMatrixf(glm::value_ptr(engine.graphics.proj));
 	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(engine.graphics.view[0].data);
+	glLoadMatrixf(glm::value_ptr(engine.graphics.view));
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

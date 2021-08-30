@@ -77,7 +77,7 @@ public:
 		lvldt.OldLoad(level);
 		model = &engine.graphics.models.Get(&lvldt);
 		DrawLevelData(lvldt, engine.graphics.textures, true);
-		glEndList();
+		//glEndList();
 
 		/*btTransform t;
 		t.setIdentity();
@@ -90,6 +90,7 @@ public:
 		engine.physics->addRigidBody(body);*/
 
 		engine.mainGraphic.AddChildForProgram(this, "test.pgr");
+		//engine.mainGraphic.AddChild(this);
 	}
 
 	~EngineLevel() {
@@ -100,8 +101,9 @@ public:
 	}
 
 	void Draw() {
-		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4());
+		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(1.0));
 		model->Draw();
+		//DrawLevelData(lvldt, engine.graphics.textures, true);
 	}
 };
 
@@ -378,8 +380,8 @@ int main(int nbarg, char ** args) {
 
 		TestCamera camera(engine);
 		EngineLevel lvl(engine,"niveau.lvl");
-		FPSCounter fc(engine);
-		JmGui gui(engine);
+		//FPSCounter fc(engine);
+		//JmGui gui(engine);
 
 		while (engine.OneLoop()) {}
 	}

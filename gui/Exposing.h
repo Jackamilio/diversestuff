@@ -380,7 +380,8 @@ void Exposing::saveToFile(T& obj, const char* filename)
 	Exposing::Type typeToWatch = Exposing::CorrectGetType<T>::getType();
 	StructDescBase* sc = registeredTypes[typeToWatch];
 
-	saveToFile(sc, &WatchedAddressRoot((char*)&obj), filename);
+	WatchedAddressRoot wa((char*)&obj);
+	saveToFile(sc, &wa, filename);
 }
 
 template<class T>
@@ -388,8 +389,9 @@ bool Exposing::loadFromFile(T& obj, const char* filename)
 {
 	Exposing::Type typeToWatch = Exposing::CorrectGetType<T>::getType();
 	StructDescBase* sc = registeredTypes[typeToWatch];
-
-	return loadFromFile(sc, &WatchedAddressRoot((char*)&obj), filename);
+	
+	WatchedAddressRoot wa((char*)&obj);
+	return loadFromFile(sc, &wa, filename);
 }
 
 #define IM_AN_EXPOSER static Exposing::Type __getType();

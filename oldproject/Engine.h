@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <btBulletDynamicsCommon.h>
+#include <bullet/btBulletDynamicsCommon.h>
 #include <glm/glm.hpp>
 #include <typeinfo>
 #include "GraphicContext.h"

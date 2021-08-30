@@ -77,7 +77,7 @@ public:
 	template<class T>
 	bool HasValue(const std::string& name) const;
 	bool IsComposite(const std::string& name) const;
-	inline bool HasField(const std::string& name) const { return FindFieldConst(name, Values::const_iterator()); }
+	inline bool HasField(const std::string& name) const { Values::const_iterator cit; return FindFieldConst(name, cit); }
 	ValueContainer& GetField(const std::string& name);
 
 

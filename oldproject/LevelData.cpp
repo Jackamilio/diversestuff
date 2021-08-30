@@ -93,8 +93,8 @@ bool LevelData::Load(const char * filename)
 			}
 		}
 		f >> gameDataDescriptorLocation;
-		GameData::LoadGameDataDescriptor(gameDataDescriptorLocation);
-		instances.Set(f);
+		//GameData::LoadGameDataDescriptor(gameDataDescriptorLocation);
+		//instances.Set(f);
 
 		f.close();
 		return true;

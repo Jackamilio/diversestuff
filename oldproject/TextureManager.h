@@ -4,7 +4,7 @@
 #include "ResourceManager.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_opengl.h>
-#include <Fl/Fl_Image.H>
+#include <FL/Fl_Image.H>
 
 class AllegroTexture {
 private:
@@ -48,11 +48,11 @@ public:
 template<class Texture>
 class TextureManager : public TextureManagerBase, public ResourceManager<Texture, GLuint> {
 public:
-	inline const Texture& Get(const std::string& file) { return GetHandler(file); }
-	inline void Bind(const std::string& file) { glBindTexture(GL_TEXTURE_2D, GetValue(file)); }
+	inline const Texture& Get(const std::string& file) { return ResourceManager<Texture, GLuint>::GetHandler(file); }
+	inline void Bind(const std::string& file) { glBindTexture(GL_TEXTURE_2D, ResourceManager<Texture, GLuint>::GetValue(file)); }
 	inline float GetTexWidth(const std::string& file) { return Get(file).GetWidth(); }
 	inline float GetTexHeight(const std::string& file) { return Get(file).GetHeight(); }
-	inline GLuint GetGlId(const std::string& file) { return GetValue(file); }
+	inline GLuint GetGlId(const std::string& file) { return ResourceManager<Texture, GLuint>::GetValue(file); }
 };
 
 

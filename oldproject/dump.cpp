@@ -6,6 +6,7 @@
 #include <FL/Fl.H>
 #include <FL/glu.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "TextureManager.h"
 
 bool linePlaneIntersection(const glm::vec3& plane_center, const glm::vec3& plane_normal, const glm::vec3& line_origin, const glm::vec3& line_direction, bool lineasray, glm::vec3* res)
@@ -175,7 +176,7 @@ void DrawBrickHeap(const LevelData::BrickHeap& brickheap, TextureManagerBase& te
 		glPushMatrix();
 		const LevelData::Brick& brick = brickheap[i];
 		brick.matrix.CalcMatrix(mat);
-		glMultMatrixf(mat[0].data);
+		glMultMatrixf(glm::value_ptr(mat));
 		float uo = 0.0f;
 		float uf = 1.0f;
 		float vo = 0.0f;

@@ -3,7 +3,7 @@
 
 #include <string>
 #include <sstream>
-#include <btBulletDynamicsCommon.h>
+#include <bullet/btBulletDynamicsCommon.h>
 #include "LevelData.h"
 
 class TextureManagerBase;

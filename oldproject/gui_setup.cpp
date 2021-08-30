@@ -25,6 +25,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <vector>
 #include <list>
@@ -378,7 +379,7 @@ protected:
 		//glLoadIdentity();
 		//gluPerspective(40, (float)w / (float)h, 0.1, 150);
 		projMat = glm::perspective(glm::radians(40.0f), (float)w / (float)h, 0.1f, 150.0f);
-		glLoadMatrixf(projMat[0].data);
+		glLoadMatrixf(glm::value_ptr(projMat));
 		if (turnUpsideDown)
 			glScalef(1, -1, 1);
 	}
@@ -400,7 +401,7 @@ public:
 		glMatrixMode(GL_MODELVIEW);
 		glm::mat4 mat;
 		camera.CalcMatrix(mat);
-		glLoadMatrixf(mat[0].data);
+		glLoadMatrixf(glm::value_ptr(mat));
 
 		glClearColor(192.0f / 255.0f, 192.0f / 255.0f, 192.0f / 255.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -611,7 +612,7 @@ public:
 		glMatrixMode(GL_MODELVIEW);
 		glm::mat4 mat;
 		camera.CalcMatrix(mat);
-		glLoadMatrixf(mat[0].data);
+		glLoadMatrixf(glm::value_ptr(mat));
 
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -695,7 +696,7 @@ public:
 		cam.SetDistance(2.5f);
 		cam.SetFocusPoint(0.0f, 0.0f, 0.0f);
 		cam.CalcMatrix(mat);
-		glLoadMatrixf(mat[0].data);
+		glLoadMatrixf(glm::value_ptr(mat));
 		drawCoordSystem();
 	}
 };
@@ -733,7 +734,7 @@ public:
 		glLoadIdentity();
 		glm::mat4 mat;
 		camera.CalcMatrix(mat);
-		glMultMatrixf(mat[0].data);
+		glMultMatrixf(glm::value_ptr(mat));
 
 		glClearColor(192.0f / 255.0f, 192.0f / 255.0f, 192.0f / 255.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

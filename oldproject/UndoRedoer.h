@@ -201,7 +201,7 @@ inline bool UndoRedoer::RemoveThing(std::vector<T>& vec, const int index, bool m
 template<class K, class T>
 inline bool UndoRedoer::RemoveThing(std::map<K, T>& map, const K & key, bool managePtr)
 {
-	std::map<K, T>::iterator it = map.find(key);
+	auto it = map.find(key);
 	if (it != map.end()) {
 		AddUndo(new DoMem<UndoRedoer>(this, &UndoRedoer::UndoRemoveMappedThing<K,T>, (void*)UseSPtr(new Mapped<K,T>(map, key, managePtr, *this))));
 		map.erase(it);
