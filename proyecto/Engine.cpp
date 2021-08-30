@@ -4,8 +4,56 @@
 #include <allegro5/allegro_font.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-//#include "gui.h"
-//#include "GameData.h"
+#include "imgui.h"
+#include "imgui_impl_allegro5.h"
+
+namespace DearImguiIntegration {
+	void Init(ALLEGRO_DISPLAY* display) {
+		// Setup Dear ImGui context
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+
+		// Setup Dear ImGui style
+		ImGui::StyleColorsDark();
+		//ImGui::StyleColorsClassic();
+
+		// Setup Platform/Renderer backends
+		ImGui_ImplAllegro5_Init(display);
+	}
+
+	bool Event(ALLEGRO_EVENT& event) {
+		ImGui_ImplAllegro5_ProcessEvent(&event);
+
+		if (event.type == ALLEGRO_EVENT_DISPLAY_RESIZE)
+		{
+			ImGui_ImplAllegro5_InvalidateDeviceObjects();
+			//al_acknowledge_resize(display);
+			ImGui_ImplAllegro5_CreateDeviceObjects();
+		}
+
+		ImGuiIO& io = ImGui::GetIO();
+		return io.WantCaptureKeyboard || io.WantCaptureMouse;
+	}
+
+	void NewFrame() {
+		// Start the Dear ImGui frame
+		ImGui_ImplAllegro5_NewFrame();
+		ImGui::NewFrame();
+	}
+
+	void Render() {
+		ImGui::Render();
+		ImGui_ImplAllegro5_RenderDrawData(ImGui::GetDrawData());
+	}
+
+	void Destroy() {
+		ImGui_ImplAllegro5_Shutdown();
+		ImGui::DestroyContext();
+	}
+}
+
 
 Engine::Engine()
 	: inputRoot()
@@ -39,6 +87,8 @@ Engine::~Engine()
 
 	if (display) { al_destroy_display(display); }
 	if (eventQueue) { al_destroy_event_queue(eventQueue); }
+
+	DearImguiIntegration::Destroy();
 
 	/*if (physics) delete physics;
 	if (solver) delete solver;
@@ -145,6 +195,8 @@ bool Engine::Init()
 
 	fprintf(stdout, "opengl version is %i.%i\n", maj, min);
 
+	DearImguiIntegration::Init(display);
+
 	return true;
 }
 
@@ -187,15 +239,19 @@ bool Engine::OneLoop()
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			stayOpen = false;
 		}
-		else {
+		else if (!DearImguiIntegration::Event(event)) {
 			RecursiveInput(&inputRoot, event);
 		}
 	}
+
+	DearImguiIntegration::NewFrame();
 
 	//physics->stepSimulation(dt, 10);
 
 	RecursiveUpdate(&updateRoot);
 	RecursiveGraphic(&graphicRoot);
+
+	DearImguiIntegration::Render();
 
 	al_flip_display();
 

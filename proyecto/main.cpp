@@ -5,6 +5,7 @@
 #include <allegro5/allegro_ttf.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "LevelData.h"
 #include "Dump.h"
 #include "Editorcamera.h"
@@ -18,7 +19,8 @@ ALLEGRO_FONT* fetchDefaultFont()
 {
 	static ALLEGRO_FONT* defaultFont = NULL;
 	if (!defaultFont) {
-	//	defaultFont = al_load_ttf_font("arial.ttf", 14, 0);
+	//	defaultFont = al_
+	// _ttf_font("arial.ttf", 14, 0);
 	//	if (!defaultFont) {
 			defaultFont = al_create_builtin_font();
 	//	}
@@ -34,6 +36,7 @@ public:
 	//btRigidBody* trackbody;
 
 	bool mleft;
+	glm::vec4 mouse;
 
 	TestCamera(Engine& e) : engine(e) {
 		mleft = false;
@@ -50,6 +53,13 @@ public:
 	}
 
 	bool Event(ALLEGRO_EVENT& event) {
+		if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+			mouse.x = event.mouse.dx;
+			mouse.y = event.mouse.dy;
+			mouse.z = event.mouse.dz;
+			mouse.w = event.mouse.dw;
+		}
+
 		if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1) {
 			mleft = true;
 			return true;
@@ -75,8 +85,12 @@ public:
 
 		camera.CalcMatrix(engine.graphics.view);
 
-		ImGui::Begin("Debug camera");
-		ImGui::SliderFloat("Distance", &camera.distance, 0.1f, 50.0f);
+		//ImGui::Begin("Debug camera");
+		//ImGui::SliderFloat("Distance", &camera.distance, 0.1f, 50.0f);
+		//ImGui::End();
+
+		ImGui::Begin("Last mouse");
+		ImGui::InputFloat4("Values", glm::value_ptr(mouse));
 		ImGui::End();
 	}
 };
@@ -123,6 +137,19 @@ public:
 		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(1.0));
 		model->Draw();
 		//DrawLevelData(lvldt, engine.graphics.textures, true);
+
+		// imgui image test
+		ImGui::Begin("Image test");
+
+		if (ImGui::TreeNode("Show")) {
+			const Texture& tex = engine.graphics.textures.Get("tileset.png");
+			ImGui::Image(tex.GetAlValue(), ImVec2(tex.GetWidth(), tex.GetHeight()));
+			ImGui::TreePop();
+		}
+
+		ImGui::End();
+
+		ImGui::ShowDemoWindow();
 	}
 };
 
@@ -253,55 +280,6 @@ public:
 	}
 };
 
-class DearImguiIntegrated : public Engine::Input, public Engine::Graphic {
-public:
-	Engine& engine;
-
-	DearImguiIntegrated(Engine& e) : engine(e) {
-		engine.inputRoot.AddChild(this);
-		engine.overlayGraphic.AddChild(this);
-
-		// Setup Dear ImGui context
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		
-		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-
-		// Setup Dear ImGui style
-		ImGui::StyleColorsDark();
-		//ImGui::StyleColorsClassic();
-
-		// Setup Platform/Renderer backends
-		ImGui_ImplAllegro5_Init(engine.display);
-
-		// Start the Dear ImGui frame
-		ImGui_ImplAllegro5_NewFrame();
-		ImGui::NewFrame();
-	}
-
-	bool Event(ALLEGRO_EVENT& event) {
-		ImGui_ImplAllegro5_ProcessEvent(&event);
-
-		if (event.type == ALLEGRO_EVENT_DISPLAY_RESIZE)
-		{
-			ImGui_ImplAllegro5_InvalidateDeviceObjects();
-			//al_acknowledge_resize(display);
-			ImGui_ImplAllegro5_CreateDeviceObjects();
-		}
-		
-		ImGuiIO& io = ImGui::GetIO();
-		return io.WantCaptureKeyboard || io.WantCaptureMouse;
-	}
-
-	void Draw() {
-		ImGui::Render();
-		ImGui_ImplAllegro5_RenderDrawData(ImGui::GetDrawData());
-
-		ImGui_ImplAllegro5_NewFrame();
-		ImGui::NewFrame();
-	}
-};
-
 int main(int nbarg, char ** args) {
 	Engine engine;
 
@@ -315,7 +293,6 @@ int main(int nbarg, char ** args) {
 		al_init_primitives_addon();
 		al_init_ttf_addon();
 
-		DearImguiIntegrated dearimgui(engine);
 		TestCamera camera(engine);
 		EngineLevel lvl(engine,"niveau.lvl");
 		FPSCounter fc(engine);

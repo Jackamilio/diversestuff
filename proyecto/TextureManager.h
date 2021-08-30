@@ -15,6 +15,7 @@ public:
 	Texture() : bitmap(0), needsToLoad(true) {}
 	~Texture() { if (bitmap) { al_destroy_bitmap(bitmap); bitmap = 0; } };
 	inline GLuint GetValue() const { return al_get_opengl_texture(bitmap); }
+	inline ALLEGRO_BITMAP* GetAlValue() const { return bitmap; }
 	void Load(const std::string& file) { needsToLoad = false; bitmap = al_load_bitmap(file.c_str()); }
 	inline bool NeedsToLoad() const { return needsToLoad; }
 	inline float GetWidth() const { return al_get_bitmap_width(bitmap); }
