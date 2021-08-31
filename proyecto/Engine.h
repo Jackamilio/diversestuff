@@ -25,6 +25,7 @@ public:
 	public:
 		std::vector<T*> children;
 		void AddChild(T* c, bool onTop = false);
+		void RemoveChild(T* c);
 	};
 	class Input : public Node<Input> {
 	public:
@@ -71,7 +72,8 @@ public:
 		ShaderGraphic(GraphicContext& g);
 
 		void Draw();
-		void AddChildForProgram(Graphic* child, const std::string& progFile);
+		void AddChildToProgram(Graphic* child, const std::string& progFile);
+		void RemoveChildFromProgram(Graphic* child, const std::string& progFile);
 	};
 	class MainGraphic : public ShaderGraphic {
 	public:
@@ -177,6 +179,19 @@ inline void Engine::Node<T>::AddChild(T * c, bool onTop)
 	}
 	else {
 		children.push_back(c);
+	}
+}
+
+template<class T>
+inline void Engine::Node<T>::RemoveChild(T* c)
+{
+	for (auto it = children.begin(); it != children.end(); ) {
+		if (*it  == c) {
+			it = children.erase(it);
+		}
+		else {
+			++it;
+		}
 	}
 }
 

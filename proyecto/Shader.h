@@ -30,7 +30,7 @@ private:
 public:
 	Uniform() : loc(-1), needsToLoad(true) {}
 	~Uniform() {}
-	void Load(const std::string& name, GLuint programID) { loc = glGetUniformLocation(programID, name.c_str()); }
+	void Load(const std::string& name, GLuint programID) { loc = glGetUniformLocation(programID, name.c_str()); needsToLoad = false; }
 	inline GLint GetValue() const { return loc; }
 	inline bool NeedsToLoad() const { return needsToLoad; }
 };

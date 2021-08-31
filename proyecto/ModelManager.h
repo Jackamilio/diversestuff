@@ -25,6 +25,8 @@ public:
 	ModelManager(GraphicContext& g) : graphics(g) {}
 	inline const Model& Get(const std::string& file) { return ResourceManager<ModelHandler, Model, std::string>::GetRefValue(file, graphics); }
 	inline const Model& Get(const LevelData* level) { return ResourceManager<ModelHandler, Model, const LevelData*>::GetRefValue(level, graphics); }
+	inline void RemoveValue(const std::string& file) { ResourceManager<ModelHandler, Model, std::string>::RemoveValue(file); }
+	inline void RemoveValue(const LevelData* level) { ResourceManager<ModelHandler, Model, const LevelData*>::RemoveValue(level); }
 
 	void Clear() {
 		return ResourceManager<ModelHandler, Model, std::string>::Clear();

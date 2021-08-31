@@ -4,9 +4,9 @@
 #include "ResourceManager.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_opengl.h>
-//#include <Fl/Fl_Image.H>
+#include <map>
 
-class Texture {//class AllegroTexture {
+class Texture {
 private:
 	ALLEGRO_BITMAP* bitmap;
 	bool needsToLoad;
@@ -22,34 +22,11 @@ public:
 	inline float GetHeight() const { return al_get_bitmap_height(bitmap); }
 };
 
-/*class FltkTexture {
-private:
-	//Fl_Image* img;
-	GLuint value;
-	bool needsToLoad;
-
-public:
-	FltkTexture() : img(0), value(0), needsToLoad(true) {}
-	~FltkTexture() { if (value != 0) { glDeleteTextures(1, &value); value = 0; } };
-	inline GLuint GetValue() const { return value; }
-	void Load(const std::string& file);
-	inline bool NeedsToLoad() const { return needsToLoad; }
-	inline float GetWidth() const { return img->w(); }
-	inline float GetHeight() const { return img->h(); }
-};
-
-class TextureManagerBase {
-public:
-	virtual void Bind(const std::string& file) = 0;
-	virtual float GetTexWidth(const std::string& file) = 0;
-	virtual float GetTexHeight(const std::string& file) = 0;
-	virtual GLuint GetGlId(const std::string& file) = 0;
-};
-
-template<class Texture>
-class TextureManager : public TextureManagerBase, public ResourceManager<Texture, GLuint> {*/
 class TextureManager : public ResourceManager<Texture, GLuint> {
+private:
+	std::map<std::string,bool> processedKeys;
 public:
+	const std::string& ValidateKey(const std::string& key);
 	inline const Texture& Get(const std::string& file) { return GetHandler(file); }
 	inline void Bind(const std::string& file) { glBindTexture(GL_TEXTURE_2D, GetValue(file)); }
 	inline float GetTexWidth(const std::string& file) { return Get(file).GetWidth(); }

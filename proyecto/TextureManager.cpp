@@ -1,33 +1,23 @@
-//#include <Fl/Fl_Shared_Image.H>
 #include "TextureManager.h"
+#include <allegro5/allegro.h>
 
-/*void FltkTexture::Load(const std::string & file)
+const std::string errortexfile("errortexture.png");
+
+const std::string& TextureManager::ValidateKey(const std::string& key)
 {
-	needsToLoad = false;
-
-	img = Fl_Shared_Image::get(file.c_str());
-	if (img) {
-		glGenTextures(1, &value);
-		glBindTexture(GL_TEXTURE_2D, value);
-
-		GLint format;
-		switch (img->d()) {
-		case 3:
-			format = GL_RGB;
-			break;
-		case 4:
-			format = GL_RGBA;
-			break;
-		default:
-			format = -1;
-			break;
+	auto mykey = processedKeys.find(key);
+	if (mykey != processedKeys.end()) {
+		return mykey->second ? mykey->first : errortexfile;
+	}
+	else {
+		if (al_filename_exists(key.c_str())) {
+			processedKeys[key] = true;
+			return key;
 		}
-
-		if (format != -1) {
-			glTexImage2D(GL_TEXTURE_2D, 0, format, img->w(), img->h(), 0, format, GL_UNSIGNED_BYTE, img->data()[0]);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		else {
+			assert(al_filename_exists(errortexfile.c_str()) && "An error texture must be present in the directory. Won't let you run around having crashes.");
+			processedKeys[key] = false;
+			return errortexfile;
 		}
 	}
 }
-*/

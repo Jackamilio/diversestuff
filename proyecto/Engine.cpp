@@ -157,7 +157,7 @@ bool Engine::Init()
 
 	al_set_new_display_flags(ALLEGRO_OPENGL);
 	al_set_new_display_option(ALLEGRO_DEPTH_SIZE, 16, ALLEGRO_SUGGEST);
-	display = al_create_display(640, 480);
+	display = al_create_display(1280, 720);
 	if (!display) {
 		fprintf(stderr, "failed to create display!\n");
 		return false;
@@ -304,11 +304,15 @@ void Engine::ShaderGraphic::Draw()
 	graphics.programs.StopToUse();
 }
 
-void Engine::ShaderGraphic::AddChildForProgram(Graphic * child, const std::string & progFile)
+void Engine::ShaderGraphic::AddChildToProgram(Graphic * child, const std::string & progFile)
 {
 	programChildren[&graphics.programs.Get(progFile)].AddChild(child);
 }
 
+void Engine::ShaderGraphic::RemoveChildFromProgram(Graphic* child, const std::string& progFile)
+{
+	programChildren[&graphics.programs.Get(progFile)].RemoveChild(child);
+}
 
 Engine::MainGraphic::MainGraphic(Engine& e) : ShaderGraphic(e.graphics), engine(e)
 {

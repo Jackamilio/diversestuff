@@ -36,7 +36,6 @@ public:
 	//btRigidBody* trackbody;
 
 	bool mleft;
-	glm::vec4 mouse;
 
 	TestCamera(Engine& e) : engine(e) {
 		mleft = false;
@@ -49,17 +48,10 @@ public:
 		camera.SetFocusPoint(0, 0, 0.5f);
 		camera.SetUp(0, 0, 1);
 
-		engine.graphics.proj = glm::perspective(glm::radians(40.0f), 640.0f / 480.0f, 0.5f, 50.0f);
+		engine.graphics.proj = glm::perspective(glm::radians(40.0f), 1280.0f / 720.0f, 0.5f, 50.0f);
 	}
 
 	bool Event(ALLEGRO_EVENT& event) {
-		if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
-			mouse.x = event.mouse.dx;
-			mouse.y = event.mouse.dy;
-			mouse.z = event.mouse.dz;
-			mouse.w = event.mouse.dw;
-		}
-
 		if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1) {
 			mleft = true;
 			return true;
@@ -88,10 +80,6 @@ public:
 		//ImGui::Begin("Debug camera");
 		//ImGui::SliderFloat("Distance", &camera.distance, 0.1f, 50.0f);
 		//ImGui::End();
-
-		ImGui::Begin("Last mouse");
-		ImGui::InputFloat4("Values", glm::value_ptr(mouse));
-		ImGui::End();
 	}
 };
 
@@ -109,8 +97,7 @@ public:
 	EngineLevel(Engine& e, const char* level) : engine(e) {
 		lvldt.OldLoad(level);
 		model = &engine.graphics.models.Get(&lvldt);
-		DrawLevelData(lvldt, engine.graphics.textures, true);
-		//glEndList();
+		//DrawLevelData(lvldt, engine.graphics.textures, true);
 
 		/*btTransform t;
 		t.setIdentity();
@@ -122,8 +109,7 @@ public:
 		body = new btRigidBody(info);
 		engine.physics->addRigidBody(body);*/
 
-		engine.mainGraphic.AddChildForProgram(this, "test.pgr");
-		//engine.mainGraphic.AddChild(this);
+		engine.mainGraphic.AddChildToProgram(this, "test.pgr");
 	}
 
 	~EngineLevel() {
@@ -136,7 +122,96 @@ public:
 	void Draw() {
 		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(1.0));
 		model->Draw();
-		//DrawLevelData(lvldt, engine.graphics.textures, true);
+	}
+};
+
+class LevelEditor : public Engine::Input, public Engine::Update, public Engine::Graphic {
+public:
+	Engine& engine;
+	EngineLevel& lvl;
+	LevelData& lvldt;
+	bool showGui;
+	bool lastShowGui;
+	int curTileset;
+
+	LevelEditor(EngineLevel& lvl) :
+		engine(lvl.engine),
+		lvl(lvl),
+		lvldt(lvl.lvldt),
+		showGui(false),
+		lastShowGui(false),
+		curTileset(-1)
+	{
+		engine.inputRoot.AddChild(this);
+		engine.updateRoot.AddChild(this);
+	}
+
+	bool Event(ALLEGRO_EVENT& event) {
+		if (event.type == ALLEGRO_EVENT_KEY_UP && event.keyboard.keycode == ALLEGRO_KEY_F1) {
+			showGui = !showGui;
+			return true;
+		}
+		return false;
+	}
+
+	void TileSetDataCallback(ImGuiInputTextCallbackData* data) {
+		const LevelData::TilesetData* tsd = lvldt.GetTilesetData(curTileset);
+		if (tsd && strcmp(data->Buf, tsd->file.c_str()) != 0) {
+			lvldt.UpdateTilesetData(curTileset, data->Buf, tsd->ox, tsd->oy, tsd->px, tsd->py, tsd->tw, tsd->th);
+		}
+	}
+
+	static int GlobalTileSetDataCallback(ImGuiInputTextCallbackData* data) {
+		((LevelEditor*)data->UserData)->TileSetDataCallback(data);
+		return 0; //no idea what I should return. couldn't be bothered to research.
+	}
+
+	void Step() {
+
+		if (showGui != lastShowGui) {
+			lastShowGui = showGui;
+
+			if (showGui) {
+				engine.mainGraphic.RemoveChildFromProgram(&lvl, "test.pgr");
+				engine.mainGraphic.AddChild(this);
+			}
+			else {
+				engine.mainGraphic.RemoveChild(this);
+
+				engine.graphics.models.RemoveValue(&lvldt);
+				lvl.model = &engine.graphics.models.Get(&lvldt);
+
+				engine.mainGraphic.AddChildToProgram(&lvl, "test.pgr");
+			}
+		}
+
+		curTileset = -1;
+		if (showGui) {
+			if (ImGui::Begin("Level editor", &showGui)) {
+				if (ImGui::CollapsingHeader("Tilesets")) {
+					if (ImGui::BeginTabBar("Tilesets")) {
+						int i = 0;
+						const LevelData::TilesetData* tsd = lvldt.GetTilesetData(i);
+						while (tsd) {
+							char tabtitle[64];
+							sprintf_s(tabtitle, 64, "Tileset %i", i);
+							if (ImGui::BeginTabItem(tabtitle)) {
+								curTileset = i;
+								static char buf[64];
+								strcpy_s(buf, 64, tsd->file.c_str());
+								ImGui::InputText("Picture file", buf, 64, ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CallbackEdit, GlobalTileSetDataCallback, (void*)this);
+								ImGui::EndTabItem();
+							}
+							tsd = lvldt.GetTilesetData(++i);
+						}
+
+						ImGui::EndTabBar();
+					}
+				}
+				ImGui::Text("Selected tileset : %i", curTileset);
+			}
+			ImGui::End();
+		}
 
 		// imgui image test
 		ImGui::Begin("Image test");
@@ -150,6 +225,10 @@ public:
 		ImGui::End();
 
 		ImGui::ShowDemoWindow();
+	}
+
+	void Draw() {
+		DrawLevelData(lvldt, engine.graphics.textures, true);
 	}
 };
 
@@ -295,82 +374,9 @@ int main(int nbarg, char ** args) {
 
 		TestCamera camera(engine);
 		EngineLevel lvl(engine,"niveau.lvl");
+		LevelEditor editor(lvl);
 		FPSCounter fc(engine);
 
 		while (engine.OneLoop()) {}
 	}
 }
-
-/*
-#include <iostream>
-#include <allegro5\allegro.h>
-#include <allegro5\allegro_primitives.h>
-#include <allegro5\allegro_font.h>
-#include <allegro5\allegro_ttf.h>
-#include <allegro5\display.h>
-#include <allegro5\events.h>
-#include "JackamikazGUI.h"
-
-int main(int nbarg, char ** args)
-{
-
-	al_init();
-	al_init_primitives_addon();
-	al_init_font_addon();
-	al_init_ttf_addon();
-
-	ALLEGRO_DISPLAY* display = al_create_display(640, 480);
-	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
-	al_register_event_source(queue, al_get_display_event_source(display));
-	al_install_mouse();
-	al_register_event_source(queue, al_get_mouse_event_source());
-	al_install_keyboard();
-	al_register_event_source(queue, al_get_keyboard_event_source());
-
-	ALLEGRO_EVENT event;
-
-	jmg::WallPaper wp(al_map_rgb(200, 200, 200));
-	jmg::Window win(200,250,"Salut les gens");
-	jmg::Text text(u"Salut je teste ma vie\ngenre lol ‡‡‡‡‡‡ÈÈÈÈÈÈ ouais trop bien tavu ouech genre vazi quoi");
-	jmg::MoveableRectangle mr(200,350);
-	mr.addChild(&text);
-	wp.addChild(&mr);
-
-	win.mColor.g = 0;
-	win.mOutline = 1;
-	win.mRelx = 300;
-	win.mRely = 150;
-
-	text.mRelx = 10;
-	text.mRely = 10;
-	text.mWidth = mr.mWidth - text.mRelx * 2;
-
-	win.setParent(&wp, false);
-
-
-	bool quitApp = false;
-	while (!quitApp)
-	{
-		al_wait_for_event(queue, &event);
-		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-			quitApp = true;
-		}
-		else {
-			if (event.type == ALLEGRO_EVENT_KEY_UP
-			 && event.keyboard.keycode == ALLEGRO_KEY_F1) {
-				win.open();
-			}
-			wp.baseHandleEvent(event);
-			wp.baseDraw();
-			al_flip_display();
-		}
-	}
-
-	al_destroy_font(jmg::fetchDefaultFont());
-	al_destroy_display(display);
-
-	al_shutdown_primitives_addon();
-
-	return 0;
-}
-*/
