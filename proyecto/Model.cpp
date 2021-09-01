@@ -58,10 +58,10 @@ Model::Model(const LevelData& level, GraphicContext& g) : graphics(g)
 							uf = (float)tsdt->tw / tw;
 							vf = (float)tsdt->th / th;
 							//if (flipTexV)
-							{
+							//{
 								vo = 1.0f - vo;
 								vf = -vf;
-							}
+							//}
 						}
 
 						unsigned int& meshid = meshmap[tsdt];

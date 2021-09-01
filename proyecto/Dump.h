@@ -40,6 +40,10 @@ inline T strToVal(const char * str)
 std::string tolower(const std::string& str);
 std::string toupper(const std::string& str);
 
+void eraseAllSubStr(std::string& mainStr, const std::string& toErase);
+// make this better : add "../" when the file is outside the working directory
+std::string makefilelocal(const std::string& file);
+
 void DrawGlWireCube(float neg, float pos);
 void DrawGlWireCapsule(float radius, float height, int turns = 3);
 

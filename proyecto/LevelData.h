@@ -40,11 +40,16 @@ public:
 
 		TilesetData();
 		TilesetData(const TilesetData& copy);
-		TilesetData(const char * file, unsigned int ox, unsigned int oy, unsigned int px, unsigned int py, unsigned int tw, unsigned int th);
+		TilesetData(const char * file, int ox, int oy, int px, int py, int tw, int th);
 		void operator=(const TilesetData& copy);
 		~TilesetData();
 		std::string file;
-		unsigned int ox, oy, px, py, tw, th;
+		union {
+			int values[6];
+			struct {
+				int ox, oy, px, py, tw, th;
+			};
+		};
 	};
 
 	const TilesetData* GetTilesetData(const int index) const;

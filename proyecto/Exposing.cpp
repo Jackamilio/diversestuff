@@ -3,49 +3,49 @@
 #include "tinyxml2.h"
 #include "Dump.h"
 
-template<> Exposing::Type Exposing::getType<bool>() { return Exposing::BOOL; }
-template<> Exposing::Type Exposing::getType<char>() { return Exposing::INT8; }
-template<> Exposing::Type Exposing::getType<unsigned char>() { return Exposing::UINT8; }
-template<> Exposing::Type Exposing::getType<short>() { return Exposing::INT16; }
-template<> Exposing::Type Exposing::getType<unsigned short>() { return Exposing::UINT16; }
-template<> Exposing::Type Exposing::getType<int>() { return Exposing::INT; }
-template<> Exposing::Type Exposing::getType<unsigned int>() { return Exposing::UINT; }
-template<> Exposing::Type Exposing::getType<float>() { return Exposing::FLOAT; }
-template<> Exposing::Type Exposing::getType<double>() { return Exposing::DOUBLE; }
-template<> Exposing::Type Exposing::getType<std::string>() { return Exposing::STRING; }
+template<> Exposing::Type Exposing::getType<bool>() { return Exposing::Type::BOOL; }
+template<> Exposing::Type Exposing::getType<char>() { return Exposing::Type::INT8; }
+template<> Exposing::Type Exposing::getType<unsigned char>() { return Exposing::Type::UINT8; }
+template<> Exposing::Type Exposing::getType<short>() { return Exposing::Type::INT16; }
+template<> Exposing::Type Exposing::getType<unsigned short>() { return Exposing::Type::UINT16; }
+template<> Exposing::Type Exposing::getType<int>() { return Exposing::Type::INT; }
+template<> Exposing::Type Exposing::getType<unsigned int>() { return Exposing::Type::UINT; }
+template<> Exposing::Type Exposing::getType<float>() { return Exposing::Type::FLOAT; }
+template<> Exposing::Type Exposing::getType<double>() { return Exposing::Type::DOUBLE; }
+template<> Exposing::Type Exposing::getType<std::string>() { return Exposing::Type::STRING; }
 
 std::map<Exposing::Type, Exposing::StructDescBase*> Exposing::registeredTypes;
-unsigned int typeCount = (unsigned int)Exposing::MAX;
+unsigned int typeCount = (unsigned int)Exposing::Type::MAX;
 
 std::string Exposing::getBasicTypeAsString(Exposing::Type type, char* address) {
-	if (type == Exposing::BOOL) {
+	if (type == Exposing::Type::BOOL) {
 		return std::string((*(bool*)address) ? "true" : "false");
 	}
-	else if (type == Exposing::INT8) {
+	else if (type == Exposing::Type::INT8) {
 		return std::to_string(*(char*)address);
 	}
-	else if (type == Exposing::UINT8) {
+	else if (type == Exposing::Type::UINT8) {
 		return std::to_string(*(unsigned char*)address);
 	}
-	else if (type == Exposing::INT16) {
+	else if (type == Exposing::Type::INT16) {
 		return std::to_string(*(short*)address);
 	}
-	else if (type == Exposing::UINT16) {
+	else if (type == Exposing::Type::UINT16) {
 		return std::to_string(*(unsigned short*)address);
 	}
-	else if (type == Exposing::INT) {
+	else if (type == Exposing::Type::INT) {
 		return std::to_string(*(int*)address);
 	}
-	else if (type == Exposing::UINT) {
+	else if (type == Exposing::Type::UINT) {
 		return std::to_string(*(unsigned int*)address);
 	}
-	else if (type == Exposing::FLOAT) {
+	else if (type == Exposing::Type::FLOAT) {
 		return std::to_string(*(float*)address);
 	}
-	else if (type == Exposing::DOUBLE) {
+	else if (type == Exposing::Type::DOUBLE) {
 		return std::to_string(*(double*)address);
 	}
-	else if (type == Exposing::STRING) {
+	else if (type == Exposing::Type::STRING) {
 		return *(std::string*)address;
 	}
 	else {
@@ -55,16 +55,16 @@ std::string Exposing::getBasicTypeAsString(Exposing::Type type, char* address) {
 
 bool Exposing::setBasicTypeFromString(Exposing::Type type, char* address, const std::string& str) {
 	switch (type) {
-	case Exposing::BOOL:	*(bool*)address = (tolower(str).compare("true") == 0); break;
-	case Exposing::INT8:	*(char*)address = (char)strToVal<int>(str); break;
-	case Exposing::UINT8:	*(unsigned char*)address = (unsigned char)strToVal<int>(str); break;
-	case Exposing::INT16:	*(short*)address = strToVal<short>(str); break;
-	case Exposing::UINT16:	*(unsigned short*)address = strToVal<unsigned short>(str); break;
-	case Exposing::INT:		*(int*)address = strToVal<int>(str); break;
-	case Exposing::UINT:	*(unsigned int*)address = strToVal<unsigned int>(str); break;
-	case Exposing::FLOAT:	*(float*)address = strToVal<float>(str); break;
-	case Exposing::DOUBLE:	*(double*)address = strToVal<double>(str); break;
-	case Exposing::STRING:	*(std::string*)address = str; break;
+	case Exposing::Type::BOOL:	*(bool*)address = (tolower(str).compare("true") == 0); break;
+	case Exposing::Type::INT8:	*(char*)address = (char)strToVal<int>(str); break;
+	case Exposing::Type::UINT8:	*(unsigned char*)address = (unsigned char)strToVal<int>(str); break;
+	case Exposing::Type::INT16:	*(short*)address = strToVal<short>(str); break;
+	case Exposing::Type::UINT16:	*(unsigned short*)address = strToVal<unsigned short>(str); break;
+	case Exposing::Type::INT:		*(int*)address = strToVal<int>(str); break;
+	case Exposing::Type::UINT:	*(unsigned int*)address = strToVal<unsigned int>(str); break;
+	case Exposing::Type::FLOAT:	*(float*)address = strToVal<float>(str); break;
+	case Exposing::Type::DOUBLE:	*(double*)address = strToVal<double>(str); break;
+	case Exposing::Type::STRING:	*(std::string*)address = str; break;
 	default: return false;
 	}
 	return true;
@@ -83,7 +83,7 @@ Exposing::Type Exposing::defineStruct(const char * name, const Exposing::StructI
 
 Exposing::StructMember::StructMember()
 	: name("struct has no name")
-	, type(Exposing::UNDEF)
+	, type(Exposing::Type::UNDEF)
 	, offset(0)
 {
 }
@@ -431,7 +431,7 @@ void saveToFileRecursive(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* paren
 		tinyxml2::XMLElement* el = doc.NewElement((std::string(sc->isContainer() ? "id_" : "") + it->getName()).c_str());
 		Exposing::Type t = it->getType();
 		Exposing::WatchedAddress* mwa = it->generateWatchedAddress();
-		if (t < Exposing::MAX) {
+		if (t < Exposing::Type::MAX) {
 			el->SetText(getBasicTypeAsString(t, mwa->calculateAddress()).c_str());
 		}
 		else {

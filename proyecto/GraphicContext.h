@@ -20,16 +20,12 @@ public:
 	glm::vec3 ambient;
 	glm::mat2x4 pointLights[MAX_LIGHTS];
 
+	GraphicContext();
+	~GraphicContext();
+
+	void Clear();
+
 	void SetCommonUniforms();
-
-	GraphicContext() : models(*this) {}
-	~GraphicContext() { Clear(); }
-
-	void Clear() {
-		programs.Clear();
-		models.Clear();
-		textures.Clear();
-	}
 
 private:
 

@@ -46,7 +46,7 @@ public:
 	};
 
 	struct KeyFrame {
-		KeyFrame() {}
+		KeyFrame() : time(0.0f), val() {}
 		float time;
 		union {
 			glm::vec4 val;

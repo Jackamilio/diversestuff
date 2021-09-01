@@ -2,6 +2,7 @@
 #include <allegro5/allegro_opengl.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_font.h>
+#include <allegro5/allegro_native_dialog.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "imgui.h"
@@ -152,6 +153,11 @@ bool Engine::Init()
 
 	if (!al_init_font_addon()) {
 		fprintf(stderr, "failed to load font addon!\n");
+		return false;
+	}
+
+	if (!al_init_native_dialog_addon()) {
+		fprintf(stderr, "failed to load native dialog addon!\n");
 		return false;
 	}
 

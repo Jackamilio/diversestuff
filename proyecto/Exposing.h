@@ -6,7 +6,7 @@
 #include <map>
 
 namespace Exposing {
-	enum Type {
+	enum class Type {
 		UNDEF,
 		BOOL,
 		INT8,
@@ -68,7 +68,7 @@ namespace Exposing {
 
 		// `eval(...)` is a no-op for otherwise unmatched arguments
 		static Type _eval(...) {
-			return UNDEF;
+			return Type::UNDEF;
 		}
 
 		// `eval()` delegates to :-
@@ -400,8 +400,8 @@ bool Exposing::loadFromFile(T& obj, const char* filename)
 #define STR(s) STR_(s)
 #define EXPOSE_START \
 Exposing::Type EXPOSE_TYPE::__getType() { \
-	static Exposing::Type type = Exposing::UNDEF; \
-	if (type != Exposing::UNDEF) return type; \
+	static Exposing::Type type = Exposing::Type::UNDEF; \
+	if (type != Exposing::Type::UNDEF) return type; \
 	std::vector<Exposing::StructMember> vec; \
 	Exposing::StructMember tmp;
 

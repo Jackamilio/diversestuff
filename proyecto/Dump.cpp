@@ -29,6 +29,31 @@ std::string toupper(const std::string& str)
 	return ret;
 }
 
+// found in https://thispointer.com/how-to-remove-substrings-from-a-string-in-c/
+void eraseAllSubStr(std::string& mainStr, const std::string& toErase)
+{
+	size_t pos = std::string::npos;
+	// Search for the substring in string in a loop untill nothing is found
+	while ((pos = mainStr.find(toErase)) != std::string::npos)
+	{
+		// If found then erase it from string
+		mainStr.erase(pos, toErase.length());
+	}
+}
+
+std::string makefilelocal(const std::string& file)
+{
+	char* alcurdir = al_get_current_directory();
+	std::string curdir(alcurdir);
+	al_free(alcurdir);
+
+	curdir.append("\\");
+	std::string ret(file);
+	eraseAllSubStr(ret, curdir);
+	
+	return ret;
+}
+
 bool linePlaneIntersection(const glm::vec3& plane_center, const glm::vec3& plane_normal, const glm::vec3& line_origin, const glm::vec3& line_direction, bool lineasray, glm::vec3* res)
 {
 	//plane_normal = glm::normalize(plane_normal);

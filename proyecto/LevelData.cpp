@@ -290,7 +290,7 @@ void LevelData::UpdateInstance(const std::string & field, const std::string & va
 
 bool LevelData::RayCast(const glm::vec3 & rayOrigin, const glm::vec3 & rayDirection, float limit, LevelData::RayCastResult* res) const
 {
-	glm::vec3 planeX, planeY, planeZ, planeXup, planeYup, planeZup, intsctX, intsctY, intsct, intsctZ, cAsVec3;
+	glm::vec3 planeX(0.0f), planeY(0.0f), planeZ(0.0f), planeXup(0.0f), planeYup(0.0f), planeZup(0.0f), intsctX(0.0f), intsctY(0.0f), intsct(0.0f), intsctZ(0.0f), cAsVec3(0.0f);
 	float distPX, distPY, distPZ, intsctDist, curBrickDist = 0.0f;
 	int triangleIndex;
 
@@ -385,7 +385,7 @@ void LevelData::TilesetData::OldLoad(std::ifstream & f)
 	f >> file >> ox >> oy >> px >> py >> tw >> th;
 }
 
-LevelData::TilesetData::TilesetData() : file("undefined"), ox(0), oy(0), px(0), py(0), tw(0), th(0)
+LevelData::TilesetData::TilesetData() : file("undefined"), values {0}
 {
 }
 
@@ -400,7 +400,7 @@ LevelData::TilesetData::TilesetData(const TilesetData & copy)
 	this->tw = copy.tw;
 }
 
-LevelData::TilesetData::TilesetData(const char * file, unsigned int ox, unsigned int oy, unsigned int px, unsigned int py, unsigned int tw, unsigned int th)
+LevelData::TilesetData::TilesetData(const char * file, int ox, int oy, int px, int py, int tw, int th)
 {
 	this->file = file;
 	this->ox = ox;

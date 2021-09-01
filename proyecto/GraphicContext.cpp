@@ -1,5 +1,21 @@
 #include "GraphicContext.h"
 
+GraphicContext::GraphicContext() :
+	models(*this),
+	proj(1.0f),
+	view(1.0f),
+	ambient(0.1f),
+	pointLights()
+{}
+
+GraphicContext::~GraphicContext() { Clear(); }
+
+void GraphicContext::Clear() {
+	programs.Clear();
+	models.Clear();
+	textures.Clear();
+}
+
 void GraphicContext::SetCommonUniforms()
 {
 	Program* program = programs.GetCurrent();

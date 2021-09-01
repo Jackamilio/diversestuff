@@ -71,7 +71,7 @@ private:
 
 	class SPtrBase {
 	public:
-		int count;
+		int count{};
 		virtual void Del() = 0;
 	};
 
