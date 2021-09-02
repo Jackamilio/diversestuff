@@ -59,7 +59,8 @@ namespace DearImguiIntegration {
 Engine::Engine()
 	: inputRoot()
 	, updateRoot()
-	, graphicRoot()
+	, graphicTargets()
+	, defaultGraphicTarget()
 	, mainGraphic(*this)
 	, debugGraphic(graphics)
 	, overlayGraphic(*this)
@@ -71,9 +72,11 @@ Engine::Engine()
 	, eventQueue(0)
 	, initSuccess(false)
 {
-	graphicRoot.AddChild(&mainGraphic);
-	graphicRoot.AddChild(&debugGraphic);
-	graphicRoot.AddChild(&overlayGraphic);
+	graphicTargets.AddChild(&defaultGraphicTarget);
+
+	defaultGraphicTarget.AddChild(&mainGraphic);
+	defaultGraphicTarget.AddChild(&debugGraphic);
+	defaultGraphicTarget.AddChild(&overlayGraphic);
 
 	lastTime = time = 0.0;
 	dt = dtTarget = 1.0 / 60.0;
@@ -169,6 +172,8 @@ bool Engine::Init()
 		return false;
 	}
 
+	defaultGraphicTarget.bitmap = al_get_backbuffer(display);
+
 	eventQueue = al_create_event_queue();
 	if (!eventQueue) {
 		fprintf(stderr, "failed to create event queue!\n");
@@ -255,7 +260,25 @@ bool Engine::OneLoop()
 	//physics->stepSimulation(dt, 10);
 
 	RecursiveUpdate(&updateRoot);
-	RecursiveGraphic(&graphicRoot);
+
+	///////////////////////// TARGETS TEST
+
+	/*static ALLEGRO_BITMAP* alttarget = nullptr;
+	if (!alttarget) {
+		al_set_new_bitmap_depth(16);
+		alttarget = al_create_bitmap(512, 512);
+	}
+
+	al_set_target_bitmap(alttarget);*/
+
+	///////////////////////////////////////
+
+	RecursiveGraphic(&graphicTargets);
+
+	//al_set_target_backbuffer(display);
+	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//al_draw_bitmap(alttarget, 20, 20, 0);
 
 	DearImguiIntegration::Render();
 
@@ -296,6 +319,47 @@ void Engine::GraphicRoot::Draw()
 {
 }
 
+Engine::GraphicTarget::GraphicTarget(ALLEGRO_BITMAP* bitmap) :
+	ownsBitmap(false),
+	bitmap(bitmap),
+	clearColor(0.0f)
+{
+}
+
+Engine::GraphicTarget::GraphicTarget(int width, int height, bool depth) :
+	ownsBitmap(true),
+	bitmap(nullptr),
+	clearColor(0.0f)
+{
+	int olddepth = al_get_new_bitmap_depth();
+	if (depth) {
+		al_set_new_bitmap_depth(16);
+	}
+
+	bitmap = al_create_bitmap(width, height);
+
+	if (depth) {
+		al_set_new_bitmap_depth(olddepth);
+	}
+}
+
+Engine::GraphicTarget::~GraphicTarget()
+{
+	if (ownsBitmap && bitmap) {
+		al_destroy_bitmap(bitmap);
+	}
+}
+
+void Engine::GraphicTarget::Draw()
+{
+	if (bitmap) {
+		al_set_target_bitmap(bitmap);
+		glViewport(0, 0, al_get_bitmap_width(bitmap), al_get_bitmap_height(bitmap));
+		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+}
+
 Engine::ShaderGraphic::ShaderGraphic(GraphicContext & g) : graphics(g)
 {
 }
@@ -326,20 +390,20 @@ Engine::MainGraphic::MainGraphic(Engine& e) : ShaderGraphic(e.graphics), engine(
 
 void Engine::MainGraphic::Draw()
 {
-	glViewport(0, 0, al_get_display_width(engine.display), al_get_display_height(engine.display));
+	//glViewport(0, 0, al_get_display_width(engine.display), al_get_display_height(engine.display));
+	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(glm::value_ptr(engine.graphics.proj));
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(glm::value_ptr(engine.graphics.view));
-
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(glm::value_ptr(engine.graphics.proj));
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(glm::value_ptr(engine.graphics.view));
 
 	ShaderGraphic::Draw();
 }

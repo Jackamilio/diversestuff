@@ -29,6 +29,17 @@ std::string toupper(const std::string& str)
 	return ret;
 }
 
+void swapmemorychunks(void* elementA, void* elementB, size_t size)
+{
+	unsigned char* swap = new unsigned char[size];
+
+	memcpy(swap, elementA, size);
+	memcpy(elementA, elementB, size);
+	memcpy(elementB, swap, size);
+
+	delete[] swap;
+}
+
 // found in https://thispointer.com/how-to-remove-substrings-from-a-string-in-c/
 void eraseAllSubStr(std::string& mainStr, const std::string& toErase)
 {

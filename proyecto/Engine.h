@@ -63,6 +63,18 @@ public:
 	public:
 		void Draw();
 	};
+	class GraphicTarget : public Graphic {
+	private:
+		bool ownsBitmap;
+	public:
+		ALLEGRO_BITMAP* bitmap;
+		glm::vec4 clearColor;
+
+		GraphicTarget(ALLEGRO_BITMAP* bitmap = nullptr);
+		GraphicTarget(int width, int height, bool depth = false);
+		~GraphicTarget();
+		void Draw();
+	};
 
 	// graphic node classes
 	class ShaderGraphic : public Graphic {
@@ -130,7 +142,8 @@ public:
 	InputRoot inputRoot;
 	//DynamicRoot dynamicRoot;
 	UpdateRoot updateRoot;
-	GraphicRoot graphicRoot;
+	GraphicRoot graphicTargets;
+	GraphicTarget defaultGraphicTarget;
 	MainGraphic mainGraphic;
 	DebugGraphic debugGraphic;
 	OverlayGraphic overlayGraphic;

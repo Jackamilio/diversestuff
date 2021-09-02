@@ -66,23 +66,6 @@ void EditorCamera::SetDistance(float dist, float min, float max)
 
 void EditorCamera::CalcMatrix(glm::mat4x4& matrix)
 {
-	// lookat
-	/*glm::vec3 from = GetPosition();
-	glm::vec3 mz(from - focuspoint);
-	glm::vec3 my(up);
-	glm::vec3 mx(glm::cross(my,mz));
-	my = glm::cross(mz, mx);
-	mx = glm::normalize(mx);
-	my = glm::normalize(my);
-	mz = glm::normalize(mz);
-
-	matrix[0] = glm::vec4(mx, 0);
-	matrix[1] = glm::vec4(my, 0);
-	matrix[2] = glm::vec4(mz, 0);
-	matrix[3] = glm::vec4(from, 1);
-
-	matrix = glm::inverse(matrix);*/
-
 	matrix = glm::lookAt(GetPosition(), focuspoint, up);
 }
 

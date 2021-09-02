@@ -30,6 +30,32 @@ ALLEGRO_FONT* fetchDefaultFont()
 }
 
 
+class TestGraphicTarget : public Engine::DoubleGraphic {
+public:
+	Engine& engine;
+	Engine::GraphicTarget target;
+
+	TestGraphicTarget(Engine& e) :
+		engine(e),
+		target(256,256)
+	{
+		engine.graphicTargets.AddChild(&target, true);
+		target.clearColor.b = 1.0f;
+		target.clearColor.a = 1.0f;
+
+		engine.overlayGraphic.AddChild(this);
+		target.AddChild(this->GetSecondGraphic());
+	}
+
+	void Draw() {
+		al_draw_bitmap(target.bitmap, 10, 50, 0);
+	}
+
+	void SecondDraw() {
+		al_draw_textf(fetchDefaultFont(), al_map_rgb(255, 255, 255), 10, 10, 0, "hey hiy hoy haaaar");
+	}
+};
+
 class TestCamera : public Engine::Input, public Engine::Update {
 public:
 	Engine & engine;
@@ -126,7 +152,7 @@ public:
 	}
 };
 
-class LevelEditor : public Engine::Input, public Engine::Update, public Engine::Graphic {
+class LevelEditor : public Engine::Input, public Engine::Update, public Engine::DoubleGraphic {
 public:
 	Engine& engine;
 	EngineLevel& lvl;
@@ -134,18 +160,20 @@ public:
 	bool showGui;
 	bool lastShowGui;
 	int lastTileset;
-	char tsfile[64] = "";
-	union {
-		int tilesetmemory[6]{ 0 };
-		struct {
-			int tsox, tsoy, tspx, tspy, tsw, tsh;
-		};
-	};
+	int curBrickdata;
+	int lastBrickdata;
+	LevelData::TilesetData guiTsd;
+	std::vector<LevelData::Vertex> guiBdVertices;
+	LevelData::BrickData::TriangleList guiBdTriangles;
 	struct SelectedTile {
 		int set = -1, x = 0, y = 0;
 	};
 	SelectedTile selectedtile{};
 	int TSIDtoDel;
+	int BDIDtoDel;
+
+	Engine::GraphicTarget brickDataPreview;
+	EditorCamera camera;
 
 	LevelEditor(EngineLevel& lvl) :
 		engine(lvl.engine),
@@ -154,10 +182,19 @@ public:
 		showGui(false),
 		lastShowGui(false),
 		lastTileset(-1),
-		TSIDtoDel(-1)
+		curBrickdata(-1),
+		lastBrickdata(-1),
+		TSIDtoDel(-1),
+		BDIDtoDel(-1),
+		brickDataPreview(265,256,true)
 	{
 		engine.inputRoot.AddChild(this);
 		engine.updateRoot.AddChild(this);
+
+		camera.SetAngles(1.0f, 0.5f);
+		camera.SetDistance(3.0f);
+		camera.SetUp(0, 0, 1);
+		camera.SetFocusPoint(0.5f, 0.5f, 0.5f);
 	}
 
 	bool Event(ALLEGRO_EVENT& event) {
@@ -168,11 +205,11 @@ public:
 		return false;
 	}
 
-	void LoadTilesetInGui(int tileset) {
-		const LevelData::TilesetData* tsd = lvldt.GetTilesetData(tileset);
-		if (tsd) {
-			strcpy_s(tsfile, 64, tsd->file.c_str());
-			memcpy(tilesetmemory, tsd->values, sizeof(tilesetmemory));
+	void LoadBrickdataInGui(int brickdata)
+	{
+		const LevelData::BrickData* bd = lvldt.GetBrickData(brickdata);
+		if (bd) {
+
 		}
 	}
 
@@ -185,10 +222,13 @@ public:
 				// show the debug level, and not the correct one anymore
 				engine.mainGraphic.RemoveChildFromProgram(&lvl, "test.pgr");
 				engine.mainGraphic.AddChild(this);
+				engine.graphicTargets.AddChild(&brickDataPreview, true);
+				brickDataPreview.AddChild(GetSecondGraphic());
 			}
 			else {
 				// show the correct level, and not the debug one anymore
 				engine.mainGraphic.RemoveChild(this);
+				engine.graphicTargets.RemoveChild(&brickDataPreview);
 
 				// tell him to reload
 				engine.graphics.models.RemoveValue(&lvldt);
@@ -200,9 +240,10 @@ public:
 
 		if (showGui) {
 			if (ImGui::Begin("Level editor", &showGui)) {
+				int wantTSIDtoDel = -1;
+				int wantBDIDtoDel = -1;
 				if (ImGui::CollapsingHeader("Tilesets")) {
 					if (ImGui::BeginTabBar("Tilesets")) {
-						int wantTSIDtoDel = -1;
 						int curTileset = 0;
 						const LevelData::TilesetData* tsd = lvldt.GetTilesetData(curTileset);
 						while (tsd) {
@@ -213,7 +254,8 @@ public:
 							if (ImGui::BeginTabItem(tabtitle, &open)) {
 								if (curTileset != lastTileset) {
 									lastTileset = curTileset;
-									LoadTilesetInGui(curTileset);
+									//LoadTilesetInGui(curTileset);
+									guiTsd = *tsd;
 								}
 
 								{
@@ -230,37 +272,40 @@ public:
 											std::string result = makefilelocal(answer);
 											if (result.compare(tsd->file) != 0) {
 												change = true;
-												strcpy_s(tsfile, 64, result.c_str());
+												guiTsd.file = result;
 											}
 										}
 										al_destroy_native_file_dialog(dialog);
 									}
 									ImGui::SameLine();
+									char tsfile[64] = "";
+									strcpy_s(tsfile, 64, guiTsd.file.c_str());
 									change = change || ImGui::InputText("Picture file", tsfile, 64, ImGuiInputTextFlags_CharsNoBlank);
+									guiTsd.file = tsfile;
 
 									// tilsedata values tweaking
 									if (ImGui::BeginTable("Tilset values", 2)) {
 										ImGui::TableNextColumn();
-										change = change || ImGui::InputInt("Tile offset X", &tsox);
+										change = ImGui::InputInt("Tile offset X", &guiTsd.ox) || change;
 										ImGui::TableNextColumn();
-										change = change || ImGui::InputInt("Tile offset Y", &tsoy);
+										change = ImGui::InputInt("Tile offset Y", &guiTsd.oy) || change;
 
 										ImGui::TableNextColumn();
-										change = change || ImGui::InputInt("Tile padding X", &tspx);
+										change = ImGui::InputInt("Tile padding X", &guiTsd.px) || change;
 										ImGui::TableNextColumn();
-										change = change || ImGui::InputInt("Tile padding Y", &tspy);
+										change = ImGui::InputInt("Tile padding Y", &guiTsd.py) || change;
 
 										ImGui::TableNextColumn();
-										change = change || ImGui::InputInt("Tile width", &tsw);
+										change = ImGui::InputInt("Tile width", &guiTsd.tw) || change;
 										ImGui::TableNextColumn();
-										change = change || ImGui::InputInt("Tile height", &tsh);
+										change = ImGui::InputInt("Tile height", &guiTsd.th) || change;
 
 										ImGui::EndTable();
 									}
 
 									// update the level and its undo/redo if a change was detected
 									if (change) {
-										lvldt.UpdateTilesetData(curTileset, tsfile, tsox, tsoy, tspx, tspy, tsw, tsh);
+										lvldt.UpdateTilesetData(curTileset, guiTsd.file.c_str(), guiTsd.ox, guiTsd.oy, guiTsd.px, guiTsd.py, guiTsd.tw, guiTsd.th);
 									}
 								}
 
@@ -284,15 +329,15 @@ public:
 									// double loop to show tiles as buttons, with frame padding calculation
 									const int p = 1;
 									const int p2 = p * 2;
-									ImVec2 buttonsize(tsw - p2, tsh - p2);
-									ImVec2 texpos(tsox, tsoy);
+									ImVec2 buttonsize(guiTsd.tw - p2, guiTsd.th - p2);
+									ImVec2 texpos(guiTsd.ox, guiTsd.oy);
 									ImVec2 cursorpos(0, 0);
 									int ty = 0;
-									while (texpos.y + tspy + tsh <= texh) {
-										texpos.x = tsox;
+									while (texpos.y + guiTsd.py + guiTsd.th <= texh) {
+										texpos.x = guiTsd.ox;
 										cursorpos.x = 0;
 										int tx = 0;
-										while (texpos.x + tspx + tsw <= texw) {
+										while (texpos.x + guiTsd.px + guiTsd.tw <= texw) {
 											if (!showtilesonly) {
 												cursorpos = texpos;
 											}
@@ -302,7 +347,7 @@ public:
 											ImGui::PushID(tx | ty << 12);
 											if (ImGui::ImageButton(tex.GetAlValue(), buttonsize,
 												ImVec2((texpos.x + p) / texw, (texpos.y + p) / texh),
-												ImVec2((texpos.x + tsw - p) / texw, (texpos.y + tsh - p) / texh),
+												ImVec2((texpos.x + guiTsd.tw - p) / texw, (texpos.y + guiTsd.th - p) / texh),
 												p,
 												ImVec4(0, 0, 0, 0),
 												// green tint if selected, white otherwise
@@ -315,12 +360,12 @@ public:
 											}
 											ImGui::PopID();
 
-											texpos.x += tspx + tsw;
-											cursorpos.x += tsw + 2;
+											texpos.x += guiTsd.px + guiTsd.tw;
+											cursorpos.x += guiTsd.tw + 2;
 											++tx;
 										}
-										texpos.y += tspy + tsh;
-										cursorpos.y += tsh + 2;
+										texpos.y += guiTsd.py + guiTsd.th;
+										cursorpos.y += guiTsd.th + 2;
 										++ty;
 									}
 
@@ -345,37 +390,238 @@ public:
 						}
 
 						ImGui::EndTabBar();
+					}
+				}
+				if (ImGui::CollapsingHeader("Bricks")) {
+					if (ImGui::BeginTabBar("Brick data sheets")) {
+						int curbd = 0;
+						LevelData::BrickData* bd = lvldt.GetBrickData(curbd);
+						while (bd) {
+							char tabtitle[64];
+							sprintf_s(tabtitle, 64, "Brick data %i", curbd);
 
-						// popup to confirm deleting a tileset
-						if (wantTSIDtoDel >= 0) {
-							TSIDtoDel = wantTSIDtoDel;
-							ImGui::OpenPopup("Delete?");
+							static int selectedtriangle = -1;
+							static int selectedvertex = -1;
+							bool open = true;
+							if (ImGui::BeginTabItem(tabtitle, &open)) {
+								curBrickdata = curbd;
+								if (curbd != lastBrickdata) {
+									lastBrickdata = curbd;
+									guiBdTriangles = bd->GetTriangleList();
+									guiBdVertices.clear();
+									int vi = 0;
+									const LevelData::Vertex* v = bd->GetVertex(vi);
+									while (v) {
+										guiBdVertices.push_back(*v);
+										v = bd->GetVertex(++vi);
+									}
+									selectedtriangle = -1;
+									selectedvertex = -1;
+								}
+
+								if (selectedvertex >= guiBdVertices.size()) { selectedvertex = -1; }
+
+								if (ImGui::BeginChild("Fine vertex control", ImVec2(220, 300))) {
+									static LevelData::Vertex dummy;
+									const bool disabled = (selectedvertex < 0);
+									LevelData::Vertex* v = disabled ? &dummy : &guiBdVertices[selectedvertex];
+									ImGui::BeginDisabled(disabled);
+									ImGui::Text(disabled ? "No vertex selected" : "Vertex %i selected", selectedvertex);
+									if (!disabled) {
+										ImGui::SameLine();
+										if (ImGui::Button("Remove")) {
+											bd->RemoveVertex(selectedvertex);
+											guiBdVertices.erase(guiBdVertices.begin() + selectedvertex);
+											selectedvertex = -1;
+										}
+									}
+									const int vsw = 35, vsh = 270;
+									const char* format = "%.2f";
+									bool changed = ImGui::VSliderFloat("##x", ImVec2(vsw, vsh), &v->x, 0.0f, 1.0f, format); ImGui::SameLine();
+									changed = ImGui::VSliderFloat("##y", ImVec2(vsw, vsh), &v->y, 0.0f, 1.0f, format) || changed; ImGui::SameLine();
+									changed = ImGui::VSliderFloat(" ##z", ImVec2(vsw, vsh), &v->z, 0.0f, 1.0f, format) || changed; ImGui::SameLine();
+									changed = ImGui::VSliderFloat("##u", ImVec2(vsw, vsh), &v->u, 0.0f, 1.0f, format) || changed; ImGui::SameLine();
+									changed = ImGui::VSliderFloat("##v", ImVec2(vsw, vsh), &v->v, 0.0f, 1.0f, format) || changed;
+									if (changed) { bd->UpdateVertex(selectedvertex, v->x, v->y, v->z, v->u, v->v); }
+									ImGui::EndDisabled();
+								}
+								ImGui::EndChild();
+
+								ImGui::SameLine();
+								ImGui::Image(brickDataPreview.bitmap, ImVec2(256, 256));
+
+								if (ImGui::BeginChild("Vertices", ImVec2(320, 200))) {
+									for (int i = 0; i < guiBdVertices.size(); ++i) {
+										LevelData::Vertex& v = guiBdVertices[i];
+										ImGui::PushID(i);
+										char buf[32];
+										sprintf_s(buf, 32, "%i:", i);
+										if (ImGui::Selectable(buf, selectedvertex == i, ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0, 20))) {
+											selectedvertex = i;
+										}
+										ImGui::SameLine();
+										ImGui::PushItemWidth(140.0f);
+										bool changed = ImGui::InputFloat3("xyz", v.values);
+										ImGui::PopItemWidth();
+										ImGui::SameLine();
+										ImGui::PushItemWidth(90.0f);
+										changed = ImGui::InputFloat2("uv", &v.u) || changed;
+										ImGui::PopItemWidth();
+										ImGui::PopID();
+										if (changed) { bd->UpdateVertex(i, v.x, v.y, v.z, v.u, v.v); }
+									}
+									if (ImGui::Button("Add a vertex")) {
+										bd->AddVertex();
+										guiBdVertices.push_back(LevelData::Vertex());
+										ImGui::Text(" "); //dummy for scroll
+										ImGui::SetScrollHereY(0.0f);
+									}
+								}
+								ImGui::EndChild();
+
+								ImGui::SameLine();
+
+								if (ImGui::BeginChild("Triangles section", ImVec2(130, 200))) {
+
+									if (selectedtriangle * 3 > guiBdTriangles.size()) { selectedtriangle = -1; }
+
+									bool change = false;
+									const bool disabled = (selectedtriangle < 0);
+									ImGui::PushItemWidth(25);
+									ImGui::BeginDisabled(disabled);
+									ImGui::Text("  "); ImGui::SameLine();
+									if (ImGui::Button("-")) {
+										const int tripos = selectedtriangle * 3;
+										guiBdTriangles.erase(guiBdTriangles.begin() + tripos, guiBdTriangles.begin() + tripos + 3);
+										change = true;
+									}
+									ImGui::SameLine();
+									bool refreshscroll = false;
+									if (ImGui::Button("^") && selectedtriangle > 0) {
+										refreshscroll = true;
+
+										swapmemorychunks(&guiBdTriangles[selectedtriangle * 3], &guiBdTriangles[(selectedtriangle - 1) * 3], sizeof(int[3]));
+										--selectedtriangle;
+										change = true;
+									}
+									ImGui::SameLine();
+									if (ImGui::Button("v") && selectedtriangle + 1 < guiBdTriangles.size() / 3) {
+										refreshscroll = true;
+
+										swapmemorychunks(&guiBdTriangles[selectedtriangle * 3], &guiBdTriangles[(selectedtriangle + 1) * 3], sizeof(int[3]));
+										++selectedtriangle;
+										change = true;
+									}
+									ImGui::EndDisabled();
+									ImGui::PopItemWidth();
+
+									if (ImGui::BeginChild("Triangles")) {
+										ImGui::PushItemWidth(25);
+										for (int i = 0; i < guiBdTriangles.size(); ++i) {
+											ImGui::PushID(i);
+											if (i % 3 == 0) {
+												const int triangleid = i / 3;
+												if (ImGui::Selectable("##triangleselect", selectedtriangle == triangleid, ImGuiSelectableFlags_AllowItemOverlap, ImVec2(0, 20))) {
+													selectedtriangle = triangleid;
+												}
+												ImGui::SameLine();
+												if (refreshscroll && selectedtriangle == triangleid) {
+													ImGui::SetScrollHereY();
+												}
+											}
+											change = ImGui::InputInt("", &guiBdTriangles[i], 0) || change;
+											ImGui::PopID();
+											if (i % 3 != 2) { ImGui::SameLine(); }
+										}
+										ImGui::PopItemWidth();
+									}
+									if (ImGui::Button("Add a triangle")) {
+										ImGui::Text(" "); //dummy for scroll
+										ImGui::SetScrollHereY(0.0f);
+										guiBdTriangles.push_back(0);
+										guiBdTriangles.push_back(0);
+										guiBdTriangles.push_back(0);
+										change = true;
+									}
+									ImGui::EndChild();
+
+									if (change) {
+										bd->UpdateTriangleList(guiBdTriangles);
+									}
+								}
+								ImGui::EndChild();
+
+								ImGui::EndTabItem();
+							}
+							
+							// if this tab was closed, it means the user wants to delete it
+							if (!open) {
+								wantBDIDtoDel = curbd;
+							}
+							bd = lvldt.GetBrickData(++curbd);
 						}
 
-						if (ImGui::BeginPopupModal("Delete?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-						{
-							ImGui::Text("Are you sure you want to remove this tileset?\nResults are currently undefined as removing is still WIP\n\n");
-							ImGui::Separator();
+						// button to add a new brick data
+						if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip)) {
+							lvldt.AddBrickData();
+						}
 
-							if (ImGui::Button("Yes", ImVec2(120, 0)))
-							{
+						ImGui::EndTabItem();
+					}
+				}
+
+				// popup to confirm deleting a tileset or a brick data
+				if (wantTSIDtoDel >= 0) {
+					TSIDtoDel = wantTSIDtoDel;
+					ImGui::OpenPopup("Delete?");
+				}
+				if (wantBDIDtoDel >= 0) {
+					BDIDtoDel = wantBDIDtoDel;
+					ImGui::OpenPopup("Delete?");
+				}
+
+				if (ImGui::BeginPopupModal("Delete?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+				{
+					const bool handlingTS = (TSIDtoDel >= 0);
+					const bool handlingBD = (BDIDtoDel >= 0);
+					// never too cautious!
+					if (handlingTS && handlingBD) {
+						ImGui::Text("How to did you manage wanting to delete a tileset and a brick data at the same time?\nYou clicked two close button at the same frame?\nARE YOU A NINJA?\n\n");
+					}
+					else {
+						if (handlingTS) {
+							ImGui::Text("Are you sure you want to remove this tileset?\nResults are currently undefined as removing is still WIP\n\n");
+						}
+						else if (handlingBD) {
+							ImGui::Text("Are you sure you want to remove this brick data?\nResults are currently undefined as removing is still WIP\n\n");
+						}
+						ImGui::Separator();
+
+						if (ImGui::Button("Yes", ImVec2(120, 0)))
+						{
+							if (handlingTS) {
 								lvldt.RemoveTilesetData(TSIDtoDel);
 								lastTileset = -1;
 								TSIDtoDel = -1;
+							}
+							else if (handlingBD) {
+								lvldt.RemoveBrickData(BDIDtoDel);
+								lastBrickdata = -1;
+								BDIDtoDel = -1;
+							}
 
-								ImGui::CloseCurrentPopup();
-							}
-							ImGui::SetItemDefaultFocus();
-							ImGui::SameLine();
-							if (ImGui::Button("No", ImVec2(120, 0))) {
-								ImGui::CloseCurrentPopup();
-							}
-							ImGui::EndPopup();
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::SetItemDefaultFocus();
+						ImGui::SameLine();
+						if (ImGui::Button("No", ImVec2(120, 0))) {
+							ImGui::CloseCurrentPopup();
 						}
 					}
+					ImGui::EndPopup();
 				}
-				//ImGui::Text("Selected tileset : %i", curTileset);
 			}
+
 			ImGui::End();
 		}
 
@@ -384,6 +630,32 @@ public:
 
 	void Draw() {
 		DrawLevelData(lvldt, engine.graphics.textures, true);
+	}
+
+	void SecondDraw() {
+		const LevelData::BrickData* brick = lvldt.GetBrickData(curBrickdata);
+
+		if (brick) {
+			glMatrixMode(GL_PROJECTION);
+			glm::mat4 projMat = glm::perspective(glm::radians(40.0f), 1.0f, 0.1f, 150.0f);
+			glLoadMatrixf(glm::value_ptr(projMat));
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			glm::mat4 mat;
+			camera.CalcMatrix(mat);
+			glMultMatrixf(glm::value_ptr(mat));
+
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_LIGHTING);
+			glColor3f(0.5, 0.5, 0.5);
+			DrawGlWireCube(0.0f, 1.0f);
+
+			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHT0);
+			glColor3ub(255, 255, 255);
+			DrawBrick(brick);
+		}
 	}
 };
 
@@ -531,6 +803,7 @@ int main(int nbarg, char ** args) {
 		EngineLevel lvl(engine,"niveau.lvl");
 		LevelEditor editor(lvl);
 		FPSCounter fc(engine);
+		TestGraphicTarget tgt(engine);
 
 		while (engine.OneLoop()) {}
 	}
