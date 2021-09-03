@@ -75,6 +75,9 @@
     <ClCompile Include="imgui_impl_allegro5.cpp">
       <Filter>Dear imgui</Filter>
     </ClCompile>
+    <ClCompile Include="LevelEditor.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -148,6 +151,12 @@
     </ClInclude>
     <ClInclude Include="imstb_truetype.h">
       <Filter>Dear imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelEditor.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="TemporaryOrTesting.h">
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

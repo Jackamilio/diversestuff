@@ -35,10 +35,10 @@ void EditorCamera::SetUp(float x, float y, float z)
 	up.z = z;
 }
 
-void EditorCamera::SetAngles(float hor, float ver)
+void EditorCamera::SetAngles(float hor, float ver, bool relative)
 {
-	horAngle = hor;
-	verAngle = ver;
+	horAngle = (relative ? horAngle : 0.0f) + hor;
+	verAngle = (relative ? verAngle : 0.0f) + ver;
 
 	if (verAngle >= glm::half_pi<float>()) {
 		verAngle = glm::half_pi<float>() * 0.999f;
@@ -101,4 +101,42 @@ glm::vec3 EditorCamera::GetPosition()
 	from -= side * ax + front * ay + up * az;
 
 	return from;
+}
+
+bool EditorCamera::Drag(ALLEGRO_EVENT& event, int mousebutton) {
+	if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+		if (--mousebutton < 0) mousebutton = 0;
+		if (Engine::Input::mouseState.buttons & 1 << mousebutton) {
+			SetAngles((float)event.mouse.dx * 0.01f, (float)event.mouse.dy * 0.01f, true);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool EditorCamera::Zoom(ALLEGRO_EVENT& event, float scale, float* powerDist, float powerIncrement, float maxpowerdist) {
+	if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+		const float eventdz = -(float)event.mouse.dz;
+		if (eventdz != 0) {
+			if (powerDist) {
+				*powerDist = glm::clamp<float>(*powerDist + eventdz * powerIncrement, 0.0f, maxpowerdist);
+				SetDistance(pow(glm::e<float>(), *powerDist)*scale);
+			}
+			else {
+				SetDistance(distance + scale);
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+EditorCamera::DefaultInput::DefaultInput(float powerDist) : powerDist(powerDist)
+{
+	SetDistance(pow(glm::e<float>(), powerDist));
+}
+
+bool EditorCamera::DefaultInput::Event(ALLEGRO_EVENT& event) {
+	const bool drag = Drag(event);
+	return Zoom(event, 1.0f) || drag;
 }

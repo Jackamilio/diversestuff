@@ -245,6 +245,10 @@ bool Engine::OneLoop()
 	dt = time - lastTime;
 
 	bool stayOpen = true;
+
+	al_get_keyboard_state(&Input::keyboardState);
+	al_get_mouse_state(&Input::mouseState);
+
 	ALLEGRO_EVENT event;
 	while (al_get_next_event(eventQueue, &event)) {
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
@@ -260,25 +264,7 @@ bool Engine::OneLoop()
 	//physics->stepSimulation(dt, 10);
 
 	RecursiveUpdate(&updateRoot);
-
-	///////////////////////// TARGETS TEST
-
-	/*static ALLEGRO_BITMAP* alttarget = nullptr;
-	if (!alttarget) {
-		al_set_new_bitmap_depth(16);
-		alttarget = al_create_bitmap(512, 512);
-	}
-
-	al_set_target_bitmap(alttarget);*/
-
-	///////////////////////////////////////
-
 	RecursiveGraphic(&graphicTargets);
-
-	//al_set_target_backbuffer(display);
-	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//al_draw_bitmap(alttarget, 20, 20, 0);
 
 	DearImguiIntegration::Render();
 
@@ -301,6 +287,9 @@ void Engine::Dynamic::ReactToCollisionFrom(btRigidBody & body)
 {
 	body.setUserPointer((void*)this);
 }*/
+
+ALLEGRO_MOUSE_STATE Engine::Input::mouseState;
+ALLEGRO_KEYBOARD_STATE Engine::Input::keyboardState;
 
 bool Engine::InputRoot::Event(ALLEGRO_EVENT & event)
 {

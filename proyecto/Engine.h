@@ -29,6 +29,8 @@ public:
 	};
 	class Input : public Node<Input> {
 	public:
+		static ALLEGRO_MOUSE_STATE mouseState;
+		static ALLEGRO_KEYBOARD_STATE keyboardState;
 		virtual bool Event(ALLEGRO_EVENT& event) = 0;
 	};
 	/*class Dynamic : public Node<Dynamic> {
@@ -128,7 +130,7 @@ public:
 		class ThirdGraphic : public Engine::Graphic {
 		public:
 			TripleGraphic& trg;
-			ThirdGraphic(DoubleGraphic& tg) : trg(trg) {}
+			ThirdGraphic(TripleGraphic& trg) : trg(trg) {}
 			void Draw() { trg.ThirdDraw(); }
 		};
 		ThirdGraphic thg;
