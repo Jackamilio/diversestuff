@@ -15,7 +15,7 @@ public:
 	//btRigidBody* body;
 
 	EngineLevel(Engine& e, const char* level) : engine(e) {
-		lvldt.OldLoad(level);
+		lvldt.Load(level);
 		model = &engine.graphics.models.Get(&lvldt);
 		//DrawLevelData(lvldt, engine.graphics.textures, true);
 

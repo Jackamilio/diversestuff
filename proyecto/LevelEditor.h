@@ -18,6 +18,7 @@ public:
 	int lastTileset;
 	int curBrickdata;
 	int lastBrickdata;
+	int selectedBrickInHeap;
 	LevelData::TilesetData guiTsd;
 	std::vector<LevelData::Vertex> guiBdVertices;
 	LevelData::BrickData::TriangleList guiBdTriangles;
@@ -53,6 +54,10 @@ public:
 private:
 	void HandlePick(bool rightheld, bool middleclick);
 	void GlideToNewCenter();
+	void RotateBrickHeap(void (OrthoMatrix::* rotfunc)());
+	void Undo();
+	void Redo();
+	void ReloadCurrentBrickData();
 };
 
 #endif //__LEVEL_EDITOR_H__

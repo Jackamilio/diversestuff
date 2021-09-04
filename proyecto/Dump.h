@@ -50,6 +50,8 @@ void DrawGlWireCube(float neg, float pos);
 void DrawGlWireCapsule(float radius, float height, int turns = 3);
 
 void DrawBrick(const LevelData::BrickData* brick, float uo = 0.0f, float uf = 1.0f, float vo = 0.0f, float vf = 1.0f);
+void DrawBrick(const LevelData::Brick& brick, TextureManager& texMngr, bool flipTexV = false);
+void DrawBrickWireframe(const LevelData::Brick& brick);
 void DrawBrickHeap(const LevelData::BrickHeap& brickheap, TextureManager& texMngr, bool flipTexV = false);
 void DrawLevelData(const LevelData& level, TextureManager& txmgr, bool flipTexV = false);
 

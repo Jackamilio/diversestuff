@@ -2,6 +2,9 @@
 #include "MathUtils.h"
 #include <cfloat>
 #include <glm/gtx/norm.hpp>
+#include <fstream>
+
+using json = nlohmann::json;
 
 LevelData::LevelData()
 {
@@ -12,7 +15,89 @@ LevelData::~LevelData()
 	Clear();
 }
 
-/*bool LevelData::Save(const char * filename)
+bool LevelData::Save(const char* filename) {
+	json j;
+
+	// TILESETS
+	json jtilesets = json::array();
+	for (unsigned int i = 0; i < tilesets.size(); ++i) {
+		json jts;
+		TilesetData* tsd = tilesets[i];
+		jts["file"] = tsd->file;
+		jts["ox"] = tsd->ox;
+		jts["oy"] = tsd->oy;
+		jts["px"] = tsd->px;
+		jts["py"] = tsd->py;
+		jts["tw"] = tsd->tw;
+		jts["th"] = tsd->th;
+
+		jtilesets.push_back(jts);
+	}
+	j["tilesets"] = jtilesets;
+
+	// BRICK DATA
+	json jbricks = json::array();
+	for (unsigned int i = 0; i < bricks.size(); ++i) {
+		json jbd;
+
+		BrickData* bd = bricks[i];
+
+		json jverts = json::array();
+		for (int vi = 0; vi < bd->GetVertexCount(); ++vi) {
+			const Vertex& v = *bd->GetVertex(vi);
+			jverts.push_back({v.x, v.y, v.z, v.u, v.v});
+		}
+		jbd["vertices"] = jverts;
+
+		const BrickData::TriangleList& tl = bd->GetTriangleList();
+		json jtriangles = json::array();
+		for (unsigned int ti = 0; ti < tl.size(); ++ti) {
+			jtriangles.push_back(tl[ti]);
+		}
+		jbd["triangles"] = jtriangles;
+
+		jbricks.push_back(jbd);
+	}
+	j["bricks"] = jbricks;
+
+
+	// LEVEL BRICK HEAPS
+	json jlvl = json::array();
+	for (const_iterator it = begin(); it != end(); ++it) {
+		const BrickHeap& bh = it->second;
+		if (!bh.empty()) {
+			json jbh;
+
+			const Coordinate& c = it->first;
+			jbh["coord"] = {c.x, c.y, c.z};
+
+			json jheap = json::array();
+			for (unsigned int i = 0; i < bh.size(); ++i) {
+				const Brick& b = bh[i];
+				// lot of different values pushed as int as to make the json not too verbose
+				// be wary of the order
+				jheap.push_back({
+					FindTilesetData(b.tilesetdata),
+					b.tilex,
+					b.tiley,
+					FindBrickData(b.brickdata),
+					b.matrix.AsSingleInt()
+					});
+			}
+			jbh["heap"] = jheap;
+
+			jlvl.push_back(jbh);
+		}
+	}
+	j["level"] = jlvl;
+
+	std::ofstream ofs(filename);
+	ofs << j << std::endl;
+
+	return true;
+}
+
+/*bool LevelData::OldSave(const char * filename)
 {
 	std::ofstream f;
 	f.open(filename, std::ios::out);
@@ -58,7 +143,53 @@ LevelData::~LevelData()
 	return false;
 }*/
 
-bool LevelData::OldLoad(const char * filename)
+bool LevelData::Load(const char* filename) {
+	// parse the json
+	std::ifstream ifs(filename);
+	json j = json::parse(ifs, nullptr, false, false);
+
+	if (j.type() == nlohmann::detail::value_t::discarded) {
+		std::cout << "Error parsing the level json. Nothing was loaded" << std::endl;
+		return false;
+	}
+
+	Clear();
+
+	// TILESETS
+	for (auto jts : j["tilesets"]) {
+		LevelData::TilesetData* tsd = undoRedoer.UseSPtr(new LevelData::TilesetData());
+
+		tsd->file = jts["file"];
+		tsd->ox = jts["ox"];
+		tsd->oy = jts["oy"];
+		tsd->px = jts["px"];
+		tsd->py = jts["py"];
+		tsd->tw = jts["tw"];
+		tsd->th = jts["th"];
+
+		tilesets.push_back(tsd);
+	}
+
+	// BRICKS
+	for (auto jbd : j["bricks"]) {
+		bricks.push_back(undoRedoer.UseSPtr(new LevelData::BrickData(*this, jbd)));
+	}
+
+	// LEVEL BRICK HEAPS
+	for (auto lvl : j["level"]) {
+		json& jc = lvl["coord"];
+		Coordinate c(jc[0], jc[1], jc[2]);
+
+		BrickHeap& ref = level[c];
+		for (auto jbh : lvl["heap"]) {
+			ref.push_back(Brick(*this, jbh));
+		}
+	}
+
+	return true;
+}
+
+/*bool LevelData::OldLoad(const char* filename)
 {
 	std::ifstream f;
 	f.open(filename, std::ios::in);
@@ -100,7 +231,7 @@ bool LevelData::OldLoad(const char * filename)
 		return true;
 	}
 	return false;
-}
+}*/
 
 void LevelData::Clear()
 {
@@ -373,7 +504,7 @@ bool LevelData::RayCast(const glm::vec3 & rayOrigin, const glm::vec3 & rayDirect
 	f << '\n';
 }*/
 
-void LevelData::TilesetData::OldLoad(std::ifstream & f)
+/*void LevelData::TilesetData::OldLoad(std::ifstream& f)
 {
 	//OLD COMMENT
 	//unsigned int l;
@@ -383,7 +514,7 @@ void LevelData::TilesetData::OldLoad(std::ifstream & f)
 	//file = c;
 	//delete[] c;
 	f >> file >> ox >> oy >> px >> py >> tw >> th;
-}
+}*/
 
 LevelData::TilesetData::TilesetData() : file("undefined"), values {0}
 {
@@ -431,12 +562,12 @@ LevelData::TilesetData::~TilesetData()
 {
 	f << x << ' ' << y << ' ' << z << ' ' << u << ' ' << v << ' ';
 	f << '\n';
-}*/
+}
 
 void LevelData::Vertex::OldLoad(std::ifstream & f)
 {
 	f >> x >> y >> z >> u >> v;
-}
+}*/
 
 LevelData::Vertex::Vertex() : x(0.0f), y(0.0f), z(0.0f), u(0.0f), v(0.0f)
 {
@@ -475,7 +606,7 @@ LevelData::Vertex::~Vertex()
 		f << triangles[i] << ' ';
 	}
 	f << '\n';
-}*/
+}
 
 void LevelData::BrickData::OldLoad(std::ifstream & f)
 {
@@ -492,10 +623,21 @@ void LevelData::BrickData::OldLoad(std::ifstream & f)
 		f >> t;
 		triangles.push_back(t);
 	}
-}
+}*/
 
 LevelData::BrickData::BrickData(LevelData & ld) : levelData(ld)
 {
+}
+
+LevelData::BrickData::BrickData(LevelData& ld, nlohmann::json& json) : levelData(ld)
+{
+	for (auto jv : json["vertices"]) {
+		vertices.push_back(levelData.undoRedoer.UseSPtr(new Vertex(jv[0], jv[1], jv[2], jv[3], jv[4])));
+	}
+
+	for (auto jt : json["triangles"]) {
+		triangles.push_back(jt);
+	}
 }
 
 const LevelData::Vertex * LevelData::BrickData::GetVertex(const int index) const
@@ -531,7 +673,7 @@ bool LevelData::BrickData::UpdateTriangleList(const TriangleList & tri)
 /*void LevelData::Brick::Save(std::ofstream & f) const
 {
 	f << tilex << ' ' << tiley << ' ' << levelData.FindTilesetData(tilesetdata) << ' ' << levelData.FindBrickData(brickdata) << ' ' << matrix.AsSingleInt() << ' ';
-}*/
+}
 
 void LevelData::Brick::OldLoad(std::ifstream & f)
 {
@@ -543,7 +685,7 @@ void LevelData::Brick::OldLoad(std::ifstream & f)
 	brickdata = levelData.GetBrickData(i);
 	f >> i;
 	matrix.SetFromSingleInt(i);
-}
+}*/
 
 bool LevelData::Brick::operator==(const Brick & comp) const
 {
@@ -562,6 +704,18 @@ LevelData::Brick::Brick(LevelData& ld)
 	, brickdata(0)
 	, tilesetdata(0)
 {
+}
+
+LevelData::Brick::Brick(LevelData& ld, nlohmann::json& json)
+	: levelData(ld)
+	, tilex(json[1])
+	, tiley(json[2])
+	, brickdata(nullptr)
+	, tilesetdata(nullptr)
+{
+	tilesetdata = ld.GetTilesetData(json[0]);
+	brickdata = ld.GetBrickData(json[3]);
+	matrix.SetFromSingleInt(json[4]);
 }
 
 LevelData::Brick::Brick(const Brick & b)
@@ -632,12 +786,12 @@ void LevelData::Brick::TransformTriangle(const glm::vec3 & position, int triangl
 /*void LevelData::Coordinate::Save(std::ofstream & f) const
 {
 	f << x << ' ' << y << ' ' << z << ' ';
-}*/
+}
 
 void LevelData::Coordinate::OldLoad(std::ifstream & f)
 {
 	f >> x >> y >> z;
-}
+}*/
 
 LevelData::Coordinate::Coordinate()
 	: x(0)

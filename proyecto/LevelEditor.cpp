@@ -17,10 +17,11 @@ LevelEditor::LevelEditor(EngineLevel& lvl) :
 	lastTileset(-1),
 	curBrickdata(-1),
 	lastBrickdata(-1),
+	selectedBrickInHeap(-1),
 	TSIDtoDel(-1),
 	BDIDtoDel(-1),
-	brickHeapPreview(128, 128, true),
-	brickDataPreview(265, 256, true),
+	brickHeapPreview(192, 192, true),
+	brickDataPreview(256, 256, true),
 	levelCamera(2.4f),
 	gridUp(0,0,1)
 {
@@ -57,6 +58,21 @@ bool LevelEditor::Event(ALLEGRO_EVENT& event) {
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_T) {
 				tilemode = !tilemode;
+			}
+		}
+		else if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
+			if (event.keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
+				if (event.keyboard.keycode == ALLEGRO_KEY_Z) {
+					if (event.keyboard.modifiers & ALLEGRO_KEYMOD_SHIFT) {
+						Redo();
+					}
+					else {
+						Undo();
+					}
+				}
+				else if (event.keyboard.keycode == ALLEGRO_KEY_Y) {
+					Redo();
+				}
 			}
 		}
 		else if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
@@ -205,7 +221,6 @@ void LevelEditor::GlideToNewCenter() {
 	lerper.Begin();
 }
 
-
 void LevelEditor::Draw() {
 	// change view locally
 	glPushMatrix();
@@ -313,7 +328,7 @@ void LevelEditor::ThirdDraw() {
 		glm::mat4 mat;
 		EditorCamera copycam = levelCamera;
 		copycam.focuspoint = glm::vec3(0.5f, 0.5f, 0.5f);
-		copycam.distance = 2.0f;
+		copycam.distance = 2.5f;
 		copycam.CalcMatrix(mat);
 		copycam.CalcMatrix(mat);
 		glMultMatrixf(glm::value_ptr(mat));
@@ -322,8 +337,41 @@ void LevelEditor::ThirdDraw() {
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_LIGHTING);
 		glEnable(GL_LIGHT0);
-		glColor3ub(255, 255, 255);
+
+		const bool inrange = selectedBrickInHeap >= 0 && selectedBrickInHeap < brickheap.size();
+
+		if (inrange) {
+			glPushAttrib(GL_COLOR_BUFFER_BIT);
+			glDisable(GL_BLEND);
+			glColor4ub(255, 255, 255, 255);
+			DrawBrick(brickheap[selectedBrickInHeap], engine.graphics.textures, true);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glColor4ub(255, 255, 255, 96);
+		}
+		else {
+			glColor3ub(255, 255, 255);
+		}
+
 		DrawBrickHeap(brickheap, engine.graphics.textures, true);
+
+		if (inrange) {
+			glPopAttrib();
+		}
+
+		// draw coordinate system on the bottom left corner
+		const int vs = al_get_bitmap_width(brickHeapPreview.bitmap) / 4;
+		glViewport(0, 0, vs, vs);
+
+		glDisable(GL_TEXTURE_2D);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+		glBegin(GL_LINES);
+		{
+			glColor3ub(255, 0, 0); glVertex3i(0, 0, 0); glVertex3i(1, 0, 0);
+			glColor3ub(0, 255, 0); glVertex3i(0, 0, 0); glVertex3i(0, 1, 0);
+			glColor3ub(0, 0, 255); glVertex3i(0, 0, 0); glVertex3i(0, 0, 1);
+		} glEnd();
 	}
 }
 
@@ -358,7 +406,53 @@ void LevelEditor::Step() {
 			lerper.Step();
 		}
 
-		if (ImGui::Begin("Level editor", &showGui)) {
+		if (ImGui::Begin("Level editor", &showGui, ImGuiWindowFlags_MenuBar)) {
+
+			if (ImGui::BeginMenuBar())
+			{
+				if (ImGui::BeginMenu("File"))
+				{
+					if (ImGui::MenuItem("Open")) {
+						ALLEGRO_FILECHOOSER* dialog = al_create_native_file_dialog(
+							nullptr,
+							"Choose a level file",
+							"*.lvl",
+							ALLEGRO_FILECHOOSER_FILE_MUST_EXIST);
+						if (al_show_native_file_dialog(engine.display, dialog)) {
+							const char* answer = al_get_native_file_dialog_path(dialog, 0);
+							lvldt.Load(answer); // Todo : error handling
+							lastTileset = -1;
+							curBrickdata = -1;
+							lastBrickdata = -1;
+							selectedBrickInHeap = -1;
+							TSIDtoDel = -1;
+							BDIDtoDel = -1;
+						}
+						al_destroy_native_file_dialog(dialog);
+					}
+					if (ImGui::MenuItem("Save")) {
+						ALLEGRO_FILECHOOSER* dialog = al_create_native_file_dialog(
+							nullptr,
+							"Save your level",
+							"*.lvl",
+							ALLEGRO_FILECHOOSER_SAVE);
+						if (al_show_native_file_dialog(engine.display, dialog)) {
+							const char* answer = al_get_native_file_dialog_path(dialog, 0);
+							lvldt.Save(answer);
+						}
+						al_destroy_native_file_dialog(dialog);
+					}
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("Edit"))
+				{
+					if (ImGui::MenuItem("Undo", "CTRL+Z")) { Undo(); }
+					if (ImGui::MenuItem("Redo", "CTRL+Y")) { Redo(); }
+					ImGui::EndMenu();
+				}
+				ImGui::EndMenuBar();
+			}
+
 			int wantTSIDtoDel = -1;
 			int wantBDIDtoDel = -1;
 			if (ImGui::CollapsingHeader("Tilesets")) {
@@ -526,14 +620,7 @@ void LevelEditor::Step() {
 							curBrickdata = curbd;
 							if (curbd != lastBrickdata) {
 								lastBrickdata = curbd;
-								guiBdTriangles = bd->GetTriangleList();
-								guiBdVertices.clear();
-								int vi = 0;
-								const LevelData::Vertex* v = bd->GetVertex(vi);
-								while (v) {
-									guiBdVertices.push_back(*v);
-									v = bd->GetVertex(++vi);
-								}
+								ReloadCurrentBrickData();
 								selectedtriangle = -1;
 								selectedvertex = -1;
 							}
@@ -760,11 +847,17 @@ void LevelEditor::Step() {
 		// Tile and break heap preview
 		if (ImGui::Begin("Tile/Brick preview"))
 		{
-			const ImVec2 previewSize(128, 128);
 			if (tilemode) {
 				if (ImGui::Button("Tile mode")) {
 					tilemode = !tilemode;
 				}
+				ImGui::SameLine();
+				if (ImGui::Button("Clear")) {
+					selectedtile.set = -1;
+					selectedtile.x = 0;
+					selectedtile.y = 0;
+				}
+				const ImVec2 previewSize(128, 128);
 				const LevelData::TilesetData* tsd = lvldt.GetTilesetData(selectedtile.set);
 				if (tsd) {
 					const Texture& tex = engine.graphics.textures.Get(tsd->file);
@@ -788,11 +881,105 @@ void LevelEditor::Step() {
 				if (ImGui::Button("Clear")) {
 					brickheap.clear();
 				}
-				ImGui::Image(brickHeapPreview.bitmap, previewSize);
+				ImGui::SameLine();
+				if (ImGui::Button("Clear textures")) {
+					for (unsigned int i = 0; i < brickheap.size(); ++i) {
+						brickheap[i].tilesetdata = nullptr;
+					}
+				}
+				ALLEGRO_BITMAP* const bm = brickHeapPreview.bitmap;
+				ImGui::Image(bm, ImVec2(al_get_bitmap_width(bm), al_get_bitmap_height(bm)));
+				ImGui::SameLine();
+
+				if (ImGui::BeginChild("Individual brick edit")) {
+					if (ImGui::BeginChild("Rotation edit", ImVec2(55,80))) {
+						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1, 0, 0, 1));
+						if (ImGui::Button("<##rxn")) { RotateBrickHeap(&OrthoMatrix::RotXNeg); }
+						ImGui::SameLine();
+						if (ImGui::Button(">##rxp")) { RotateBrickHeap(&OrthoMatrix::RotXPos); }
+						ImGui::PopStyleColor();
+
+						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 1, 0, 1));
+						if (ImGui::Button("<##ryn")) { RotateBrickHeap(&OrthoMatrix::RotYNeg); }
+						ImGui::SameLine();
+						if (ImGui::Button(">##ryp")) { RotateBrickHeap(&OrthoMatrix::RotYPos); }
+						ImGui::PopStyleColor();
+
+						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 1, 1));
+						if (ImGui::Button("<##rzn")) { RotateBrickHeap(&OrthoMatrix::RotZNeg); }
+						ImGui::SameLine();
+						if (ImGui::Button(">##rzp")) { RotateBrickHeap(&OrthoMatrix::RotZPos); }
+						ImGui::PopStyleColor();
+					}
+					ImGui::EndChild();
+					ImGui::SameLine();
+					if (ImGui::BeginChild("Brick selection")) {
+						bool inrange = selectedBrickInHeap >= 0 && selectedBrickInHeap < brickheap.size();
+						ImGui::BeginDisabled(!inrange);
+						if (ImGui::Button("Remove from stack") && inrange) {
+							brickheap.erase(brickheap.begin() + selectedBrickInHeap);
+							selectedBrickInHeap = -1;
+							inrange = false;
+						}
+						ImGui::EndDisabled();
+						if (ImGui::Selectable("All bricks", !inrange)) {
+							selectedBrickInHeap = -1;
+						}
+						for (unsigned int i = 0; i < brickheap.size(); ++i) {
+							static char buf[64];
+							sprintf_s(buf, 64, "Brick #%i", i);
+							if (ImGui::Selectable(buf, selectedBrickInHeap == i)) {
+								selectedBrickInHeap = i;
+							}
+						}
+					}
+					ImGui::EndChild();
+				}
+				ImGui::EndChild();
+
 			}
 		}
 		ImGui::End();
 	}
 
 	ImGui::ShowDemoWindow();
+}
+
+void LevelEditor::RotateBrickHeap(void(OrthoMatrix::* rotfunc)())
+{
+	if (selectedBrickInHeap >= 0 && selectedBrickInHeap < brickheap.size()) {
+		(brickheap[selectedBrickInHeap].matrix.*rotfunc)();
+	}
+	else {
+		for (unsigned int i = 0; i < brickheap.size(); ++i) {
+			(brickheap[i].matrix.*rotfunc)();
+		}
+	}
+}
+
+void LevelEditor::Undo()
+{
+	lvldt.Undo();
+	ReloadCurrentBrickData();
+}
+
+void LevelEditor::Redo()
+{
+	lvldt.Redo();
+	ReloadCurrentBrickData();
+}
+
+void LevelEditor::ReloadCurrentBrickData()
+{
+	LevelData::BrickData* bd = lvldt.GetBrickData(curBrickdata);
+	if (bd) {
+		guiBdTriangles = bd->GetTriangleList();
+		guiBdVertices.clear();
+		int vi = 0;
+		const LevelData::Vertex* v = bd->GetVertex(vi);
+		while (v) {
+			guiBdVertices.push_back(*v);
+			v = bd->GetVertex(++vi);
+		}
+	}
 }

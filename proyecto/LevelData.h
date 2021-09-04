@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include "OrthoMatrix.h"
+#include "json.hpp"
 //#include "GameData.h"
 
 class LevelData {
@@ -23,8 +24,9 @@ public:
 	LevelData();
 	~LevelData();
 
-	//bool Save(const char* filename);
-	bool OldLoad(const char* filename);
+	bool Save(const char* filename);
+	bool Load(const char* filename);
+	//bool OldLoad(const char* filename);
 
 	void Clear();
 
@@ -36,7 +38,7 @@ public:
 	class TilesetData {//: public Saveable {
 	public:
 		//void Save(std::ofstream& f) const;
-		void OldLoad(std::ifstream& f);
+		//void OldLoad(std::ifstream& f);
 
 		TilesetData();
 		TilesetData(const TilesetData& copy);
@@ -63,7 +65,7 @@ public:
 	class Vertex {//: public Saveable {
 	public:
 		//void Save(std::ofstream& f) const;
-		void OldLoad(std::ifstream& f);
+		//void OldLoad(std::ifstream& f);
 
 		Vertex();
 		Vertex(const Vertex& vert);
@@ -87,9 +89,10 @@ public:
 	class BrickData {//: public Saveable {
 	public:
 		//void Save(std::ofstream& f) const;
-		void OldLoad(std::ifstream& f);
+		//void OldLoad(std::ifstream& f);
 	
 		BrickData(LevelData& ld);
+		BrickData(LevelData& ld, nlohmann::json& json);
 		LevelData& levelData;
 
 		typedef std::vector<int> TriangleList;
@@ -119,7 +122,7 @@ public:
 	class Coordinate {//: public Saveable {
 	public:
 		//void Save(std::ofstream& f) const;
-		void OldLoad(std::ifstream& f);
+		//void OldLoad(std::ifstream& f);
 
 		Coordinate();
 		Coordinate(int X, int Y, int Z);
@@ -137,11 +140,12 @@ public:
 	class Brick {//: public Saveable {
 	public:
 		//void Save(std::ofstream& f) const;
-		void OldLoad(std::ifstream& f);
+		//void OldLoad(std::ifstream& f);
 		bool operator==(const Brick& comp) const;
 		bool operator!=(const Brick& comp) const;
 
 		Brick(LevelData& ld);
+		Brick(LevelData& ld, nlohmann::json& json);
 		Brick(const Brick& b);
 		void operator=(const Brick& b);
 		LevelData& levelData;

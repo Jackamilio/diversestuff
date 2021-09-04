@@ -226,11 +226,10 @@ void DrawBrick(const LevelData::BrickData* brick, float uo, float uf, float vo, 
 	}
 }
 
-void DrawBrickHeap(const LevelData::BrickHeap& brickheap, TextureManager& texMngr, bool flipTexV) {
-	glm::mat4 mat;
-	for (unsigned int i = 0; i < brickheap.size(); ++i) {
+void DrawBrick(const LevelData::Brick& brick, TextureManager& texMngr, bool flipTexV) {
+	if (brick.brickdata) {
+		glm::mat4 mat;
 		glPushMatrix();
-		const LevelData::Brick& brick = brickheap[i];
 		brick.matrix.CalcMatrix(mat);
 		glMultMatrixf(&mat[0][0]);
 		float uo = 0.0f;
@@ -254,8 +253,44 @@ void DrawBrickHeap(const LevelData::BrickHeap& brickheap, TextureManager& texMng
 		else {
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
-		DrawBrick(brickheap[i].brickdata, uo, uf, vo, vf);
+		DrawBrick(brick.brickdata, uo, uf, vo, vf);
 		glPopMatrix();
+	}
+}
+
+void DrawBrickWireframe(const LevelData::Brick& brick)
+{
+	const LevelData::BrickData* const bd = brick.brickdata;
+	if (bd) {
+		glm::mat4 mat;
+		glPushMatrix();
+		brick.matrix.CalcMatrix(mat);
+		glMultMatrixf(&mat[0][0]);
+
+		glBegin(GL_LINE_LOOP);
+
+		const std::vector<int>& tris = bd->GetTriangleList();
+		int nbTris = (int)tris.size() / 3;
+		for (int i = 0; i < nbTris; ++i) {
+			const LevelData::Vertex* v1 = bd->GetVertex(tris[i * 3]);
+			const LevelData::Vertex* v2 = bd->GetVertex(tris[i * 3 + 1]);
+			const LevelData::Vertex* v3 = bd->GetVertex(tris[i * 3 + 2]);
+			if (v1 && v2 && v3) {
+				glVertex3f(v1->x, v1->y, v1->z);
+				glVertex3f(v2->x, v2->y, v2->z);
+				glVertex3f(v3->x, v3->y, v3->z);
+			}
+		}
+
+		glEnd();
+
+		glPopMatrix();
+	}
+}
+
+void DrawBrickHeap(const LevelData::BrickHeap& brickheap, TextureManager& texMngr, bool flipTexV) {
+	for (unsigned int i = 0; i < brickheap.size(); ++i) {
+		DrawBrick(brickheap[i], texMngr, flipTexV);
 	}
 }
 

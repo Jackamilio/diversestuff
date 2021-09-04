@@ -4,3 +4,4 @@ Tue 31/08 - Started level editor
 Wen 01/09 - Got tileset menus for the editor working
 Thu 02/09 - Brick data editing almost done, target rendering system in place
 Fri 03/09 - Level navigating and editing done. Texture painting done.
+Sat 04/09 - Brick heap preview and rotating done. Saving and loading with new json format done.
