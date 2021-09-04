@@ -198,7 +198,6 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="TemporaryOrTesting.h" />
     <ClInclude Include="TextureManager.h" />
-    <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="UndoRedoer.h" />
   </ItemGroup>
   <ItemGroup>

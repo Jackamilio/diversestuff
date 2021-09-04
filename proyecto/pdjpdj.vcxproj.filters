@@ -128,9 +128,6 @@
     <ClInclude Include="Exposing.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="tinyxml2.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="imconfig.h">
       <Filter>Dear imgui</Filter>
     </ClInclude>
