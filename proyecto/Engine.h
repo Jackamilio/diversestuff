@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 #include <string>
-//#include <btBulletDynamicsCommon.h>
+#include <bullet/btBulletDynamicsCommon.h>
 #include <glm/glm.hpp>
 #include <typeinfo>
 #include "GraphicContext.h"
@@ -33,12 +33,12 @@ public:
 		static ALLEGRO_KEYBOARD_STATE keyboardState;
 		virtual bool Event(ALLEGRO_EVENT& event) = 0;
 	};
-	/*class Dynamic : public Node<Dynamic> {
+	class Dynamic : public Node<Dynamic> {
 	public:
 		virtual void Tick() = 0;
 		virtual void Collision(Dynamic* other, btPersistentManifold& manifold);
 		void ReactToCollisionFrom(btRigidBody& body);
-	};*/
+	};
 	class Update : public Node<Update> {
 	public:
 		virtual void Step() = 0;
@@ -53,10 +53,10 @@ public:
 	public:
 		bool Event(ALLEGRO_EVENT& event);
 	};
-	/*class DynamicRoot : public Dynamic {
+	class DynamicRoot : public Dynamic {
 	public:
 		void Tick();
-	};*/
+	};
 	class UpdateRoot : public Update {
 	public:
 		void Step();
@@ -142,7 +142,7 @@ public:
 
 	// engine node instances
 	InputRoot inputRoot;
-	//DynamicRoot dynamicRoot;
+	DynamicRoot dynamicRoot;
 	UpdateRoot updateRoot;
 	GraphicRoot graphicTargets;
 	GraphicTarget defaultGraphicTarget;
@@ -160,15 +160,15 @@ public:
 	GraphicContext graphics;
 	std::string currentDirectory;
 
-	//btDiscreteDynamicsWorld* physics;;
+	btDiscreteDynamicsWorld* physics;;
 
 	template<class T>
 	T& Get();
 private:
-	/*btDefaultCollisionConfiguration* collisionConfig;
+	btDefaultCollisionConfiguration* collisionConfig;
 	btCollisionDispatcher* dispatcher;
 	btBroadphaseInterface* overlappingPairCache;
-	btSequentialImpulseConstraintSolver* solver;*/
+	btSequentialImpulseConstraintSolver* solver;
 	ALLEGRO_EVENT_QUEUE* eventQueue;
 	bool initSuccess;
 

@@ -2,6 +2,7 @@
 #define __TEMPORARY_OR_TESTING_H__
 #include "Engine.h"
 #include "LevelData.h"
+#include "Dump.h"
 
 class EngineLevel : public Engine::Graphic {
 public:
@@ -9,17 +10,22 @@ public:
 	LevelData lvldt;
 	const Model* model;
 
-	//btTriangleMesh* levelMesh;
-	//btBvhTriangleMeshShape* shape;
-	//btMotionState* motion;
-	//btRigidBody* body;
+	btTriangleMesh* levelMesh;
+	btBvhTriangleMeshShape* shape;
+	btMotionState* motion;
+	btRigidBody* body;
 
-	EngineLevel(Engine& e, const char* level) : engine(e) {
+	EngineLevel(Engine& e, const char* level) :
+		engine(e),
+		levelMesh(nullptr),
+		shape(nullptr),
+		motion(nullptr),
+		body(nullptr)
+	{
 		lvldt.Load(level);
 		model = &engine.graphics.models.Get(&lvldt);
-		//DrawLevelData(lvldt, engine.graphics.textures, true);
 
-		/*btTransform t;
+		btTransform t;
 		t.setIdentity();
 		t.setOrigin(btVector3(0, 0, 0));
 		levelMesh = ConstructLevelCollision(lvldt);
@@ -27,16 +33,17 @@ public:
 		motion = new btDefaultMotionState(t);
 		btRigidBody::btRigidBodyConstructionInfo info(0.0, motion, shape);
 		body = new btRigidBody(info);
-		engine.physics->addRigidBody(body);*/
+		engine.physics->addRigidBody(body);
 
 		engine.mainGraphic.AddChildToProgram(this, "test.pgr");
 	}
 
 	~EngineLevel() {
-		//delete body;
-		//delete motion;
-		//delete shape;
-		//delete levelMesh;
+		engine.physics->removeRigidBody(body);
+		delete body;
+		delete motion;
+		delete shape;
+		delete levelMesh;
 	}
 
 	void Draw() {
@@ -78,6 +85,143 @@ public:
 
 	void SecondDraw() {
 		model.DrawPose(wpose);
+	}
+};
+
+class TestCamera : public Engine::Update {
+public:
+	Engine& engine;
+	EditorCamera::DefaultInput camera;
+	btRigidBody* trackbody;
+
+	TestCamera(Engine& e) :
+		engine(e),
+		trackbody(nullptr)
+	{
+		engine.inputRoot.AddChild(&camera);
+		engine.updateRoot.AddChild(this);
+
+		camera.distance = 10.0f;
+		camera.SetFocusPoint(0, 0, 0.5f);
+		camera.SetUp(0, 0, 1);
+
+		engine.graphics.proj = glm::perspective(glm::radians(40.0f), 1280.0f / 720.0f, 0.5f, 50.0f);
+	}
+
+	void Step() {
+
+		if (trackbody) {
+			btTransform tr = trackbody->getCenterOfMassTransform();
+			camera.SetFocusPoint(tr.getOrigin().x(), tr.getOrigin().y(), tr.getOrigin().z());
+		}
+
+		camera.CalcMatrix(engine.graphics.view);
+	}
+};
+
+class TestCharacter : public Engine::Input, public Engine::Dynamic, public Engine::Update, public Engine::Graphic {
+public:
+	Engine& engine;
+
+	btCapsuleShape* shape;
+	btMotionState* motion;
+	btRigidBody* body;
+
+	bool space;
+	bool grounded;
+	glm::vec3 groundContact;
+
+	TestCharacter(Engine& e) :engine(e) {
+		space = false;
+		grounded = false;
+
+		btTransform t;
+		t.setIdentity();
+		t.setOrigin(btVector3(0, 0, 5));
+		t.setRotation(btQuaternion(0.0f, glm::half_pi<float>(), 0.0f));
+		shape = new btCapsuleShape(0.25f, 0.7f);
+		btVector3 inertia;
+		//shape->calculateLocalInertia(1.0f, inertia);
+		motion = new btDefaultMotionState(t);
+		btRigidBody::btRigidBodyConstructionInfo info(1.0f, motion, shape, inertia);
+		info.m_friction = 0.0f;
+		body = new btRigidBody(info);
+		engine.physics->addRigidBody(body);
+		ReactToCollisionFrom(*body);
+
+		engine.inputRoot.AddChild(this);
+		engine.dynamicRoot.AddChild(this);
+		engine.updateRoot.AddChild(this);
+		engine.debugGraphic.AddChild(this);
+	}
+
+	bool Event(ALLEGRO_EVENT& event) {
+		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+				space = true;
+				return true;
+			}
+		}
+
+		if (event.type == ALLEGRO_EVENT_KEY_UP) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+				space = false;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void Collision(Dynamic* other, btPersistentManifold& manifold) {
+		for (int i = 0; i < manifold.getNumContacts(); ++i) {
+			btManifoldPoint& pt = manifold.getContactPoint(i);
+			if (pt.getPositionWorldOnA().z() < body->getCenterOfMassPosition().z() - shape->getHalfHeight() - shape->getRadius() * 0.5f) {
+				grounded = true;
+				groundContact = btToVec(pt.getPositionWorldOnA());
+				break;
+			}
+		}
+	}
+
+	void Tick() {
+		float scl = space ? 5.0 : 0.0f;
+		EditorCamera& camera = engine.Get<TestCamera*>()->camera;
+		body->setLinearVelocity(btVector3(cos(camera.horAngle) * scl, -sin(camera.horAngle) * scl, grounded ? 0.0f : body->getLinearVelocity().z()));
+		body->setGravity(btVector3(0.0f, 0.0f, grounded ? 0.0f : -10.0f));
+		body->activate();
+	}
+
+	void Step() {
+		grounded = false;
+
+		const btVector3& pos = body->getCenterOfMassTransform().getOrigin();
+
+		//engine.graphics.pointLights[2][0] = glm::vec4(pos.x(), pos.y(), pos.z(), 1.5f + sinf(engine.time));
+		//engine.graphics.pointLights[2][1] = glm::vec4(0.7f, 0.7f, 0.7f, 0.0f);
+	}
+
+	void Draw() {
+		btTransform tr = body->getCenterOfMassTransform();
+		glm::mat4 mat(1.0);
+		tr.getOpenGLMatrix(&mat[0].x);
+
+		glPushMatrix();
+		glMultMatrixf(&mat[0].x);
+		DrawGlWireCapsule(shape->getRadius(), shape->getHalfHeight() * 2.0f);
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(groundContact.x, groundContact.y, groundContact.z);
+		glColor3ub(255, 0, 0);
+		DrawGlWireCube(-0.05f, 0.05f);
+		glPopMatrix();
+	}
+
+	~TestCharacter() {
+		engine.physics->removeRigidBody(body);
+		delete body;
+		delete motion;
+		delete shape;
 	}
 };
 

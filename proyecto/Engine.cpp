@@ -64,12 +64,13 @@ Engine::Engine()
 	, mainGraphic(*this)
 	, debugGraphic(graphics)
 	, overlayGraphic(*this)
-	//, collisionConfig(0)
-	//, dispatcher(0)
-	//, overlappingPairCache(0)
-	//, solver(0)
-	//, physics(0)
-	, eventQueue(0)
+	, collisionConfig(nullptr)
+	, dispatcher(nullptr)
+	, overlappingPairCache(nullptr)
+	, solver(nullptr)
+	, physics(nullptr)
+	, display(nullptr)
+	, eventQueue(nullptr)
 	, initSuccess(false)
 {
 	graphicTargets.AddChild(&defaultGraphicTarget);
@@ -92,16 +93,16 @@ Engine::~Engine()
 	if (display) { al_destroy_display(display); }
 	if (eventQueue) { al_destroy_event_queue(eventQueue); }
 
-	DearImguiIntegration::Destroy();
-
-	/*if (physics) delete physics;
-	if (solver) delete solver;
-	if (overlappingPairCache) delete overlappingPairCache;
+	DearImguiIntegration::Destroy();	
+	
+	if (collisionConfig) delete collisionConfig;
 	if (dispatcher) delete dispatcher;
-	if (collisionConfig) delete collisionConfig;*/
+	if (overlappingPairCache) delete overlappingPairCache;
+	if (solver) delete solver;
+	if (physics) delete physics;
 }
 
-/*void RecursiveTick(Engine::Dynamic* dynamic) {
+void RecursiveTick(Engine::Dynamic* dynamic) {
 	dynamic->Tick();
 	for (unsigned int i = 0; i < dynamic->children.size(); ++i) {
 		RecursiveTick(dynamic->children[i]);
@@ -126,7 +127,7 @@ void myTickCallback(btDynamicsWorld *world, btScalar timeStep) {
 
 	Engine& engine = *((Engine*)world->getWorldUserInfo());
 	RecursiveTick(&engine.dynamicRoot);
-}*/
+}
 
 bool Engine::Init()
 {
@@ -188,15 +189,13 @@ bool Engine::Init()
 	currentDirectory = std::string(dir);
 	al_free(dir);
 
-	/*collisionConfig = new btDefaultCollisionConfiguration();
+	collisionConfig = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(collisionConfig);
 	overlappingPairCache = new btDbvtBroadphase();
 	solver = new btSequentialImpulseConstraintSolver();
 	physics = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfig);
 	physics->setGravity(btVector3(0, 0, -10));
 	physics->setInternalTickCallback(myTickCallback, (void*)this);
-
-	GameData::Init();*/
 
 	initSuccess = true;
 
@@ -261,7 +260,7 @@ bool Engine::OneLoop()
 
 	DearImguiIntegration::NewFrame();
 
-	//physics->stepSimulation(dt, 10);
+	physics->stepSimulation(dt, 10);
 
 	RecursiveUpdate(&updateRoot);
 	RecursiveGraphic(&graphicTargets);
@@ -279,14 +278,14 @@ bool Engine::OneLoop()
 	return stayOpen;
 }
 
-/*void Engine::Dynamic::Collision(Engine::Dynamic* other, btPersistentManifold& manifold)
+void Engine::Dynamic::Collision(Engine::Dynamic* other, btPersistentManifold& manifold)
 {
 }
 
 void Engine::Dynamic::ReactToCollisionFrom(btRigidBody & body)
 {
 	body.setUserPointer((void*)this);
-}*/
+}
 
 ALLEGRO_MOUSE_STATE Engine::Input::mouseState;
 ALLEGRO_KEYBOARD_STATE Engine::Input::keyboardState;
@@ -296,17 +295,9 @@ bool Engine::InputRoot::Event(ALLEGRO_EVENT & event)
 	return false;
 }
 
-/*void Engine::DynamicRoot::Tick()
-{
-}*/
-
-void Engine::UpdateRoot::Step()
-{
-}
-
-void Engine::GraphicRoot::Draw()
-{
-}
+void Engine::DynamicRoot::Tick() {}
+void Engine::UpdateRoot::Step() {}
+void Engine::GraphicRoot::Draw() {}
 
 Engine::GraphicTarget::GraphicTarget(ALLEGRO_BITMAP* bitmap) :
 	ownsBitmap(false),
@@ -379,9 +370,7 @@ Engine::MainGraphic::MainGraphic(Engine& e) : ShaderGraphic(e.graphics), engine(
 
 void Engine::MainGraphic::Draw()
 {
-	//glViewport(0, 0, al_get_display_width(engine.display), al_get_display_height(engine.display));
-	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//viewport and clear handled in defaultGraphicTarget
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);

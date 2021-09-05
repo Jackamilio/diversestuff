@@ -24,39 +24,6 @@ ALLEGRO_FONT* fetchDefaultFont()
 	return defaultFont;
 }
 
-class TestCamera : public Engine::Update {
-public:
-	Engine & engine;
-	EditorCamera::DefaultInput camera;
-	//btRigidBody* trackbody;
-
-	TestCamera(Engine& e) : engine(e), camera(2.0f) {
-		//trackbody = 0;
-
-		engine.inputRoot.AddChild(&camera);
-		engine.updateRoot.AddChild(this);
-
-		camera.SetFocusPoint(0, 0, 0.5f);
-		camera.SetUp(0, 0, 1);
-
-		engine.graphics.proj = glm::perspective(glm::radians(40.0f), 1280.0f / 720.0f, 0.5f, 50.0f);
-	}
-
-	void Step() {
-
-		/*if (trackbody) {
-			btTransform tr = trackbody->getCenterOfMassTransform();
-			camera.SetFocusPoint(tr.getOrigin().x(), tr.getOrigin().y(), tr.getOrigin().z());
-		}*/
-
-		camera.CalcMatrix(engine.graphics.view);
-
-		//ImGui::Begin("Debug camera");
-		//ImGui::SliderFloat("Distance", &camera.distance, 0.1f, 50.0f);
-		//ImGui::End();
-	}
-};
-
 class ExposingTestMember {
 public:
 	int _otherInt;
@@ -201,7 +168,11 @@ int main(int nbarg, char ** args) {
 		EngineLevel lvl(engine,"niveau.lvl");
 		LevelEditor editor(lvl);
 		TestModel tm(engine, "personnage.fbx", "Cours");
+		TestCharacter tc(engine);
 		FPSCounter fc(engine);
+
+		camera.trackbody = tc.body;
+		engine.Get<TestCamera*>() = &camera;
 
 		while (engine.OneLoop()) {}
 	}

@@ -3,8 +3,6 @@
 #include "dump.h"
 #include "MathUtils.h"
 #include <math.h>
-//#include <FL/Fl.H>
-//#include <FL/glu.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "TextureManager.h"
 #include <locale>
@@ -306,7 +304,7 @@ void DrawLevelData(const LevelData& level, TextureManager& txmgr, bool flipTexV)
 	}
 }
 
-/*inline btVector3 Transform(const LevelData::Vertex* vert, const LevelData::Coordinate& c, const glm::mat4& mat) {
+inline btVector3 Transform(const LevelData::Vertex* vert, const LevelData::Coordinate& c, const glm::mat4& mat) {
 	glm::vec4 f = mat * glm::vec4(vert->xyz, 1.0f);
 	return btVector3((float) c.x + f.x, (float)c.y + f.y, (float)c.z + f.z);
 }
@@ -341,7 +339,7 @@ btTriangleMesh * ConstructLevelCollision(const LevelData & level)
 	}
 
 	return data;
-}*/
+}
 
 glm::mat4 LocRotScaleToMat4(const LocRotScale& poseBone)
 {

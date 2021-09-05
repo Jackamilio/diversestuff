@@ -3,14 +3,14 @@
 
 #include <string>
 #include <sstream>
-//#include <btBulletDynamicsCommon.h>
+#include <bullet/btBulletDynamicsCommon.h>
 #include "LevelData.h"
 
 class TextureManager;
 
-//inline glm::vec3 btToVec(const btVector3& bt) {
-//	return glm::vec3(bt.x(), bt.y(), bt.z());
-//}
+inline glm::vec3 btToVec(const btVector3& bt) {
+	return glm::vec3(bt.x(), bt.y(), bt.z());
+}
 
 template<typename T>
 inline std::string valToStr(const T& value)
@@ -55,6 +55,6 @@ void DrawBrickWireframe(const LevelData::Brick& brick);
 void DrawBrickHeap(const LevelData::BrickHeap& brickheap, TextureManager& texMngr, bool flipTexV = false);
 void DrawLevelData(const LevelData& level, TextureManager& txmgr, bool flipTexV = false);
 
-//btTriangleMesh* ConstructLevelCollision(const LevelData& level);
+btTriangleMesh* ConstructLevelCollision(const LevelData& level);
 
 #endif
