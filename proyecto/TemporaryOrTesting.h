@@ -6,7 +6,6 @@
 
 class EngineLevel : public Engine::Graphic {
 public:
-	Engine& engine;
 	LevelData lvldt;
 	const Model* model;
 
@@ -15,8 +14,7 @@ public:
 	btMotionState* motion;
 	btRigidBody* body;
 
-	EngineLevel(Engine& e, const char* level) :
-		engine(e),
+	EngineLevel(const char* level) :
 		levelMesh(nullptr),
 		shape(nullptr),
 		motion(nullptr),
@@ -54,17 +52,15 @@ public:
 
 class TestModel : public Engine::Update, public Engine::DoubleGraphic {
 public:
-	Engine& engine;
 	const Model& model;
 	Model::WorkingPose wpose;
 	Model::WorkingPose wpose2;
 	Model::FinalPose fpose;
 	const char* animName;
 
-	TestModel(Engine& e, const char* modelfile, const char* anim)
-		: engine(e)
-		, model(e.graphics.models.Get(modelfile))
-		, animName(anim)
+	TestModel(const char* modelfile, const char* anim) :
+		model(engine.graphics.models.Get(modelfile)),
+		animName(anim)
 	{
 		engine.updateRoot.AddChild(this);
 		engine.mainGraphic.AddChildToProgram(this, "test.pgr");
@@ -90,12 +86,10 @@ public:
 
 class TestCamera : public Engine::Update {
 public:
-	Engine& engine;
 	EditorCamera::DefaultInput camera;
 	btRigidBody* trackbody;
 
-	TestCamera(Engine& e) :
-		engine(e),
+	TestCamera() :
 		trackbody(nullptr)
 	{
 		engine.inputRoot.AddChild(&camera);
@@ -119,20 +113,16 @@ public:
 	}
 };
 
-class TestCharacter : public Engine::Input, public Engine::Dynamic, public Engine::Update, public Engine::Graphic {
+class TestCharacter : public Engine::Dynamic, public Engine::Update, public Engine::Graphic {
 public:
-	Engine& engine;
-
 	btCapsuleShape* shape;
 	btMotionState* motion;
 	btRigidBody* body;
 
-	bool space;
 	bool grounded;
 	glm::vec3 groundContact;
 
-	TestCharacter(Engine& e) :engine(e) {
-		space = false;
+	TestCharacter() {
 		grounded = false;
 
 		btTransform t;
@@ -149,27 +139,9 @@ public:
 		engine.physics->addRigidBody(body);
 		ReactToCollisionFrom(*body);
 
-		engine.inputRoot.AddChild(this);
 		engine.dynamicRoot.AddChild(this);
 		engine.updateRoot.AddChild(this);
 		engine.debugGraphic.AddChild(this);
-	}
-
-	bool Event(ALLEGRO_EVENT& event) {
-		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-			if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
-				space = true;
-				return true;
-			}
-		}
-
-		if (event.type == ALLEGRO_EVENT_KEY_UP) {
-			if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
-				space = false;
-				return true;
-			}
-		}
-		return false;
 	}
 
 	void Collision(Dynamic* other, btPersistentManifold& manifold) {
@@ -184,8 +156,8 @@ public:
 	}
 
 	void Tick() {
-		float scl = space ? 5.0 : 0.0f;
-		EditorCamera& camera = engine.Get<TestCamera*>()->camera;
+		float scl = al_key_down(&Engine::Input::keyboardState, ALLEGRO_KEY_SPACE) ? 5.0 : 0.0f;
+		EditorCamera& camera = engine.Access<TestCamera*>()->camera;
 		body->setLinearVelocity(btVector3(cos(camera.horAngle) * scl, -sin(camera.horAngle) * scl, grounded ? 0.0f : body->getLinearVelocity().z()));
 		body->setGravity(btVector3(0.0f, 0.0f, grounded ? 0.0f : -10.0f));
 		body->activate();

@@ -13,15 +13,25 @@
 
 class Engine {
 public:
+	static Engine& Get();
+
 	Engine();
 	~Engine();
 
 	bool Init();
 	bool OneLoop();
 
+	// default uber mother class
+	class Object {
+	public:
+		Engine& engine;
+
+		Object();
+	};
+
 	// mother node classes
 	template<class T>
-	class Node {
+	class Node : virtual public Object {
 	public:
 		std::vector<T*> children;
 		void AddChild(T* c, bool onTop = false);
@@ -82,8 +92,7 @@ public:
 	class ShaderGraphic : public Graphic {
 	public:
 		std::map<Program*, GraphicRoot> programChildren;
-		GraphicContext& graphics;
-		ShaderGraphic(GraphicContext& g);
+		ShaderGraphic();
 
 		void Draw();
 		void AddChildToProgram(Graphic* child, const std::string& progFile);
@@ -91,21 +100,18 @@ public:
 	};
 	class MainGraphic : public ShaderGraphic {
 	public:
-		Engine& engine;
-
-		MainGraphic(Engine& e);
+		MainGraphic();
 		void Draw();
 	};
 	class DebugGraphic : public ShaderGraphic {
 	public:
-		DebugGraphic(GraphicContext& g);
+		DebugGraphic();
 
 		void Draw();
 	};
 	class OverlayGraphic : public ShaderGraphic {
 	public:
-		Engine& engine;
-		OverlayGraphic(Engine& e);
+		OverlayGraphic();
 		void Draw();
 	};
 
@@ -163,7 +169,7 @@ public:
 	btDiscreteDynamicsWorld* physics;;
 
 	template<class T>
-	T& Get();
+	T& Access();
 private:
 	btDefaultCollisionConfiguration* collisionConfig;
 	btCollisionDispatcher* dispatcher;
@@ -211,7 +217,7 @@ inline void Engine::Node<T>::RemoveChild(T* c)
 }
 
 template<class T>
-inline T& Engine::Get()
+inline T& Engine::Access()
 {
 	TData<T>*& usr = (TData<T>*&)userData[&typeid(T)];
 	if (!usr) {

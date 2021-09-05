@@ -55,15 +55,21 @@ namespace DearImguiIntegration {
 	}
 }
 
+Engine singleton;
+
+Engine& Engine::Get()
+{
+	return singleton;
+}
 
 Engine::Engine()
 	: inputRoot()
 	, updateRoot()
 	, graphicTargets()
 	, defaultGraphicTarget()
-	, mainGraphic(*this)
-	, debugGraphic(graphics)
-	, overlayGraphic(*this)
+	, mainGraphic()
+	, debugGraphic()
+	, overlayGraphic()
 	, collisionConfig(nullptr)
 	, dispatcher(nullptr)
 	, overlappingPairCache(nullptr)
@@ -100,6 +106,10 @@ Engine::~Engine()
 	if (overlappingPairCache) delete overlappingPairCache;
 	if (solver) delete solver;
 	if (physics) delete physics;
+
+	graphics.Clear();
+
+	al_uninstall_system();
 }
 
 void RecursiveTick(Engine::Dynamic* dynamic) {
@@ -135,7 +145,7 @@ bool Engine::Init()
 		return true;
 	}
 
-	if (!al_init()) {
+	if (!al_install_system(ALLEGRO_VERSION_INT, nullptr)) {
 		fprintf(stderr, "failed to initialize allegro!\n");
 		return false;
 	}
@@ -278,6 +288,11 @@ bool Engine::OneLoop()
 	return stayOpen;
 }
 
+Engine::Object::Object() :
+	engine(Engine::Get())
+{
+}
+
 void Engine::Dynamic::Collision(Engine::Dynamic* other, btPersistentManifold& manifold)
 {
 }
@@ -340,31 +355,31 @@ void Engine::GraphicTarget::Draw()
 	}
 }
 
-Engine::ShaderGraphic::ShaderGraphic(GraphicContext & g) : graphics(g)
+Engine::ShaderGraphic::ShaderGraphic()
 {
 }
 
 void Engine::ShaderGraphic::Draw()
 {
 	for (std::map<Program*, GraphicRoot>::iterator it = programChildren.begin(); it != programChildren.end(); ++it) {
-		graphics.programs.Use(it->first);
-		graphics.SetCommonUniforms();
+		engine.graphics.programs.Use(it->first);
+		engine.graphics.SetCommonUniforms();
 		RecursiveGraphic(&it->second);
 	}
-	graphics.programs.StopToUse();
+	engine.graphics.programs.StopToUse();
 }
 
 void Engine::ShaderGraphic::AddChildToProgram(Graphic * child, const std::string & progFile)
 {
-	programChildren[&graphics.programs.Get(progFile)].AddChild(child);
+	programChildren[&engine.graphics.programs.Get(progFile)].AddChild(child);
 }
 
 void Engine::ShaderGraphic::RemoveChildFromProgram(Graphic* child, const std::string& progFile)
 {
-	programChildren[&graphics.programs.Get(progFile)].RemoveChild(child);
+	programChildren[&engine.graphics.programs.Get(progFile)].RemoveChild(child);
 }
 
-Engine::MainGraphic::MainGraphic(Engine& e) : ShaderGraphic(e.graphics), engine(e)
+Engine::MainGraphic::MainGraphic()
 {
 }
 
@@ -387,7 +402,7 @@ void Engine::MainGraphic::Draw()
 	ShaderGraphic::Draw();
 }
 
-Engine::DebugGraphic::DebugGraphic(GraphicContext & g) : ShaderGraphic(g)
+Engine::DebugGraphic::DebugGraphic()
 {
 }
 
@@ -401,7 +416,7 @@ void Engine::DebugGraphic::Draw()
 	ShaderGraphic::Draw();
 }
 
-Engine::OverlayGraphic::OverlayGraphic(Engine & e) : ShaderGraphic(e.graphics), engine(e)
+Engine::OverlayGraphic::OverlayGraphic()
 {
 }
 

@@ -122,14 +122,12 @@ EXPOSE_END
 
 class FPSCounter : public Engine::Graphic {
 public:
-	Engine & engine;
-
 	double samplingDuration;
 	double lastTime;
 	int nbSamples;
 	int lastFps;
 
-	FPSCounter(Engine& e) : engine(e) {
+	FPSCounter() {
 		engine.overlayGraphic.AddChild(this);
 
 		samplingDuration = 0.5;
@@ -152,7 +150,7 @@ public:
 };
 
 int main(int nbarg, char ** args) {
-	Engine engine;
+	Engine& engine = Engine::Get();
 
 	engine.graphics.ambient = glm::vec3(0.3f, 0.3f, 0.3f);
 	engine.graphics.pointLights[0][0] = glm::vec4(5.0f, 0.0f, 1.0f, 3.0f);
@@ -164,15 +162,15 @@ int main(int nbarg, char ** args) {
 		al_init_primitives_addon();
 		al_init_ttf_addon();
 
-		TestCamera camera(engine);
-		EngineLevel lvl(engine,"niveau.lvl");
+		TestCamera camera;
+		EngineLevel lvl("niveau.lvl");
 		LevelEditor editor(lvl);
-		TestModel tm(engine, "personnage.fbx", "Cours");
-		TestCharacter tc(engine);
-		FPSCounter fc(engine);
+		TestModel tm("personnage.fbx", "Cours");
+		TestCharacter tc;
+		FPSCounter fc;
 
 		camera.trackbody = tc.body;
-		engine.Get<TestCamera*>() = &camera;
+		engine.Access<TestCamera*>() = &camera;
 
 		while (engine.OneLoop()) {}
 	}
