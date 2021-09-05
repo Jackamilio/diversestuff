@@ -10,8 +10,8 @@
 class MapEditor : public Engine::Input, public Engine::Update, public Engine::TripleGraphic {
 public:
 	Engine& engine;
-	EngineLevel& lvl;
-	MapData& lvldt;
+	EngineMap& map;
+	MapData& mapdt;
 	bool showGui;
 	bool lastShowGui;
 	bool tilemode;
@@ -41,7 +41,7 @@ public:
 	Interpolator<glm::vec3> lerper;
 	MapData::Coordinate lastClic;
 
-	MapEditor(EngineLevel& lvl);
+	MapEditor(EngineMap& map);
 
 	bool Event(ALLEGRO_EVENT& event);
 

@@ -228,7 +228,7 @@ void DrawBrickHeap(const MapData::BrickHeap& brickheap, TextureManager& texMngr,
 	}
 }
 
-void DrawLevelData(const MapData& level, TextureManager& txmgr, bool flipTexV) {
+void DrawMapData(const MapData& level, TextureManager& txmgr, bool flipTexV) {
 	for (MapData::const_iterator it = level.begin(); it != level.end(); ++it) {
 		glPushMatrix();
 
@@ -245,7 +245,7 @@ inline btVector3 Transform(const MapData::Vertex* vert, const MapData::Coordinat
 	return btVector3((float) c.x + f.x, (float)c.y + f.y, (float)c.z + f.z);
 }
 
-btTriangleMesh * ConstructLevelCollision(const MapData & level)
+btTriangleMesh * ConstructMapCollision(const MapData & level)
 {
 	btTriangleMesh* data = new btTriangleMesh();
 	glm::mat4 mat;

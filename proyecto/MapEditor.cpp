@@ -7,10 +7,10 @@
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_native_dialog.h>
 
-MapEditor::MapEditor(EngineLevel& lvl) :
-	engine(lvl.engine),
-	lvl(lvl),
-	lvldt(lvl.lvldt),
+MapEditor::MapEditor(EngineMap& map) :
+	engine(map.engine),
+	map(map),
+	mapdt(map.mapdt),
 	showGui(false),
 	lastShowGui(false),
 	tilemode(false),
@@ -149,7 +149,7 @@ void MapEditor::HandlePick(bool rightheld, bool middleclick)
 	glm::vec3 rayDir = glm::normalize(worldMouse - levelCamera.GetPosition());
 
 	MapData::RayCastResult res;
-	bool levelcollision = lvldt.RayCast(levelCamera.GetPosition(), rayDir, 70.0f, &res);
+	bool levelcollision = mapdt.RayCast(levelCamera.GetPosition(), rayDir, 70.0f, &res);
 
 	bool gridcollision = linePlaneIntersection(plane_center, gridUp, levelCamera.GetPosition(), rayDir, true, &pick);
 	MapData::Coordinate c(
@@ -184,29 +184,29 @@ void MapEditor::HandlePick(bool rightheld, bool middleclick)
 			if (levelcollision) {
 				if (al_key_down(&keyboardState, ALLEGRO_KEY_LSHIFT)) {
 					// copy tile
-					const MapData::Brick& brick = lvldt.GetBrick(res.coordinate)[res.brickIndex];
-					selectedtile.set = lvldt.FindTilesetData(brick.tilesetdata);
+					const MapData::Brick& brick = mapdt.GetBrick(res.coordinate)[res.brickIndex];
+					selectedtile.set = mapdt.FindTilesetData(brick.tilesetdata);
 					selectedtile.x = brick.tilex;
 					selectedtile.y = brick.tiley;
 				}
 				else {
 					// draw tile or remove tile
-					lvldt.UpdateBrickTile(res.coordinate, res.brickIndex, al_key_down(&keyboardState, ALLEGRO_KEY_LCTRL) ? -1 : selectedtile.set, selectedtile.x, selectedtile.y);
+					mapdt.UpdateBrickTile(res.coordinate, res.brickIndex, al_key_down(&keyboardState, ALLEGRO_KEY_LCTRL) ? -1 : selectedtile.set, selectedtile.x, selectedtile.y);
 				}
 			}
 		}
 		else if (gridcollision && c != lastClic) {
 			if (al_key_down(&keyboardState, ALLEGRO_KEY_LSHIFT)) {
 				// copy brick
-				brickheap = lvldt.GetBrick(c);
+				brickheap = mapdt.GetBrick(c);
 			}
 			else if (al_key_down(&keyboardState, ALLEGRO_KEY_LCTRL)) {
 				// remove brick
-				lvldt.ClearBrick(c);
+				mapdt.ClearBrick(c);
 			}
 			else {
 				// place brick
-				lvldt.StackBrick(c, brickheap);
+				mapdt.StackBrick(c, brickheap);
 			}
 		}
 	}
@@ -236,7 +236,7 @@ void MapEditor::Draw() {
 	glEnable(GL_LIGHT0);
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1.0f, 1.0f);
-	DrawLevelData(lvldt, engine.graphics.textures, true);
+	DrawMapData(mapdt, engine.graphics.textures, true);
 	glDisable(GL_POLYGON_OFFSET_FILL);
 	glDisable(GL_TEXTURE_2D);
 
@@ -291,7 +291,7 @@ void MapEditor::Draw() {
 }
 
 void MapEditor::SecondDraw() {
-	const MapData::BrickData* brick = lvldt.GetBrickData(curBrickdata);
+	const MapData::BrickData* brick = mapdt.GetBrickData(curBrickdata);
 
 	if (brick) {
 		glMatrixMode(GL_PROJECTION);
@@ -382,7 +382,7 @@ void MapEditor::Step() {
 
 		if (showGui) {
 			// show the debug level, and not the correct one anymore
-			engine.mainGraphic.RemoveChildFromProgram(&lvl, "test.pgr");
+			engine.mainGraphic.RemoveChildFromProgram(&map, "test.pgr");
 			engine.mainGraphic.AddChild(this);
 			engine.graphicTargets.AddChild(&brickDataPreview, true);
 			engine.graphicTargets.AddChild(&brickHeapPreview, true);
@@ -394,10 +394,10 @@ void MapEditor::Step() {
 			engine.graphicTargets.RemoveChild(&brickHeapPreview);
 
 			// tell him to reload
-			engine.graphics.models.RemoveValue(&lvldt);
-			lvl.model = &engine.graphics.models.Get(&lvldt);
+			engine.graphics.models.RemoveValue(&mapdt);
+			map.model = &engine.graphics.models.Get(&mapdt);
 
-			engine.mainGraphic.AddChildToProgram(&lvl, "test.pgr");
+			engine.mainGraphic.AddChildToProgram(&map, "test.pgr");
 		}
 	}
 
@@ -416,11 +416,11 @@ void MapEditor::Step() {
 						ALLEGRO_FILECHOOSER* dialog = al_create_native_file_dialog(
 							nullptr,
 							"Choose a level file",
-							"*.lvl",
+							"*.map;*.lvl",
 							ALLEGRO_FILECHOOSER_FILE_MUST_EXIST);
 						if (al_show_native_file_dialog(engine.display, dialog)) {
 							const char* answer = al_get_native_file_dialog_path(dialog, 0);
-							lvldt.Load(answer); // Todo : error handling
+							mapdt.Load(answer); // Todo : error handling
 							lastTileset = -1;
 							curBrickdata = -1;
 							lastBrickdata = -1;
@@ -434,11 +434,11 @@ void MapEditor::Step() {
 						ALLEGRO_FILECHOOSER* dialog = al_create_native_file_dialog(
 							nullptr,
 							"Save your level",
-							"*.lvl",
+							"*.map;*.lvl",
 							ALLEGRO_FILECHOOSER_SAVE);
 						if (al_show_native_file_dialog(engine.display, dialog)) {
 							const char* answer = al_get_native_file_dialog_path(dialog, 0);
-							lvldt.Save(answer);
+							mapdt.Save(answer);
 						}
 						al_destroy_native_file_dialog(dialog);
 					}
@@ -458,7 +458,7 @@ void MapEditor::Step() {
 			if (ImGui::CollapsingHeader("Tilesets")) {
 				if (ImGui::BeginTabBar("Tilesets")) {
 					int curTileset = 0;
-					const MapData::TilesetData* tsd = lvldt.GetTilesetData(curTileset);
+					const MapData::TilesetData* tsd = mapdt.GetTilesetData(curTileset);
 					while (tsd) {
 						char tabtitle[64];
 						sprintf_s(tabtitle, 64, "Tileset %i", curTileset);
@@ -518,7 +518,7 @@ void MapEditor::Step() {
 
 								// update the level and its undo/redo if a change was detected
 								if (change) {
-									lvldt.UpdateTilesetData(curTileset, guiTsd.file.c_str(), guiTsd.ox, guiTsd.oy, guiTsd.px, guiTsd.py, guiTsd.tw, guiTsd.th);
+									mapdt.UpdateTilesetData(curTileset, guiTsd.file.c_str(), guiTsd.ox, guiTsd.oy, guiTsd.px, guiTsd.py, guiTsd.tw, guiTsd.th);
 								}
 							}
 
@@ -594,12 +594,12 @@ void MapEditor::Step() {
 						if (!open) {
 							wantTSIDtoDel = curTileset;
 						}
-						tsd = lvldt.GetTilesetData(++curTileset);
+						tsd = mapdt.GetTilesetData(++curTileset);
 					}
 
 					// button to add a new tileset
 					if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip)) {
-						lvldt.AddTilesetData();
+						mapdt.AddTilesetData();
 					}
 
 					ImGui::EndTabBar();
@@ -608,7 +608,7 @@ void MapEditor::Step() {
 			if (ImGui::CollapsingHeader("Bricks")) {
 				if (ImGui::BeginTabBar("Brick data sheets")) {
 					int curbd = 0;
-					MapData::BrickData* bd = lvldt.GetBrickData(curbd);
+					MapData::BrickData* bd = mapdt.GetBrickData(curbd);
 					while (bd) {
 						char tabtitle[64];
 						sprintf_s(tabtitle, 64, "Brick data %i", curbd);
@@ -626,7 +626,7 @@ void MapEditor::Step() {
 							}
 
 							if (ImGui::Button("Add to heap")) {
-								MapData::Brick b(lvldt);
+								MapData::Brick b(mapdt);
 								b.brickdata = bd;
 								brickheap.push_back(b);
 							}
@@ -778,12 +778,12 @@ void MapEditor::Step() {
 						if (!open) {
 							wantBDIDtoDel = curbd;
 						}
-						bd = lvldt.GetBrickData(++curbd);
+						bd = mapdt.GetBrickData(++curbd);
 					}
 
 					// button to add a new brick data
 					if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip)) {
-						lvldt.AddBrickData();
+						mapdt.AddBrickData();
 					}
 
 					ImGui::EndTabItem();
@@ -820,12 +820,12 @@ void MapEditor::Step() {
 					if (ImGui::Button("Yes", ImVec2(120, 0)))
 					{
 						if (handlingTS) {
-							lvldt.RemoveTilesetData(TSIDtoDel);
+							mapdt.RemoveTilesetData(TSIDtoDel);
 							lastTileset = -1;
 							TSIDtoDel = -1;
 						}
 						else if (handlingBD) {
-							lvldt.RemoveBrickData(BDIDtoDel);
+							mapdt.RemoveBrickData(BDIDtoDel);
 							lastBrickdata = -1;
 							BDIDtoDel = -1;
 						}
@@ -858,7 +858,7 @@ void MapEditor::Step() {
 					selectedtile.y = 0;
 				}
 				const ImVec2 previewSize(128, 128);
-				const MapData::TilesetData* tsd = lvldt.GetTilesetData(selectedtile.set);
+				const MapData::TilesetData* tsd = mapdt.GetTilesetData(selectedtile.set);
 				if (tsd) {
 					const Texture& tex = engine.graphics.textures.Get(tsd->file);
 					const float texw = tex.GetWidth();
@@ -959,19 +959,19 @@ void MapEditor::RotateBrickHeap(void(OrthoMatrix::* rotfunc)())
 
 void MapEditor::Undo()
 {
-	lvldt.Undo();
+	mapdt.Undo();
 	ReloadCurrentBrickData();
 }
 
 void MapEditor::Redo()
 {
-	lvldt.Redo();
+	mapdt.Redo();
 	ReloadCurrentBrickData();
 }
 
 void MapEditor::ReloadCurrentBrickData()
 {
-	MapData::BrickData* bd = lvldt.GetBrickData(curBrickdata);
+	MapData::BrickData* bd = mapdt.GetBrickData(curBrickdata);
 	if (bd) {
 		guiBdTriangles = bd->GetTriangleList();
 		guiBdVertices.clear();

@@ -62,7 +62,7 @@ bool MapData::Save(const char* filename) {
 
 
 	// LEVEL BRICK HEAPS
-	json jlvl = json::array();
+	json jmap = json::array();
 	for (const_iterator it = begin(); it != end(); ++it) {
 		const BrickHeap& bh = it->second;
 		if (!bh.empty()) {
@@ -86,10 +86,10 @@ bool MapData::Save(const char* filename) {
 			}
 			jbh["heap"] = jheap;
 
-			jlvl.push_back(jbh);
+			jmap.push_back(jbh);
 		}
 	}
-	j["level"] = jlvl;
+	j["level"] = jmap;
 
 	std::ofstream ofs(filename);
 	ofs << j << std::endl;
@@ -176,12 +176,12 @@ bool MapData::Load(const char* filename) {
 	}
 
 	// LEVEL BRICK HEAPS
-	for (auto lvl : j["level"]) {
-		json& jc = lvl["coord"];
+	for (auto map : j["level"]) {
+		json& jc = map["coord"];
 		Coordinate c(jc[0], jc[1], jc[2]);
 
 		BrickHeap& ref = level[c];
-		for (auto jbh : lvl["heap"]) {
+		for (auto jbh : map["heap"]) {
 			ref.push_back(Brick(*this, jbh));
 		}
 	}

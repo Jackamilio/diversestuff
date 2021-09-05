@@ -14,7 +14,7 @@ public:
 
 	inline const Model& GetValue() const { return *model; }
 	inline void Load(const std::string& file, GraphicContext& graphics) { if (!model) { model = new Model(file, graphics); } }
-	inline void Load(const MapData* lvl, GraphicContext& graphics) { if (!model) { model = new Model(*lvl, graphics); } }
+	inline void Load(const MapData* map, GraphicContext& graphics) { if (!model) { model = new Model(*map, graphics); } }
 	inline bool NeedsToLoad() const { return model == 0; }
 };
 

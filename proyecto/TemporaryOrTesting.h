@@ -4,30 +4,30 @@
 #include "MapData.h"
 #include "Dump.h"
 
-class EngineLevel : public Engine::Graphic {
+class EngineMap : public Engine::Graphic {
 public:
-	MapData lvldt;
+	MapData mapdt;
 	const Model* model;
 
-	btTriangleMesh* levelMesh;
+	btTriangleMesh* mapMesh;
 	btBvhTriangleMeshShape* shape;
 	btMotionState* motion;
 	btRigidBody* body;
 
-	EngineLevel(const char* level) :
-		levelMesh(nullptr),
+	EngineMap(const char* map) :
+		mapMesh(nullptr),
 		shape(nullptr),
 		motion(nullptr),
 		body(nullptr)
 	{
-		lvldt.Load(level);
-		model = &engine.graphics.models.Get(&lvldt);
+		mapdt.Load(map);
+		model = &engine.graphics.models.Get(&mapdt);
 
 		btTransform t;
 		t.setIdentity();
 		t.setOrigin(btVector3(0, 0, 0));
-		levelMesh = ConstructLevelCollision(lvldt);
-		shape = new btBvhTriangleMeshShape(levelMesh, true);
+		mapMesh = ConstructMapCollision(mapdt);
+		shape = new btBvhTriangleMeshShape(mapMesh, true);
 		motion = new btDefaultMotionState(t);
 		btRigidBody::btRigidBodyConstructionInfo info(0.0, motion, shape);
 		body = new btRigidBody(info);
@@ -36,12 +36,12 @@ public:
 		engine.mainGraphic.AddChildToProgram(this, "test.pgr");
 	}
 
-	~EngineLevel() {
+	~EngineMap() {
 		engine.physics->removeRigidBody(body);
 		delete body;
 		delete motion;
 		delete shape;
-		delete levelMesh;
+		delete mapMesh;
 	}
 
 	void Draw() {

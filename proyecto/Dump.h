@@ -53,8 +53,8 @@ void DrawBrick(const MapData::BrickData* brick, float uo = 0.0f, float uf = 1.0f
 void DrawBrick(const MapData::Brick& brick, TextureManager& texMngr, bool flipTexV = false);
 void DrawBrickWireframe(const MapData::Brick& brick);
 void DrawBrickHeap(const MapData::BrickHeap& brickheap, TextureManager& texMngr, bool flipTexV = false);
-void DrawLevelData(const MapData& level, TextureManager& txmgr, bool flipTexV = false);
+void DrawMapData(const MapData& level, TextureManager& txmgr, bool flipTexV = false);
 
-btTriangleMesh* ConstructLevelCollision(const MapData& level);
+btTriangleMesh* ConstructMapCollision(const MapData& level);
 
 #endif

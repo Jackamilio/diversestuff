@@ -163,8 +163,8 @@ int main(int nbarg, char ** args) {
 		al_init_ttf_addon();
 
 		TestCamera camera;
-		EngineLevel lvl("niveau.lvl");
-		MapEditor editor(lvl);
+		EngineMap map("niveau.lvl");
+		MapEditor editor(map);
 		TestModel tm("personnage.fbx", "Cours");
 		TestCharacter tc;
 		FPSCounter fc;
