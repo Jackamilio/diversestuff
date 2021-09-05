@@ -6,6 +6,7 @@
 
 class EngineMap : public Engine::Graphic {
 public:
+	OTN(EngineMap)
 	MapData mapdt;
 	const Model* model;
 
@@ -52,6 +53,7 @@ public:
 
 class TestModel : public Engine::Update, public Engine::DoubleGraphic {
 public:
+	OTN(TestModel)
 	const Model& model;
 	Model::WorkingPose wpose;
 	Model::WorkingPose wpose2;
@@ -86,6 +88,7 @@ public:
 
 class TestCamera : public Engine::Update {
 public:
+	OTN(TestCamera)
 	EditorCamera::DefaultInput camera;
 	btRigidBody* trackbody;
 
@@ -115,6 +118,7 @@ public:
 
 class TestCharacter : public Engine::Dynamic, public Engine::Update, public Engine::Graphic {
 public:
+	OTN(TestCharacter)
 	btCapsuleShape* shape;
 	btMotionState* motion;
 	btRigidBody* body;

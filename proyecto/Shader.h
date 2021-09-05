@@ -46,8 +46,10 @@ private:
 	inline bool NeedsToLoad() const { return needsToLoad; }
 	inline GLuint GetValue() const { return id; }
 	inline void Use() const { glUseProgram(id); }
+	inline bool operator == (const Program& compare) const { return id == compare.id; }
 public:
 	Program() : id(0), needsToLoad(true) {};
+	Program(const Program& rhs) : id(rhs.id), needsToLoad(rhs.needsToLoad) {}
 	~Program() { if (id) { glDeleteProgram(id); id = 0; } }
 
 	inline GLint GetUniform(const std::string& name) { return GetHandler(name, id).GetValue(); }

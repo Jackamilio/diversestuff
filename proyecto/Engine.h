@@ -10,8 +10,42 @@
 #include <typeinfo>
 #include "GraphicContext.h"
 #include "Shader.h"
+#include "Exposing.h"
+
+#define OTN(name) const char* ObjectTypeName() const { return #name; }
 
 class Engine {
+public:
+	// default uber mother class
+	friend class Object;
+	class Object {
+	public:
+		Engine& engine;
+
+		Object();
+		~Object();
+
+		virtual const char* ObjectTypeName() const = 0;
+
+		void AddChild(Object* c, bool onTop = false);
+		void RemoveChild(Object* c);
+
+		inline int ChildrenSize() const { return children.size(); }
+		inline Object* GetChild(int i) { return children[i]; }
+
+	private:
+		std::vector<Object*> children;
+	};
+
+private:
+	class RootObject : public Object {
+		OTN(RootObject);
+	};
+	RootObject rootObject;
+
+	// must be initialized first
+	std::vector<Object*> objectsTracker;
+
 public:
 	static Engine& Get();
 
@@ -21,21 +55,22 @@ public:
 	bool Init();
 	bool OneLoop();
 
-	// default uber mother class
-	class Object {
-	public:
-		Engine& engine;
-
-		Object();
-	};
-
 	// mother node classes
 	template<class T>
 	class Node : virtual public Object {
-	public:
+	private:
+		using Object::AddChild;
+		using Object::RemoveChild;
+		using Object::ChildrenSize;
+		using Object::GetChild;
+
 		std::vector<T*> children;
+	public:
 		void AddChild(T* c, bool onTop = false);
 		void RemoveChild(T* c);
+
+		inline int ChildrenSize() const { return children.size(); }
+		inline T* GetChild(int i) { return children[i]; }
 	};
 	class Input : public Node<Input> {
 	public:
@@ -61,24 +96,29 @@ public:
 	// root node classes
 	class InputRoot : public Input {
 	public:
+		OTN(InputRoot)
 		bool Event(ALLEGRO_EVENT& event);
 	};
 	class DynamicRoot : public Dynamic {
 	public:
+		OTN(DynamicRoot)
 		void Tick();
 	};
 	class UpdateRoot : public Update {
 	public:
+		OTN(UpdateRoot)
 		void Step();
 	};
 	class GraphicRoot : public Graphic {
 	public:
+		OTN(GraphicRoot)
 		void Draw();
 	};
 	class GraphicTarget : public Graphic {
 	private:
 		bool ownsBitmap;
 	public:
+		OTN(GraphicTarget)
 		ALLEGRO_BITMAP* bitmap;
 		glm::vec4 clearColor;
 
@@ -100,17 +140,20 @@ public:
 	};
 	class MainGraphic : public ShaderGraphic {
 	public:
+		OTN(MainGraphic)
 		MainGraphic();
 		void Draw();
 	};
 	class DebugGraphic : public ShaderGraphic {
 	public:
+		OTN(DebugGraphic)
 		DebugGraphic();
 
 		void Draw();
 	};
 	class OverlayGraphic : public ShaderGraphic {
 	public:
+		OTN(OverlayGraphic)
 		OverlayGraphic();
 		void Draw();
 	};
@@ -120,6 +163,7 @@ public:
 	private:
 		class SecondGraphic : public Engine::Graphic {
 		public:
+			OTN(SecondGraphic)
 			DoubleGraphic& dg;
 			SecondGraphic(DoubleGraphic& dg) : dg(dg) {}
 			void Draw() { dg.SecondDraw(); }
@@ -135,6 +179,7 @@ public:
 	private:
 		class ThirdGraphic : public Engine::Graphic {
 		public:
+			OTN(ThirdGraphic)
 			TripleGraphic& trg;
 			ThirdGraphic(TripleGraphic& trg) : trg(trg) {}
 			void Draw() { trg.ThirdDraw(); }
@@ -166,7 +211,7 @@ public:
 	GraphicContext graphics;
 	std::string currentDirectory;
 
-	btDiscreteDynamicsWorld* physics;;
+	btDiscreteDynamicsWorld* physics;
 
 	template<class T>
 	T& Access();
@@ -177,6 +222,9 @@ private:
 	btSequentialImpulseConstraintSolver* solver;
 	ALLEGRO_EVENT_QUEUE* eventQueue;
 	bool initSuccess;
+
+	bool guiEnabled;
+	void ShowGui();
 
 	class Data {
 	public:
@@ -201,6 +249,7 @@ inline void Engine::Node<T>::AddChild(T * c, bool onTop)
 	else {
 		children.push_back(c);
 	}
+	Object::AddChild((Object*)c);
 }
 
 template<class T>
@@ -214,6 +263,7 @@ inline void Engine::Node<T>::RemoveChild(T* c)
 			++it;
 		}
 	}
+	Object::RemoveChild((Object*)c);
 }
 
 template<class T>

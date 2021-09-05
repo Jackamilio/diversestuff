@@ -28,6 +28,8 @@ public:
 	template<class ... Args>
 	const ResValue& GetRefValue(const Key& key, Args& ... arg);
 
+	const Key GetKey(const ResHandler& value, const Key& def) const;
+
 	void RemoveValue(const Key& key);
 	void Clear();
 };
@@ -64,6 +66,23 @@ template<class ...Args>
 inline const ResValue & ResourceManager<ResHandler, ResValue, Key>::GetRefValue(const Key& key, Args& ... arg)
 {
 	return GetHandler(key, arg...).GetValue();
+}
+
+template<class ResHandler, class ResValue, class Key>
+inline const Key ResourceManager<ResHandler, ResValue, Key>::GetKey(const ResHandler& value, const Key& def) const
+{
+	// THIS, FREAKING THIS :
+	// changed auto to auto&&, solution found in https://stackoverflow.com/questions/20709342/unexpected-copies-with-foreach-over-a-map
+	// when GetKey was called for the Programs (in Shader.h) it created copies of programs
+	// resulting on their destructor to be called at the end,
+	// invalidating their glProgram, messing up the drawings.
+	// Hello headache, and hours of my life lost...
+	for (auto&& it : resources) {
+		if (it.second == value) {
+			return it.first;
+		}
+	}
+	return def;
 }
 
 template<class ResHandler, class ResValue, class Key>

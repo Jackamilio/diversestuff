@@ -78,12 +78,18 @@ Engine::Engine()
 	, display(nullptr)
 	, eventQueue(nullptr)
 	, initSuccess(false)
+	, guiEnabled(false)
 {
 	graphicTargets.AddChild(&defaultGraphicTarget);
 
 	defaultGraphicTarget.AddChild(&mainGraphic);
 	defaultGraphicTarget.AddChild(&debugGraphic);
 	defaultGraphicTarget.AddChild(&overlayGraphic);
+
+	rootObject.AddChild(&inputRoot);
+	rootObject.AddChild(&dynamicRoot);
+	rootObject.AddChild(&updateRoot);
+	rootObject.AddChild(&graphicTargets);
 
 	lastTime = time = 0.0;
 	dt = dtTarget = 1.0 / 60.0;
@@ -114,8 +120,8 @@ Engine::~Engine()
 
 void RecursiveTick(Engine::Dynamic* dynamic) {
 	dynamic->Tick();
-	for (unsigned int i = 0; i < dynamic->children.size(); ++i) {
-		RecursiveTick(dynamic->children[i]);
+	for (unsigned int i = 0; i < dynamic->ChildrenSize(); ++i) {
+		RecursiveTick(dynamic->GetChild(i));
 	}
 }
 
@@ -222,8 +228,8 @@ bool Engine::Init()
 
 bool RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event) {
 	if (!input->Event(event)) {
-		for (int i = 0; i < input->children.size(); ++i) {
-			if (RecursiveInput(input->children[i], event)) {
+		for (int i = 0; i < input->ChildrenSize(); ++i) {
+			if (RecursiveInput(input->GetChild(i), event)) {
 				return true;
 			}
 		}
@@ -234,15 +240,15 @@ bool RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event) {
 
 void RecursiveUpdate(Engine::Update* update) {
 	update->Step();
-	for (int i = 0; i < update->children.size(); ++i) {
-		RecursiveUpdate(update->children[i]);
+	for (int i = 0; i < update->ChildrenSize(); ++i) {
+		RecursiveUpdate(update->GetChild(i));
 	}
 }
 
 void RecursiveGraphic(Engine::Graphic* graphic) {
 	graphic->Draw();
-	for (int i = 0; i < graphic->children.size(); ++i) {
-		RecursiveGraphic(graphic->children[i]);
+	for (int i = 0; i < graphic->ChildrenSize(); ++i) {
+		RecursiveGraphic(graphic->GetChild(i));
 	}
 }
 
@@ -263,6 +269,9 @@ bool Engine::OneLoop()
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			stayOpen = false;
 		}
+		else if (event.type == ALLEGRO_EVENT_KEY_DOWN && event.keyboard.keycode == ALLEGRO_KEY_F1) {
+			guiEnabled = !guiEnabled;
+		}
 		else if (!DearImguiIntegration::Event(event)) {
 			RecursiveInput(&inputRoot, event);
 		}
@@ -274,6 +283,8 @@ bool Engine::OneLoop()
 
 	RecursiveUpdate(&updateRoot);
 	RecursiveGraphic(&graphicTargets);
+
+	ShowGui();
 
 	DearImguiIntegration::Render();
 
@@ -288,9 +299,119 @@ bool Engine::OneLoop()
 	return stayOpen;
 }
 
+void RecursiveGuiHierarchyObject(Engine::Object* obj, const ProgramManager& programs) {
+	Engine::ShaderGraphic* sg = dynamic_cast<Engine::ShaderGraphic*>(obj);
+	
+	if (obj->ChildrenSize() > 0 || sg) {
+		if (ImGui::TreeNode(obj->ObjectTypeName())) {
+
+			if (sg) {
+				if (ImGui::TreeNode("Programs")) {
+					for (auto it : sg->programChildren) {
+						const Program& prg = *it.first;
+						std::string prgName = programs.GetKey(prg, "program not found");
+						if (it.second.ChildrenSize() > 0) {
+							if (ImGui::TreeNode(prgName.c_str())) {
+								for (int j = 0; j < it.second.ChildrenSize(); ++j) {
+									ImGui::BulletText(it.second.GetChild(j)->ObjectTypeName());
+								}
+								ImGui::TreePop();
+							}
+						}
+						else {
+							ImGui::BulletText(prgName.c_str());
+						}
+					}
+					ImGui::TreePop();
+				}
+			}
+
+			for (int i = 0; i < obj->ChildrenSize(); ++i) {
+				RecursiveGuiHierarchyObject(obj->GetChild(i), programs);
+			}
+
+			ImGui::TreePop();
+		}
+	}
+	else {
+		ImGui::BulletText(obj->ObjectTypeName());
+	}
+}
+
+void Engine::ShowGui() {
+	if (guiEnabled) {
+		ImGui::ShowDemoWindow();
+
+		static bool win_objects = false;
+
+		if (win_objects) {
+			if (ImGui::Begin("Objects", &win_objects)) {
+				static bool show_hierarchy = false;
+				ImGui::Checkbox("Show hierarchy", &show_hierarchy);
+				if (show_hierarchy) {
+					RecursiveGuiHierarchyObject(&rootObject, graphics.programs);
+				}
+				else {
+					for (int i = 0; i < objectsTracker.size(); ++i) {
+						ImGui::Text(objectsTracker[i]->ObjectTypeName());
+					}
+				}
+			}
+			ImGui::End();
+		}
+
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("Windows"))
+			{
+				ImGui::MenuItem("Objects", nullptr, &win_objects);
+
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
+	}
+}
+
 Engine::Object::Object() :
 	engine(Engine::Get())
 {
+	engine.objectsTracker.push_back(this);
+}
+
+Engine::Object::~Object()
+{
+	for (auto it = engine.objectsTracker.begin(); it != engine.objectsTracker.end(); ) {
+		if (*it == this) {
+			it = engine.objectsTracker.erase(it);
+			return;
+		}
+		else {
+			++it;
+		}
+	}
+}
+
+void Engine::Object::AddChild(Object* c, bool onTop)
+{
+	if (onTop) {
+		children.insert(children.begin(), c);
+	}
+	else {
+		children.push_back(c);
+	}
+}
+
+void Engine::Object::RemoveChild(Object* c)
+{
+	for (auto it = children.begin(); it != children.end(); ) {
+		if (*it == c) {
+			it = children.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
 }
 
 void Engine::Dynamic::Collision(Engine::Dynamic* other, btPersistentManifold& manifold)

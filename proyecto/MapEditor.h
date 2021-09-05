@@ -9,6 +9,7 @@
 
 class MapEditor : public Engine::Input, public Engine::Update, public Engine::TripleGraphic {
 public:
+	OTN(MapEditor)
 	Engine& engine;
 	EngineMap& map;
 	MapData& mapdt;

@@ -45,7 +45,7 @@ MapEditor::MapEditor(EngineMap& map) :
 
 bool MapEditor::Event(ALLEGRO_EVENT& event) {
 	if (!showGui) {
-		if (event.type == ALLEGRO_EVENT_KEY_DOWN && event.keyboard.keycode == ALLEGRO_KEY_F1) {
+		if (event.type == ALLEGRO_EVENT_KEY_DOWN && event.keyboard.keycode == ALLEGRO_KEY_F2) {
 			showGui = true;
 			tilemode = false; // always start without tilemode?
 		}
@@ -941,8 +941,6 @@ void MapEditor::Step() {
 		}
 		ImGui::End();
 	}
-
-	ImGui::ShowDemoWindow();
 }
 
 void MapEditor::RotateBrickHeap(void(OrthoMatrix::* rotfunc)())

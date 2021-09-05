@@ -122,6 +122,7 @@ EXPOSE_END
 
 class FPSCounter : public Engine::Graphic {
 public:
+	OTN(FPSCounter)
 	double samplingDuration;
 	double lastTime;
 	int nbSamples;
