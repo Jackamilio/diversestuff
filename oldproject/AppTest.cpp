@@ -333,7 +333,7 @@ void AppTest::run()
 	FPSCounter fc(*engine);
 	TestCube tc(*engine);
 	TestCamera cam(*engine);
-	//TestModel tm(*engine, "personnage.fbx", "Cours");
+	TestModel tm(*engine, "personnage.fbx", "Cours");
 	cam.trackbody = tc.body;
 
 	engine->Get<TestCamera*>() = &cam;

@@ -54,9 +54,6 @@
     <ClCompile Include="Exposing.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="tinyxml2.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="imgui.cpp">
       <Filter>Dear imgui</Filter>
     </ClCompile>

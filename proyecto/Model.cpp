@@ -1,9 +1,9 @@
 #include "Model.h"
 #include "GraphicContext.h"
 #include "LevelData.h"
-//#include <assimp/scene.h>
-//#include <assimp/Importer.hpp>
-//#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <cmath>
 
@@ -25,14 +25,14 @@ void Transform(
 
 Model::Model(const LevelData& level, GraphicContext& g) : graphics(g)
 {
-	std::map<const LevelData::TilesetData*, unsigned int> meshmap;
+	std::map<const LevelData::TilesetData*, int> meshmap;
 
 	glm::mat4 mat;
 
 	for (LevelData::const_iterator it = level.begin(); it != level.end(); ++it) {
 		const LevelData::Coordinate& c = it->first;
 
-		for (unsigned int b = 0; b < it->second.size(); ++b) {
+		for (int b = 0; b < it->second.size(); ++b) {
 			const LevelData::Brick& brick = it->second[b];
 
 			brick.matrix.CalcMatrix(mat);
@@ -64,7 +64,7 @@ Model::Model(const LevelData& level, GraphicContext& g) : graphics(g)
 							//}
 						}
 
-						unsigned int& meshid = meshmap[tsdt];
+						int& meshid = meshmap[tsdt];
 						if (meshid == 0) {
 							meshid = (int)meshes.size() + 1;
 							meshes.resize(meshes.size() + 1);
@@ -76,9 +76,9 @@ Model::Model(const LevelData& level, GraphicContext& g) : graphics(g)
 						glm::vec3 v1tov3 = v3->xyz - v1->xyz;
 						glm::vec3 normal = glm::normalize(glm::cross(v1tov2, v1tov3));
 
-						unsigned int pid1 = (unsigned int)mesh.minverts.size();
-						unsigned int pid2 = pid1 + 1;
-						unsigned int pid3 = pid2 + 1;
+						int pid1 = (int)mesh.minverts.size();
+						int pid2 = pid1 + 1;
+						int pid3 = pid2 + 1;
 						mesh.tris.push_back(pid1);
 						mesh.tris.push_back(pid2);
 						mesh.tris.push_back(pid3);
@@ -96,7 +96,7 @@ Model::Model(const LevelData& level, GraphicContext& g) : graphics(g)
 	GenerateVBOS();
 }
 
-/*const aiNode* FindNodeInSceneRecursive(const aiScene* scene, const aiNode* node, std::string nodeName) {
+const aiNode* FindNodeInSceneRecursive(const aiScene* scene, const aiNode* node, std::string nodeName) {
 
 	std::string myName(node->mName.C_Str());
 	if (myName == nodeName) {
@@ -113,12 +113,12 @@ Model::Model(const LevelData& level, GraphicContext& g) : graphics(g)
 	return 0;
 }
 
-void FillBoneChildren(const aiNode* node, Model::Skeleton& skeleton, std::vector<unsigned int>& children) {
+void FillBoneChildren(const aiNode* node, Model::Skeleton& skeleton, std::vector<int>& children) {
 	for (unsigned int i = 0; i < node->mNumChildren; ++i) {
 		std::string childName(node->mChildren[i]->mName.C_Str());
 
 		int id = -1;
-		for (unsigned int j = 0; j < skeleton.bones.size(); ++j) {
+		for (int j = 0; j < skeleton.bones.size(); ++j) {
 			if (skeleton.bones[j].name == childName) {
 				id = j;
 				break;
@@ -128,11 +128,11 @@ void FillBoneChildren(const aiNode* node, Model::Skeleton& skeleton, std::vector
 			children.push_back(id);
 		}
 	}
-}*/
+}
 
 Model::Model(const std::string& file, GraphicContext& g) : graphics(g)
 {
-	/*Assimp::Importer importer;
+	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(file, aiProcessPreset_TargetRealtime_MaxQuality);
 
 	if (!scene) {
@@ -173,14 +173,14 @@ Model::Model(const std::string& file, GraphicContext& g) : graphics(g)
 						verts[j].uv.y = omesh->mTextureCoords[0][j].y;
 					}
 
-					for (unsigned int k = 0; k < MAX_BONE_INFLUENCE; ++k) {
+					for (int k = 0; k < MAX_BONE_INFLUENCE; ++k) {
 						verts[j].boneIds[k] = 0;
 						verts[j].weights[k] = 0.0f;
 					}
 				}
 
 				// fill in triangles
-				std::vector<unsigned int>& tris = meshes[i].tris;
+				std::vector<int>& tris = meshes[i].tris;
 				tris.reserve(omesh->mNumFaces*3);
 				int notTriangles = 0;
 				for (unsigned int j = 0; j < omesh->mNumFaces; ++j) {
@@ -205,7 +205,7 @@ Model::Model(const std::string& file, GraphicContext& g) : graphics(g)
 					for (unsigned int j = 0; j < omesh->mNumBones; ++j) {
 						const aiBone* obone = omesh->mBones[j];
 						std::string boneName(obone->mName.C_Str());
-						unsigned int boneId;
+						int boneId;
 						Bone& bone = FindOrAddBone(scene, boneName, boneId);
 
 						memcpy(&bone.offset[0].x, &obone->mOffsetMatrix.a1, sizeof(float) * 16);
@@ -213,11 +213,11 @@ Model::Model(const std::string& file, GraphicContext& g) : graphics(g)
 
 						for (unsigned int k = 0; k < obone->mNumWeights; ++k) {
 							//std::vector<BoneInfluence>& inf = verts[obone->mWeights[k].mVertexId].inf;
-							//unsigned int infId = inf.size();
+							//int infId = inf.size();
 							//inf.resize(infId + 1);
 							int* boneIds = verts[obone->mWeights[k].mVertexId].boneIds;
 							float* weights = verts[obone->mWeights[k].mVertexId].weights;
-							unsigned int infId = 0;
+							int infId = 0;
 							while (weights[infId] != 0.0f && infId < MAX_BONE_INFLUENCE) {
 								++infId;
 							}
@@ -234,20 +234,20 @@ Model::Model(const std::string& file, GraphicContext& g) : graphics(g)
 						fprintf(stdout, "Warning, the mesh %i from %s contains vertices that references too many bones (maximum is %i)\n", i, file.c_str(), MAX_BONE_INFLUENCE);
 					}
 					//now normalize weights troughout the vertices
-					for (unsigned int j = 0; j < verts.size(); ++j) {
+					for (int j = 0; j < verts.size(); ++j) {
 						//std::vector<BoneInfluence>& inf = verts[j].inf;
-						//unsigned int nbInf = inf.size();
+						//int nbInf = inf.size();
 						int* boneIds = verts[j].boneIds;
 						float* weights = verts[j].weights;
 
-						unsigned int nbInf = 0;
+						int nbInf = 0;
 						float totalWeight = 0.0f;
 
 						while (weights[nbInf] != 0.0f && nbInf < MAX_BONE_INFLUENCE) {
 							totalWeight += weights[nbInf];
 							++nbInf;
 						}
-						for (unsigned int k = 0; k < nbInf; ++k) {
+						for (int k = 0; k < nbInf; ++k) {
 							weights[k] /= totalWeight;
 						}
 					}
@@ -255,11 +255,11 @@ Model::Model(const std::string& file, GraphicContext& g) : graphics(g)
 			}
 
 			//fill bone children
-			for (unsigned int i = 0; i < skeletons.size(); ++i) {
+			for (int i = 0; i < skeletons.size(); ++i) {
 				Skeleton& skel = skeletons[i];
 				const aiNode* node = FindNodeInSceneRecursive(scene, scene->mRootNode, skel.name);
 				FillBoneChildren(node, skel, skel.children);
-				for (unsigned int j = 0; j < skel.bones.size(); ++j) {
+				for (int j = 0; j < skel.bones.size(); ++j) {
 					node = FindNodeInSceneRecursive(scene, scene->mRootNode, skel.bones[j].name);
 					FillBoneChildren(node, skel, skel.bones[j].children);
 				}
@@ -269,7 +269,7 @@ Model::Model(const std::string& file, GraphicContext& g) : graphics(g)
 			if (scene->HasAnimations()) {
 				for (unsigned int i = 0; i < scene->mNumAnimations; ++i) {
 					std::string animName(scene->mAnimations[i]->mName.C_Str());
-					unsigned int t = animName.find('|');
+					int t = animName.find('|');
 					std::string skelName = animName.substr(0, t);
 					animName = animName.substr(t + 1, animName.size() - t - 1);
 
@@ -287,7 +287,7 @@ Model::Model(const std::string& file, GraphicContext& g) : graphics(g)
 						for (unsigned int j = 0; j < scene->mAnimations[i]->mNumChannels; ++j) {
 							const aiNodeAnim* ochannel = scene->mAnimations[i]->mChannels[j];
 							std::string channelName(ochannel->mNodeName.C_Str());
-							unsigned int boneId;
+							int boneId;
 							if (FindBone(channelName, boneId)) {
 								anim.channels.resize(anim.channels.size() + 1);
 								Channel& channel = anim.channels[anim.channels.size() - 1];
@@ -325,12 +325,12 @@ Model::Model(const std::string& file, GraphicContext& g) : graphics(g)
 		else {
 			fprintf(stdout, "Warning loading %s, no meshes found!\n", file.c_str());
 		}
-	}*/
+	}
 }
 
-Model::Bone& Model::FindOrAddBone(const aiScene* scene, std::string boneName, unsigned int& boneId) {
+Model::Bone& Model::FindOrAddBone(const aiScene* scene, std::string boneName, int& boneId) {
 	// first look for us
-	/*Bone* b = FindBone(boneName, boneId);
+	Bone* b = FindBone(boneName, boneId);
 	if (b) { return *b; }
 
 	// then look for the bone in the scene hierarchy
@@ -347,7 +347,7 @@ Model::Bone& Model::FindOrAddBone(const aiScene* scene, std::string boneName, un
 	// check if we already made this skeleton
 	std::string skelName(skelNode->mName.C_Str());
 	Skeleton* skeleton = 0;
-	for (unsigned int i = 0; i < skeletons.size(); ++i) {
+	for (int i = 0; i < skeletons.size(); ++i) {
 		if (skeletons[i].name == skelName) {
 			skeleton = &skeletons[i];
 			break;
@@ -370,13 +370,12 @@ Model::Bone& Model::FindOrAddBone(const aiScene* scene, std::string boneName, un
 	bone.name = boneName;
 	memcpy(&bone.local[0].x, &boneNode->mTransformation.a1, sizeof(float) * 16);
 	bone.local = glm::transpose(bone.local);
-	return bone;*/
-	return skeletons[0].bones[0];
+	return bone;
 }
 
-Model::Bone* Model::FindBone(std::string boneName, unsigned int& boneId) {
-	for (unsigned int i = 0; i < skeletons.size(); ++i) {
-		for (unsigned int j = 0; j < skeletons[i].bones.size(); ++j) {
+Model::Bone* Model::FindBone(std::string boneName, int& boneId) {
+	for (int i = 0; i < skeletons.size(); ++i) {
+		for (int j = 0; j < skeletons[i].bones.size(); ++j) {
 			if (skeletons[i].bones[j].name == boneName) {
 				boneId = j;
 				return &skeletons[i].bones[j];
@@ -388,7 +387,7 @@ Model::Bone* Model::FindBone(std::string boneName, unsigned int& boneId) {
 
 Model::Skeleton * Model::FindSkeleton(std::string skelName)
 {
-	for (unsigned int i = 0; i < skeletons.size(); ++i) {
+	for (int i = 0; i < skeletons.size(); ++i) {
 		if (skeletons[i].name == skelName) {
 			return &skeletons[i];
 		}
@@ -398,7 +397,7 @@ Model::Skeleton * Model::FindSkeleton(std::string skelName)
 
 void Model::GenerateVBOS()
 {
-	for (unsigned int i = 0; i < meshes.size(); ++i) {
+	for (int i = 0; i < meshes.size(); ++i) {
 		glGenBuffers(1, &meshes[i].verticesVBO);
 		glBindBuffer(GL_ARRAY_BUFFER, meshes[i].verticesVBO);
 
@@ -411,7 +410,7 @@ void Model::GenerateVBOS()
 
 		glGenBuffers(1, &meshes[i].indicesVBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes[i].indicesVBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*meshes[i].tris.size(), &meshes[i].tris[0], GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*meshes[i].tris.size(), &meshes[i].tris[0], GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -420,7 +419,7 @@ void Model::GenerateVBOS()
 
 Model::~Model()
 {
-	for (unsigned int i = 0; i < meshes.size(); ++i) {
+	for (int i = 0; i < meshes.size(); ++i) {
 		if (meshes[i].verticesVBO) {
 			glDeleteBuffers(1, &meshes[i].verticesVBO);
 			meshes[i].verticesVBO = 0;
@@ -441,16 +440,19 @@ void Model::Draw(FinalPose* pose) const
 {
 	Program* program = graphics.programs.GetCurrent();
 	if (program) {
-		for (unsigned int i = 0; i < meshes.size(); ++i) {
+		for (int i = 0; i < meshes.size(); ++i) {
 			glBindTexture(GL_TEXTURE_2D, meshes[i].tex);
 
 			glBindBuffer(GL_ARRAY_BUFFER, meshes[i].verticesVBO);
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
 			glEnableVertexAttribArray(2);
-			int hasBones = meshes[i].verts.empty() ? 0 : 1;
-			program->SetUniform("hasBones", hasBones);
-			if (hasBones) {
+			// a mesh has bones if it has vertices with bone ids an weights (verts array, as opposed to minverts)
+			// but we don't want to animate if the pose is not valid
+			const bool poseIsValid = pose && !pose->empty();
+			int animate = (!meshes[i].verts.empty() && poseIsValid) ? 1 : 0;
+			program->SetUniform("animate", animate);
+			if (pose) {
 				glEnableVertexAttribArray(3);
 				glEnableVertexAttribArray(4);
 				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos));
@@ -458,7 +460,7 @@ void Model::Draw(FinalPose* pose) const
 				glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
 				glVertexAttribIPointer(3, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneIds));
 				glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, weights));
-				if (pose) { program->SetUniform("bones", *pose); }
+				if (poseIsValid) { program->SetUniform("bones", *pose); }
 			}
 			else
 			{
@@ -557,11 +559,11 @@ void Model::Draw(FinalPose* pose) const
 	}*/
 }
 
-void RecursiveDrawBones(const std::vector<Model::Bone>& bones, const std::vector<unsigned int>& boneIds, const glm::mat4& mat) {
+void RecursiveDrawBones(const std::vector<Model::Bone>& bones, const std::vector<int>& boneIds, const glm::mat4& mat) {
 	glm::vec4 pos1(0, 0, 0, 1);
 	pos1 = mat * pos1;
 
-	for (unsigned int i = 0; i < boneIds.size(); ++i) {
+	for (int i = 0; i < boneIds.size(); ++i) {
 		const Model::Bone& bone = bones[boneIds[i]];
 		
 		glm::mat4 mat2 = mat * bone.local;
@@ -587,7 +589,7 @@ void Model::DrawSkeleton() const
 	glEnd();
 }
 
-void RecursiveDrawBonePoses(const Model::WorkingPose& pose, const std::vector<unsigned int>& boneIds, const glm::mat4& mat) {
+void RecursiveDrawBonePoses(const Model::WorkingPose& pose, const std::vector<int>& boneIds, const glm::mat4& mat) {
 	glm::vec4 pos1(0, 0, 0, 1);
 	pos1 = mat * pos1;
 
@@ -602,7 +604,7 @@ void RecursiveDrawBonePoses(const Model::WorkingPose& pose, const std::vector<un
 
 	glColor3ub(255, 255, 255);
 
-	for (unsigned int i = 0; i < boneIds.size(); ++i) {
+	for (int i = 0; i < boneIds.size(); ++i) {
 		const glm::mat4& mat2 = mat * LocRotScaleToMat4(pose.transforms[boneIds[i]]);
 		glm::vec4 pos2(0, 0, 0, 1);
 		pos2 = mat2 * pos2;
@@ -634,7 +636,7 @@ void GetLerp(const std::vector<Model::KeyFrame>& values, float t, glm::vec4& out
 			out = values[values.size() - 1].val;
 		}
 		else {
-			for (unsigned int j = 1; j < values.size(); ++j) {
+			for (int j = 1; j < values.size(); ++j) {
 				if (t <= values[j].time) {
 					const Model::KeyFrame& before = values[j - 1];
 					const Model::KeyFrame& after = values[j];
@@ -675,9 +677,9 @@ void GetLerp(const std::vector<Model::KeyFrame>& values, float t, glm::quat& out
 	out.w = v.w;
 }
 
-void RecursiveGetGlobalPose(Model::FinalPose& fpose, const Model::WorkingPose& wpose, const Model::Skeleton& skeleton, const std::vector<unsigned int>& boneIds, const glm::mat4& mat) {
+void RecursiveGetGlobalPose(Model::FinalPose& fpose, const Model::WorkingPose& wpose, const Model::Skeleton& skeleton, const std::vector<int>& boneIds, const glm::mat4& mat) {
 	
-	for (unsigned int i = 0; i < boneIds.size(); ++i) {
+	for (int i = 0; i < boneIds.size(); ++i) {
 		glm::mat4 tr = LocRotScaleToMat4(wpose.transforms[boneIds[i]]);
 		tr = mat * tr;
 
@@ -691,8 +693,8 @@ bool Model::GetPose(std::string animName, float t, Model::WorkingPose& pose, boo
 {
 	// first find anim
 	const Animation* anim = 0;
-	for (unsigned int i = 0; i < skeletons.size(); ++i) {
-		for (unsigned int j = 0; j < skeletons[i].animations.size(); ++j) {
+	for (int i = 0; i < skeletons.size(); ++i) {
+		for (int j = 0; j < skeletons[i].animations.size(); ++j) {
 			if (skeletons[i].animations[j].name == animName) {
 				anim = &skeletons[i].animations[j];
 				pose.skeleton = &skeletons[i];
@@ -712,7 +714,7 @@ bool Model::GetPose(std::string animName, float t, Model::WorkingPose& pose, boo
 		}
 
 		// local transforms first
-		for (unsigned int i = 0; i < anim->channels.size(); ++i) {
+		for (int i = 0; i < anim->channels.size(); ++i) {
 			LocRotScale& tr = pose.transforms[anim->channels[i].boneId];
 
 			GetLerp(anim->channels[i].positions, t, tr.loc);
@@ -745,19 +747,24 @@ bool Model::GetPose(std::string animName, float t, Model::WorkingPose& pose, boo
 
 void Model::FinalizePose(const WorkingPose& in, FinalPose& out)
 {
-	if (out.size() != in.transforms.size()) {
-		out.resize(in.transforms.size());
+	if (in.skeleton) {
+		if (out.size() != in.transforms.size()) {
+			out.resize(in.transforms.size());
+		}
+		RecursiveGetGlobalPose(out, in, *in.skeleton, in.skeleton->children, glm::mat4(1.0f));
+		for (int i = 0; i < in.skeleton->bones.size(); ++i) {
+			out[i] = out[i] * in.skeleton->bones[i].offset;
+		}
 	}
-	RecursiveGetGlobalPose(out, in, *in.skeleton, in.skeleton->children, glm::mat4(1.0f));
-	for (unsigned int i = 0; i < in.skeleton->bones.size(); ++i) {
-		out[i] = out[i] * in.skeleton->bones[i].offset;
+	else {
+		out.clear(); //invalidate the pose
 	}
 }
 
 void Model::MixPoses(WorkingPose & inout, const WorkingPose & target, float f)
 {
 	if (inout.skeleton && target.skeleton && inout.skeleton->bones.size() == target.skeleton->bones.size()) {
-		for (unsigned int i = 0; i < target.transforms.size(); ++i) {
+		for (int i = 0; i < target.transforms.size(); ++i) {
 			LocRotScale& from = inout.transforms[i];
 			const LocRotScale& to = target.transforms[i];
 			from.loc += (to.loc - from.loc) * f;

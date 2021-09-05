@@ -9,7 +9,7 @@ layout (location = 4) in vec4 weights;
 uniform mat4 trFinal;
 uniform mat4 trWorld;
 uniform mat4 bones[64];
-uniform int hasBones;
+uniform int animate;
 
 out vec3 io_pos;
 out vec3 io_nor;
@@ -19,7 +19,7 @@ void main()
 {
 	mat4 trBone = mat4(1.0);
 	
-	if (hasBones != 0) {
+	if (animate != 0) {
 		trBone   = bones[boneids[0]] * weights[0];
 		trBone  += bones[boneids[1]] * weights[1];
 		trBone  += bones[boneids[2]] * weights[2];

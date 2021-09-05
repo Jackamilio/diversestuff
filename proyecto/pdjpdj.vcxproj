@@ -170,7 +170,6 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="LevelEditor.cpp" />
     <ClCompile Include="TextureManager.cpp" />
-    <ClCompile Include="tinyxml2.cpp" />
     <ClCompile Include="UndoRedoer.cpp" />
   </ItemGroup>
   <ItemGroup>

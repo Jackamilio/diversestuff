@@ -200,6 +200,7 @@ int main(int nbarg, char ** args) {
 		TestCamera camera(engine);
 		EngineLevel lvl(engine,"niveau.lvl");
 		LevelEditor editor(lvl);
+		TestModel tm(engine, "personnage.fbx", "Cours");
 		FPSCounter fc(engine);
 
 		while (engine.OneLoop()) {}

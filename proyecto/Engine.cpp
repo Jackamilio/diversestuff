@@ -213,7 +213,7 @@ bool Engine::Init()
 
 bool RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event) {
 	if (!input->Event(event)) {
-		for (unsigned int i = 0; i < input->children.size(); ++i) {
+		for (int i = 0; i < input->children.size(); ++i) {
 			if (RecursiveInput(input->children[i], event)) {
 				return true;
 			}
@@ -225,14 +225,14 @@ bool RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event) {
 
 void RecursiveUpdate(Engine::Update* update) {
 	update->Step();
-	for (unsigned int i = 0; i < update->children.size(); ++i) {
+	for (int i = 0; i < update->children.size(); ++i) {
 		RecursiveUpdate(update->children[i]);
 	}
 }
 
 void RecursiveGraphic(Engine::Graphic* graphic) {
 	graphic->Draw();
-	for (unsigned int i = 0; i < graphic->children.size(); ++i) {
+	for (int i = 0; i < graphic->children.size(); ++i) {
 		RecursiveGraphic(graphic->children[i]);
 	}
 }

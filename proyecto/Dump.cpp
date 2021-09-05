@@ -154,7 +154,7 @@ void DrawGlWireCapsule(float radius, float height, int turns)
 	static glm::vec3 halfCircle[9];
 	static bool initHalfCircle = true;
 	if (initHalfCircle) {
-		for (unsigned int i = 0; i <= 8; ++i) {
+		for (int i = 0; i <= 8; ++i) {
 			float a = glm::pi<float>() * (float)i / 8.0f;
 			halfCircle[i].x = glm::cos(a);
 			halfCircle[i].y = glm::sin(a);
@@ -289,7 +289,7 @@ void DrawBrickWireframe(const LevelData::Brick& brick)
 }
 
 void DrawBrickHeap(const LevelData::BrickHeap& brickheap, TextureManager& texMngr, bool flipTexV) {
-	for (unsigned int i = 0; i < brickheap.size(); ++i) {
+	for (int i = 0; i < brickheap.size(); ++i) {
 		DrawBrick(brickheap[i], texMngr, flipTexV);
 	}
 }

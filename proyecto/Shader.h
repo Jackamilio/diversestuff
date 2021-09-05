@@ -53,35 +53,35 @@ public:
 	inline GLint GetUniform(const std::string& name) { return GetHandler(name, id).GetValue(); }
 
 	inline void SetUniform(const std::string& name, int val) { glUniform1i(GetUniform(name), val); }
-	inline void SetUniform(const std::string& name, const int* vals, unsigned int size) { glUniform1iv(GetUniform(name), size, vals); }
+	inline void SetUniform(const std::string& name, const int* vals, int size) { glUniform1iv(GetUniform(name), size, vals); }
 	inline void SetUniform(const std::string& name, const std::vector<int>& vals) { glUniform1iv(GetUniform(name), (GLsizei)vals.size(), (int*)&vals[0]); }
 
 	inline void SetUniform(const std::string& name, float val) { glUniform1f(GetUniform(name), val); }
-	inline void SetUniform(const std::string& name, const float* vals, unsigned int size) { glUniform1fv(GetUniform(name), size, vals); }
+	inline void SetUniform(const std::string& name, const float* vals, int size) { glUniform1fv(GetUniform(name), size, vals); }
 	inline void SetUniform(const std::string& name, const std::vector<float>& vals) { glUniform1fv(GetUniform(name), (GLsizei)vals.size(), (float*)&vals[0]); }
 
 	inline void SetUniform(const std::string& name, const glm::vec3& val) { glUniform3f(GetUniform(name), val.x, val.y, val.z); }
-	inline void SetUniform(const std::string& name, const glm::vec3* vals, unsigned int size) { glUniform3fv(GetUniform(name), size, (float*)vals); }
+	inline void SetUniform(const std::string& name, const glm::vec3* vals, int size) { glUniform3fv(GetUniform(name), size, (float*)vals); }
 	inline void SetUniform(const std::string& name, const std::vector<glm::vec3>& vals) { glUniform3fv(GetUniform(name), (GLsizei)vals.size(), (float*)&vals[0]); }
 
 	inline void SetUniform(const std::string& name, const glm::vec4& val) { glUniform4f(GetUniform(name), val.x, val.y, val.z, val.w); }
-	inline void SetUniform(const std::string& name, const glm::vec4* vals, unsigned int size) { glUniform4fv(GetUniform(name), size, (float*)vals); }
+	inline void SetUniform(const std::string& name, const glm::vec4* vals, int size) { glUniform4fv(GetUniform(name), size, (float*)vals); }
 	inline void SetUniform(const std::string& name, const std::vector<glm::vec4>& vals) { glUniform4fv(GetUniform(name), (GLsizei)vals.size(), (float*)&vals[0]); }
 
 	inline void SetUniform(const std::string& name, const glm::mat4x2& val) { glUniformMatrix4x2fv(GetUniform(name), 1, false, (float*)&val); }
-	inline void SetUniform(const std::string& name, const glm::mat4x2* vals, unsigned int size) { glUniformMatrix4x2fv(GetUniform(name), size, false, (float*)vals); }
+	inline void SetUniform(const std::string& name, const glm::mat4x2* vals, int size) { glUniformMatrix4x2fv(GetUniform(name), size, false, (float*)vals); }
 	inline void SetUniform(const std::string& name, const std::vector<glm::mat4x2>& vals) { glUniformMatrix4x2fv(GetUniform(name), (GLsizei)vals.size(), false, (float*)&vals[0][0]); }
 
 	inline void SetUniform(const std::string& name, const glm::mat2x4& val) { glUniformMatrix2x4fv(GetUniform(name), 1, false, (float*)&val); }
-	inline void SetUniform(const std::string& name, const glm::mat2x4* vals, unsigned int size) { glUniformMatrix2x4fv(GetUniform(name), size, false, (float*)vals); }
+	inline void SetUniform(const std::string& name, const glm::mat2x4* vals, int size) { glUniformMatrix2x4fv(GetUniform(name), size, false, (float*)vals); }
 	inline void SetUniform(const std::string& name, const std::vector<glm::mat2x4>& vals) { glUniformMatrix2x4fv(GetUniform(name), (GLsizei)vals.size(), false, (float*)&vals[0][0]); }
 
 	inline void SetUniform(const std::string& name, const glm::mat3& val) { glUniformMatrix3fv(GetUniform(name), 1, false, (float*)&val); }
-	inline void SetUniform(const std::string& name, const glm::mat3* vals, unsigned int size) { glUniformMatrix3fv(GetUniform(name), size, false, (float*)vals); }
+	inline void SetUniform(const std::string& name, const glm::mat3* vals, int size) { glUniformMatrix3fv(GetUniform(name), size, false, (float*)vals); }
 	inline void SetUniform(const std::string& name, const std::vector<glm::mat3>& vals) { glUniformMatrix3fv(GetUniform(name), (GLsizei)vals.size(), false, (float*)&vals[0][0]); }
 
 	inline void SetUniform(const std::string& name, const glm::mat4& val) { glUniformMatrix4fv(GetUniform(name), 1, false, (float*)&val); }
-	inline void SetUniform(const std::string& name, const glm::mat4* vals, unsigned int size) { glUniformMatrix4fv(GetUniform(name), size, false, (float*)vals); }
+	inline void SetUniform(const std::string& name, const glm::mat4* vals, int size) { glUniformMatrix4fv(GetUniform(name), size, false, (float*)vals); }
 	inline void SetUniform(const std::string& name, const std::vector<glm::mat4>& vals) { glUniformMatrix4fv(GetUniform(name), (GLsizei)vals.size(), false, (float*)&vals[0][0]); }
 };
 

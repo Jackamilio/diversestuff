@@ -45,4 +45,40 @@ public:
 	}
 };
 
+class TestModel : public Engine::Update, public Engine::DoubleGraphic {
+public:
+	Engine& engine;
+	const Model& model;
+	Model::WorkingPose wpose;
+	Model::WorkingPose wpose2;
+	Model::FinalPose fpose;
+	const char* animName;
+
+	TestModel(Engine& e, const char* modelfile, const char* anim)
+		: engine(e)
+		, model(e.graphics.models.Get(modelfile))
+		, animName(anim)
+	{
+		engine.updateRoot.AddChild(this);
+		engine.mainGraphic.AddChildToProgram(this, "test.pgr");
+		//engine.debugGraphic.AddChild(GetSecondGraphic());
+	}
+
+	void Step() {
+		model.GetPose("Marche", (float)engine.time, wpose, true);
+		model.GetPose("Cours", (float)engine.time, wpose2, true);
+		model.MixPoses(wpose, wpose2, glm::clamp((float)glm::sin(engine.time * 0.5f) + 0.5f, 0.0f, 1.0f));
+		model.FinalizePose(wpose, fpose);
+	}
+
+	void Draw() {
+		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(1.0));
+		model.Draw(fpose);
+	}
+
+	void SecondDraw() {
+		model.DrawPose(wpose);
+	}
+};
+
 #endif __TEMPORARY_OR_TESTING_H__

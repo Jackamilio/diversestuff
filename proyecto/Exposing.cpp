@@ -1,6 +1,5 @@
 #include "Exposing.h"
 #include <memory>
-#include "tinyxml2.h"
 #include "Dump.h"
 
 template<> Exposing::Type Exposing::getType<bool>() { return Exposing::Type::BOOL; }
@@ -425,7 +424,7 @@ Exposing::Watcher::EditValueArgs::~EditValueArgs()
 	//delete label;
 }
 
-void saveToFileRecursive(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent, Exposing::StructDescBase * sc, Exposing::WatchedAddress * wa) {
+/*void saveToFileRecursive(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent, Exposing::StructDescBase* sc, Exposing::WatchedAddress* wa) {
 
 	for (std::unique_ptr<Exposing::StructDescBase::Iterator> it(sc->generateIterator(wa)); !it->isAtEnd(); it->next()) {
 		tinyxml2::XMLElement* el = doc.NewElement((std::string(sc->isContainer() ? "id_" : "") + it->getName()).c_str());
@@ -440,24 +439,24 @@ void saveToFileRecursive(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* paren
 		delete mwa;
 		parent->InsertEndChild(el);
 	}
-}
+}*/
 
 void Exposing::saveToFile(StructDescBase * sc, WatchedAddress * wa, const char * f) {
-	tinyxml2::XMLDocument doc;
+	/*tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement* root = doc.NewElement(sc->name.c_str());
 
 	saveToFileRecursive(doc, root, sc, wa);
 
 	doc.InsertEndChild(root);
 
-	doc.SaveFile(f);
+	doc.SaveFile(f);*/
 }
 
 bool Exposing::loadFromFile(StructDescBase * sc, WatchedAddress * wa, const char * f) {
-	tinyxml2::XMLDocument doc;
+	/*tinyxml2::XMLDocument doc;
 	doc.LoadFile(f);
 
-	tinyxml2::XMLElement* root = doc.RootElement();
+	tinyxml2::XMLElement* root = doc.RootElement();*/
 
 	return false;
 }

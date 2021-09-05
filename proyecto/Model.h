@@ -42,7 +42,7 @@ public:
 		GLuint indicesVBO;
 		std::vector<Vertex> verts;
 		std::vector<MinVertex> minverts;
-		std::vector<unsigned int> tris;
+		std::vector<int> tris;
 	};
 
 	struct KeyFrame {
@@ -57,7 +57,7 @@ public:
 	};
 
 	struct Channel {
-		unsigned int boneId;
+		int boneId;
 		std::vector<KeyFrame> positions;
 		std::vector<KeyFrame> rotations;
 		std::vector<KeyFrame> scalings;
@@ -73,7 +73,7 @@ public:
 		std::string name;
 		glm::mat4 offset;
 		glm::mat4 local;
-		std::vector<unsigned int> children;
+		std::vector<int> children;
 	};
 
 	struct Skeleton : Bone {
@@ -103,8 +103,8 @@ private:
 	std::vector<Mesh> meshes;
 	std::vector<Skeleton> skeletons;
 
-	Bone& FindOrAddBone(const aiScene* scene, std::string boneName, unsigned int& boneId);
-	Bone* FindBone(std::string boneName, unsigned int& boneId);
+	Bone& FindOrAddBone(const aiScene* scene, std::string boneName, int& boneId);
+	Bone* FindBone(std::string boneName, int& boneId);
 	Skeleton* FindSkeleton(std::string skelName);
 
 	void GenerateVBOS();
