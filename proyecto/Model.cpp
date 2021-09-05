@@ -1,6 +1,6 @@
 #include "Model.h"
 #include "GraphicContext.h"
-#include "LevelData.h"
+#include "MapData.h"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -8,8 +8,8 @@
 #include <cmath>
 
 void Transform(
-	const LevelData::Vertex* vert,
-	const LevelData::Coordinate& c,
+	const MapData::Vertex* vert,
+	const MapData::Coordinate& c,
 	const glm::mat4& mat,
 	const glm::vec3 nor,
 	float uo, float uf, float vo, float vf,
@@ -23,17 +23,17 @@ void Transform(
 	out.uv.y = vo + vert->v * vf;
 }
 
-Model::Model(const LevelData& level, GraphicContext& g) : graphics(g)
+Model::Model(const MapData& level, GraphicContext& g) : graphics(g)
 {
-	std::map<const LevelData::TilesetData*, int> meshmap;
+	std::map<const MapData::TilesetData*, int> meshmap;
 
 	glm::mat4 mat;
 
-	for (LevelData::const_iterator it = level.begin(); it != level.end(); ++it) {
-		const LevelData::Coordinate& c = it->first;
+	for (MapData::const_iterator it = level.begin(); it != level.end(); ++it) {
+		const MapData::Coordinate& c = it->first;
 
 		for (int b = 0; b < it->second.size(); ++b) {
-			const LevelData::Brick& brick = it->second[b];
+			const MapData::Brick& brick = it->second[b];
 
 			brick.matrix.CalcMatrix(mat);
 
@@ -41,15 +41,15 @@ Model::Model(const LevelData& level, GraphicContext& g) : graphics(g)
 				const std::vector<int>& tris = brick.brickdata->GetTriangleList();
 				int nbTris = (int)tris.size() / 3;
 				for (int i = 0; i < nbTris; ++i) {
-					const LevelData::Vertex* v1 = brick.brickdata->GetVertex(tris[i * 3]);
-					const LevelData::Vertex* v2 = brick.brickdata->GetVertex(tris[i * 3 + 1]);
-					const LevelData::Vertex* v3 = brick.brickdata->GetVertex(tris[i * 3 + 2]);
+					const MapData::Vertex* v1 = brick.brickdata->GetVertex(tris[i * 3]);
+					const MapData::Vertex* v2 = brick.brickdata->GetVertex(tris[i * 3 + 1]);
+					const MapData::Vertex* v3 = brick.brickdata->GetVertex(tris[i * 3 + 2]);
 					if (v1 && v2 && v3) {
 						float uo = 0.0f;
 						float uf = 1.0f;
 						float vo = 0.0f;
 						float vf = 1.0f;
-						const LevelData::TilesetData* tsdt = brick.tilesetdata;
+						const MapData::TilesetData* tsdt = brick.tilesetdata;
 						if (tsdt) {
 							float tw = (float)graphics.textures.GetTexWidth(tsdt->file);
 							float th = (float)graphics.textures.GetTexHeight(tsdt->file);
@@ -605,7 +605,7 @@ void RecursiveDrawBonePoses(const Model::WorkingPose& pose, const std::vector<in
 	glColor3ub(255, 255, 255);
 
 	for (int i = 0; i < boneIds.size(); ++i) {
-		const glm::mat4& mat2 = mat * LocRotScaleToMat4(pose.transforms[boneIds[i]]);
+		const glm::mat4& mat2 = mat * pose.transforms[boneIds[i]].ToMat4();
 		glm::vec4 pos2(0, 0, 0, 1);
 		pos2 = mat2 * pos2;
 
@@ -680,7 +680,7 @@ void GetLerp(const std::vector<Model::KeyFrame>& values, float t, glm::quat& out
 void RecursiveGetGlobalPose(Model::FinalPose& fpose, const Model::WorkingPose& wpose, const Model::Skeleton& skeleton, const std::vector<int>& boneIds, const glm::mat4& mat) {
 	
 	for (int i = 0; i < boneIds.size(); ++i) {
-		glm::mat4 tr = LocRotScaleToMat4(wpose.transforms[boneIds[i]]);
+		glm::mat4 tr = wpose.transforms[boneIds[i]].ToMat4();
 		tr = mat * tr;
 
 		fpose[boneIds[i]] = tr;

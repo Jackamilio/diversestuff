@@ -1,17 +1,17 @@
 #ifndef __LEVEL_EDITOR_H__
 #define __LEVEL_EDITOR_H__
 #include "Engine.h"
-#include "LevelData.h"
+#include "MapData.h"
 #include "Editorcamera.h"
 #include "Interpolator.h"
 
 #include "TemporaryOrTesting.h"
 
-class LevelEditor : public Engine::Input, public Engine::Update, public Engine::TripleGraphic {
+class MapEditor : public Engine::Input, public Engine::Update, public Engine::TripleGraphic {
 public:
 	Engine& engine;
 	EngineLevel& lvl;
-	LevelData& lvldt;
+	MapData& lvldt;
 	bool showGui;
 	bool lastShowGui;
 	bool tilemode;
@@ -19,9 +19,9 @@ public:
 	int curBrickdata;
 	int lastBrickdata;
 	int selectedBrickInHeap;
-	LevelData::TilesetData guiTsd;
-	std::vector<LevelData::Vertex> guiBdVertices;
-	LevelData::BrickData::TriangleList guiBdTriangles;
+	MapData::TilesetData guiTsd;
+	std::vector<MapData::Vertex> guiBdVertices;
+	MapData::BrickData::TriangleList guiBdTriangles;
 	struct SelectedTile {
 		int set = -1, x = 0, y = 0;
 	};
@@ -29,19 +29,19 @@ public:
 	int TSIDtoDel;
 	int BDIDtoDel;
 
-	LevelData::BrickHeap brickheap;
+	MapData::BrickHeap brickheap;
 	Engine::GraphicTarget brickHeapPreview;
 
 	Engine::GraphicTarget brickDataPreview;
 	EditorCamera bdPreviewCamera;
 
 	EditorCamera::DefaultInput levelCamera;
-	LevelData::Coordinate gridCenter;
+	MapData::Coordinate gridCenter;
 	glm::vec3 gridUp;
 	Interpolator<glm::vec3> lerper;
-	LevelData::Coordinate lastClic;
+	MapData::Coordinate lastClic;
 
-	LevelEditor(EngineLevel& lvl);
+	MapEditor(EngineLevel& lvl);
 
 	bool Event(ALLEGRO_EVENT& event);
 

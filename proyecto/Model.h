@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 #include "MathUtils.h"
-class LevelData;
+class MapData;
 class GraphicContext;
 struct aiScene;
 
@@ -18,7 +18,7 @@ struct aiScene;
 
 class Model {
 public:
-	Model(const LevelData& level, GraphicContext& graphics);
+	Model(const MapData& level, GraphicContext& graphics);
 	Model(const std::string& file, GraphicContext& graphics);
 	~Model();
 

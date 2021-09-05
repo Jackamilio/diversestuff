@@ -30,7 +30,7 @@
     <ClCompile Include="GraphicContext.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="LevelData.cpp">
+    <ClCompile Include="MapData.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
@@ -72,7 +72,10 @@
     <ClCompile Include="imgui_impl_allegro5.cpp">
       <Filter>Dear imgui</Filter>
     </ClCompile>
-    <ClCompile Include="LevelEditor.cpp">
+    <ClCompile Include="MapEditor.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="MathUtils.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -89,7 +92,7 @@
     <ClInclude Include="interpolator.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="LevelData.h">
+    <ClInclude Include="MapData.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="MathUtils.h">
@@ -146,7 +149,7 @@
     <ClInclude Include="imstb_truetype.h">
       <Filter>Dear imgui</Filter>
     </ClInclude>
-    <ClInclude Include="LevelEditor.h">
+    <ClInclude Include="MapEditor.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="TemporaryOrTesting.h">

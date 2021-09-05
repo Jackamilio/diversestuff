@@ -9,7 +9,7 @@
 #include <map>
 #include "Editorcamera.h"
 #include "imgui.h"
-#include "LevelEditor.h"
+#include "MapEditor.h"
 
 ALLEGRO_FONT* fetchDefaultFont()
 {
@@ -164,7 +164,7 @@ int main(int nbarg, char ** args) {
 
 		TestCamera camera;
 		EngineLevel lvl("niveau.lvl");
-		LevelEditor editor(lvl);
+		MapEditor editor(lvl);
 		TestModel tm("personnage.fbx", "Cours");
 		TestCharacter tc;
 		FPSCounter fc;

@@ -11,22 +11,14 @@
 #include <fstream>
 #include "OrthoMatrix.h"
 #include "json.hpp"
-//#include "GameData.h"
 
-class LevelData {
-	//class Saveable {
-	//protected:
-	//	virtual void Save(std::ofstream& f) const = 0;
-	//	virtual void Load(std::ifstream& i) = 0;
-	//};
-
+class MapData {
 public:
-	LevelData();
-	~LevelData();
+	MapData();
+	~MapData();
 
 	bool Save(const char* filename);
 	bool Load(const char* filename);
-	//bool OldLoad(const char* filename);
 
 	void Clear();
 
@@ -35,11 +27,8 @@ public:
 
 
 	// Tileset section
-	class TilesetData {//: public Saveable {
+	class TilesetData {
 	public:
-		//void Save(std::ofstream& f) const;
-		//void OldLoad(std::ifstream& f);
-
 		TilesetData();
 		TilesetData(const TilesetData& copy);
 		TilesetData(const char * file, int ox, int oy, int px, int py, int tw, int th);
@@ -62,11 +51,8 @@ public:
 	bool UpdateTilesetData(int index, const char * file, unsigned int ox, unsigned int oy, unsigned int px, unsigned int py, unsigned int tw, unsigned int th);
 
 	// Brick section
-	class Vertex {//: public Saveable {
+	class Vertex {
 	public:
-		//void Save(std::ofstream& f) const;
-		//void OldLoad(std::ifstream& f);
-
 		Vertex();
 		Vertex(const Vertex& vert);
 		Vertex(const float x, const float y, const float z, const float u, const float v);
@@ -86,14 +72,11 @@ public:
 	};
 
 	friend class BrickData;
-	class BrickData {//: public Saveable {
+	class BrickData {
 	public:
-		//void Save(std::ofstream& f) const;
-		//void OldLoad(std::ifstream& f);
-	
-		BrickData(LevelData& ld);
-		BrickData(LevelData& ld, nlohmann::json& json);
-		LevelData& levelData;
+		BrickData(MapData& ld);
+		BrickData(MapData& ld, nlohmann::json& json);
+		MapData& levelData;
 
 		typedef std::vector<int> TriangleList;
 
@@ -119,11 +102,8 @@ public:
 	void AddBrickData();
 
 	// Actual level data
-	class Coordinate {//: public Saveable {
+	class Coordinate {
 	public:
-		//void Save(std::ofstream& f) const;
-		//void OldLoad(std::ifstream& f);
-
 		Coordinate();
 		Coordinate(int X, int Y, int Z);
 		Coordinate(const Coordinate& c);
@@ -137,18 +117,16 @@ public:
 		inline bool operator!=(const Coordinate& c) const { return x != c.x || y != c.y || z != c.z; }
 	};
 
-	class Brick {//: public Saveable {
+	class Brick {
 	public:
-		//void Save(std::ofstream& f) const;
-		//void OldLoad(std::ifstream& f);
 		bool operator==(const Brick& comp) const;
 		bool operator!=(const Brick& comp) const;
 
-		Brick(LevelData& ld);
-		Brick(LevelData& ld, nlohmann::json& json);
+		Brick(MapData& ld);
+		Brick(MapData& ld, nlohmann::json& json);
 		Brick(const Brick& b);
 		void operator=(const Brick& b);
-		LevelData& levelData;
+		MapData& levelData;
 
 		bool RayCast(const glm::vec3 & rayOrigin, const glm::vec3 & rayDirection, const glm::vec3& position, glm::vec3 * res = 0, int* triangleIndex = 0) const;
 		void TransformTriangle(const glm::vec3& position, int triangleIndex, glm::vec3& ot1, glm::vec3& ot2, glm::vec3& ot3) const;
@@ -171,12 +149,6 @@ public:
 	inline const_iterator begin() const { return level.begin(); }
 	inline const_iterator end() const { return level.end(); }
 
-	//void RemoveInstance(const std::string& name);
-	//void AddInstance(const std::string& type, const std::string& name);
-	//void RenameInstance(const std::string& oldname, const std::string& newname);
-	//void UpdateInstance(const std::string& field, const std::string& value);
-	//inline const GameData& GetInstances() { return instances; }
-
 	struct RayCastResult {
 		glm::vec3 intersection;
 		Coordinate coordinate;
@@ -192,7 +164,6 @@ private:
 	std::vector<TilesetData*> tilesets;
 	std::vector<BrickData*> bricks;
 	std::map<Coordinate, BrickHeap> level;
-	//GameData instances;
 	std::string gameDataDescriptorLocation;
 };
 

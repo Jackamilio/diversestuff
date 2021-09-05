@@ -163,12 +163,13 @@
     <ClCompile Include="imgui_impl_allegro5.cpp" />
     <ClCompile Include="imgui_tables.cpp" />
     <ClCompile Include="imgui_widgets.cpp" />
-    <ClCompile Include="LevelData.cpp" />
+    <ClCompile Include="MapData.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MathUtils.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="OrthoMatrix.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="LevelEditor.cpp" />
+    <ClCompile Include="MapEditor.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="UndoRedoer.cpp" />
   </ItemGroup>
@@ -179,7 +180,7 @@
     <ClInclude Include="Exposing.h" />
     <ClInclude Include="GraphicContext.h" />
     <ClInclude Include="json.hpp" />
-    <ClInclude Include="LevelEditor.h" />
+    <ClInclude Include="MapEditor.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui.h" />
     <ClInclude Include="imgui_impl_allegro5.h" />
@@ -188,7 +189,7 @@
     <ClInclude Include="imstb_textedit.h" />
     <ClInclude Include="imstb_truetype.h" />
     <ClInclude Include="Interpolator.h" />
-    <ClInclude Include="LevelData.h" />
+    <ClInclude Include="MapData.h" />
     <ClInclude Include="MathUtils.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ModelManager.h" />

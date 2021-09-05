@@ -4,13 +4,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-struct LocRotScale {
+class LocRotScale {
+public:
 	glm::vec3 loc;
 	glm::quat rot;
 	glm::vec3 scale;
-};
 
-glm::mat4 LocRotScaleToMat4(const LocRotScale& poseBone);
+	LocRotScale();
+	glm::mat4 ToMat4() const;
+};
 
 bool linePlaneIntersection(const glm::vec3& plane_center, const glm::vec3& plane_normal, const glm::vec3& line_origin, const glm::vec3& line_direction, bool lineasray, glm::vec3* res = 0);
 bool pointInTriangle(const glm::vec3& point, const glm::vec3& t1, const glm::vec3& t2, const glm::vec3& t3);

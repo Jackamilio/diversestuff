@@ -1,12 +1,12 @@
 #ifndef __TEMPORARY_OR_TESTING_H__
 #define __TEMPORARY_OR_TESTING_H__
 #include "Engine.h"
-#include "LevelData.h"
+#include "MapData.h"
 #include "Dump.h"
 
 class EngineLevel : public Engine::Graphic {
 public:
-	LevelData lvldt;
+	MapData lvldt;
 	const Model* model;
 
 	btTriangleMesh* levelMesh;

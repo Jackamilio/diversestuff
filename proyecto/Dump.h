@@ -4,7 +4,7 @@
 #include <string>
 #include <sstream>
 #include <bullet/btBulletDynamicsCommon.h>
-#include "LevelData.h"
+#include "MapData.h"
 
 class TextureManager;
 
@@ -49,12 +49,12 @@ std::string makefilelocal(const std::string& file);
 void DrawGlWireCube(float neg, float pos);
 void DrawGlWireCapsule(float radius, float height, int turns = 3);
 
-void DrawBrick(const LevelData::BrickData* brick, float uo = 0.0f, float uf = 1.0f, float vo = 0.0f, float vf = 1.0f);
-void DrawBrick(const LevelData::Brick& brick, TextureManager& texMngr, bool flipTexV = false);
-void DrawBrickWireframe(const LevelData::Brick& brick);
-void DrawBrickHeap(const LevelData::BrickHeap& brickheap, TextureManager& texMngr, bool flipTexV = false);
-void DrawLevelData(const LevelData& level, TextureManager& txmgr, bool flipTexV = false);
+void DrawBrick(const MapData::BrickData* brick, float uo = 0.0f, float uf = 1.0f, float vo = 0.0f, float vf = 1.0f);
+void DrawBrick(const MapData::Brick& brick, TextureManager& texMngr, bool flipTexV = false);
+void DrawBrickWireframe(const MapData::Brick& brick);
+void DrawBrickHeap(const MapData::BrickHeap& brickheap, TextureManager& texMngr, bool flipTexV = false);
+void DrawLevelData(const MapData& level, TextureManager& txmgr, bool flipTexV = false);
 
-btTriangleMesh* ConstructLevelCollision(const LevelData& level);
+btTriangleMesh* ConstructLevelCollision(const MapData& level);
 
 #endif

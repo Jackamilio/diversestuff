@@ -1,4 +1,4 @@
-#include "LevelEditor.h"
+#include "MapEditor.h"
 #include "Dump.h"
 #include "imgui.h"
 #include "glm/glm.hpp"
@@ -7,7 +7,7 @@
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_native_dialog.h>
 
-LevelEditor::LevelEditor(EngineLevel& lvl) :
+MapEditor::MapEditor(EngineLevel& lvl) :
 	engine(lvl.engine),
 	lvl(lvl),
 	lvldt(lvl.lvldt),
@@ -43,7 +43,7 @@ LevelEditor::LevelEditor(EngineLevel& lvl) :
 	lerper.target = &levelCamera.focuspoint;
 }
 
-bool LevelEditor::Event(ALLEGRO_EVENT& event) {
+bool MapEditor::Event(ALLEGRO_EVENT& event) {
 	if (!showGui) {
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN && event.keyboard.keycode == ALLEGRO_KEY_F1) {
 			showGui = true;
@@ -130,7 +130,7 @@ bool LevelEditor::Event(ALLEGRO_EVENT& event) {
 	}
 }
 
-void LevelEditor::HandlePick(bool rightheld, bool middleclick)
+void MapEditor::HandlePick(bool rightheld, bool middleclick)
 {
 	glm::mat4 cam;
 	levelCamera.CalcMatrix(cam);
@@ -148,11 +148,11 @@ void LevelEditor::HandlePick(bool rightheld, bool middleclick)
 	glm::vec3 pick;
 	glm::vec3 rayDir = glm::normalize(worldMouse - levelCamera.GetPosition());
 
-	LevelData::RayCastResult res;
+	MapData::RayCastResult res;
 	bool levelcollision = lvldt.RayCast(levelCamera.GetPosition(), rayDir, 70.0f, &res);
 
 	bool gridcollision = linePlaneIntersection(plane_center, gridUp, levelCamera.GetPosition(), rayDir, true, &pick);
-	LevelData::Coordinate c(
+	MapData::Coordinate c(
 		gridUp.x != 0.0f ? gridCenter.x : (int)glm::floor(pick.x),
 		gridUp.y != 0.0f ? gridCenter.y : (int)glm::floor(pick.y),
 		gridUp.z != 0.0f ? gridCenter.z : (int)glm::floor(pick.z));
@@ -184,7 +184,7 @@ void LevelEditor::HandlePick(bool rightheld, bool middleclick)
 			if (levelcollision) {
 				if (al_key_down(&keyboardState, ALLEGRO_KEY_LSHIFT)) {
 					// copy tile
-					const LevelData::Brick& brick = lvldt.GetBrick(res.coordinate)[res.brickIndex];
+					const MapData::Brick& brick = lvldt.GetBrick(res.coordinate)[res.brickIndex];
 					selectedtile.set = lvldt.FindTilesetData(brick.tilesetdata);
 					selectedtile.x = brick.tilex;
 					selectedtile.y = brick.tiley;
@@ -216,12 +216,12 @@ void LevelEditor::HandlePick(bool rightheld, bool middleclick)
 	}
 }
 
-void LevelEditor::GlideToNewCenter() {
+void MapEditor::GlideToNewCenter() {
 	lerper.Set(levelCamera.focuspoint, gridCenter.asVec3() + glm::vec3(0.5f, 0.5f, 0.5f), 0.25f, 16);
 	lerper.Begin();
 }
 
-void LevelEditor::Draw() {
+void MapEditor::Draw() {
 	// change view locally
 	glPushMatrix();
 	glm::mat4 mat;
@@ -290,8 +290,8 @@ void LevelEditor::Draw() {
 	glPopMatrix();
 }
 
-void LevelEditor::SecondDraw() {
-	const LevelData::BrickData* brick = lvldt.GetBrickData(curBrickdata);
+void MapEditor::SecondDraw() {
+	const MapData::BrickData* brick = lvldt.GetBrickData(curBrickdata);
 
 	if (brick) {
 		glMatrixMode(GL_PROJECTION);
@@ -318,7 +318,7 @@ void LevelEditor::SecondDraw() {
 	}
 }
 
-void LevelEditor::ThirdDraw() {
+void MapEditor::ThirdDraw() {
 	if (!tilemode) {
 		glMatrixMode(GL_PROJECTION);
 		glm::mat4 projMat = glm::perspective(glm::radians(40.0f), 1.0f, 0.1f, 150.0f);
@@ -375,7 +375,7 @@ void LevelEditor::ThirdDraw() {
 	}
 }
 
-void LevelEditor::Step() {
+void MapEditor::Step() {
 	//when showing the gui is toggled
 	if (showGui != lastShowGui) {
 		lastShowGui = showGui;
@@ -458,7 +458,7 @@ void LevelEditor::Step() {
 			if (ImGui::CollapsingHeader("Tilesets")) {
 				if (ImGui::BeginTabBar("Tilesets")) {
 					int curTileset = 0;
-					const LevelData::TilesetData* tsd = lvldt.GetTilesetData(curTileset);
+					const MapData::TilesetData* tsd = lvldt.GetTilesetData(curTileset);
 					while (tsd) {
 						char tabtitle[64];
 						sprintf_s(tabtitle, 64, "Tileset %i", curTileset);
@@ -608,7 +608,7 @@ void LevelEditor::Step() {
 			if (ImGui::CollapsingHeader("Bricks")) {
 				if (ImGui::BeginTabBar("Brick data sheets")) {
 					int curbd = 0;
-					LevelData::BrickData* bd = lvldt.GetBrickData(curbd);
+					MapData::BrickData* bd = lvldt.GetBrickData(curbd);
 					while (bd) {
 						char tabtitle[64];
 						sprintf_s(tabtitle, 64, "Brick data %i", curbd);
@@ -626,7 +626,7 @@ void LevelEditor::Step() {
 							}
 
 							if (ImGui::Button("Add to heap")) {
-								LevelData::Brick b(lvldt);
+								MapData::Brick b(lvldt);
 								b.brickdata = bd;
 								brickheap.push_back(b);
 							}
@@ -634,9 +634,9 @@ void LevelEditor::Step() {
 							if (selectedvertex >= guiBdVertices.size()) { selectedvertex = -1; }
 
 							if (ImGui::BeginChild("Fine vertex control", ImVec2(220, 300))) {
-								static LevelData::Vertex dummy;
+								static MapData::Vertex dummy;
 								const bool disabled = (selectedvertex < 0);
-								LevelData::Vertex* v = disabled ? &dummy : &guiBdVertices[selectedvertex];
+								MapData::Vertex* v = disabled ? &dummy : &guiBdVertices[selectedvertex];
 								ImGui::BeginDisabled(disabled);
 								ImGui::Text(disabled ? "No vertex selected" : "Vertex %i selected", selectedvertex);
 								if (!disabled) {
@@ -672,7 +672,7 @@ void LevelEditor::Step() {
 
 							if (ImGui::BeginChild("Vertices", ImVec2(320, 200))) {
 								for (int i = 0; i < guiBdVertices.size(); ++i) {
-									LevelData::Vertex& v = guiBdVertices[i];
+									MapData::Vertex& v = guiBdVertices[i];
 									ImGui::PushID(i);
 									char buf[32];
 									sprintf_s(buf, 32, "%i:", i);
@@ -692,7 +692,7 @@ void LevelEditor::Step() {
 								}
 								if (ImGui::Button("Add a vertex")) {
 									bd->AddVertex();
-									guiBdVertices.push_back(LevelData::Vertex());
+									guiBdVertices.push_back(MapData::Vertex());
 									ImGui::Text(" "); //dummy for scroll
 									ImGui::SetScrollHereY(0.0f);
 								}
@@ -858,7 +858,7 @@ void LevelEditor::Step() {
 					selectedtile.y = 0;
 				}
 				const ImVec2 previewSize(128, 128);
-				const LevelData::TilesetData* tsd = lvldt.GetTilesetData(selectedtile.set);
+				const MapData::TilesetData* tsd = lvldt.GetTilesetData(selectedtile.set);
 				if (tsd) {
 					const Texture& tex = engine.graphics.textures.Get(tsd->file);
 					const float texw = tex.GetWidth();
@@ -945,7 +945,7 @@ void LevelEditor::Step() {
 	ImGui::ShowDemoWindow();
 }
 
-void LevelEditor::RotateBrickHeap(void(OrthoMatrix::* rotfunc)())
+void MapEditor::RotateBrickHeap(void(OrthoMatrix::* rotfunc)())
 {
 	if (selectedBrickInHeap >= 0 && selectedBrickInHeap < brickheap.size()) {
 		(brickheap[selectedBrickInHeap].matrix.*rotfunc)();
@@ -957,26 +957,26 @@ void LevelEditor::RotateBrickHeap(void(OrthoMatrix::* rotfunc)())
 	}
 }
 
-void LevelEditor::Undo()
+void MapEditor::Undo()
 {
 	lvldt.Undo();
 	ReloadCurrentBrickData();
 }
 
-void LevelEditor::Redo()
+void MapEditor::Redo()
 {
 	lvldt.Redo();
 	ReloadCurrentBrickData();
 }
 
-void LevelEditor::ReloadCurrentBrickData()
+void MapEditor::ReloadCurrentBrickData()
 {
-	LevelData::BrickData* bd = lvldt.GetBrickData(curBrickdata);
+	MapData::BrickData* bd = lvldt.GetBrickData(curBrickdata);
 	if (bd) {
 		guiBdTriangles = bd->GetTriangleList();
 		guiBdVertices.clear();
 		int vi = 0;
-		const LevelData::Vertex* v = bd->GetVertex(vi);
+		const MapData::Vertex* v = bd->GetVertex(vi);
 		while (v) {
 			guiBdVertices.push_back(*v);
 			v = bd->GetVertex(++vi);

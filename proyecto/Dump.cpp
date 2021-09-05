@@ -1,7 +1,6 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include "dump.h"
-#include "MathUtils.h"
 #include <math.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "TextureManager.h"
@@ -61,69 +60,6 @@ std::string makefilelocal(const std::string& file)
 	eraseAllSubStr(ret, curdir);
 	
 	return ret;
-}
-
-bool linePlaneIntersection(const glm::vec3& plane_center, const glm::vec3& plane_normal, const glm::vec3& line_origin, const glm::vec3& line_direction, bool lineasray, glm::vec3* res)
-{
-	//plane_normal = glm::normalize(plane_normal);
-	//line_direction = glm::normalize(line_direction);
-
-	float denom = glm::dot(plane_normal, line_direction);
-	if (abs(denom) > 0.0001f)
-	{
-		float t = glm::dot((plane_center - line_origin), plane_normal) / denom;
-		glm::vec3 intersect = line_origin + line_direction*t;
-		if (lineasray && glm::dot(intersect-line_origin,line_direction) < 0.0f) {
-			return false;
-		}
-		if (res) {
-			*res = intersect;
-		}
-		return true;
-	}
-	return false;
-}
-
-// thank you here! http://www.blackpawn.com/texts/pointinpoly/
-// are P1 and P2 in the same side compared to [AB] ?
-bool sameSide(const glm::vec3 p1, const glm::vec3 p2, const glm::vec3 A, const glm::vec3 B) {
-	glm::vec3 cp1 = glm::cross(B - A, p1 - A);
-	glm::vec3 cp2 = glm::cross(B - A, p2 - A);
-	return glm::dot(cp1, cp2) >= 0.0f;
-}
-
-bool pointInTriangle(const glm::vec3& point, const glm::vec3& t1, const glm::vec3& t2, const glm::vec3& t3)
-{
-	return sameSide(point, t1, t2, t3) && sameSide(point, t2, t1, t3) && sameSide(point, t3, t1, t2);
-	/* This code is totally irrelevant ... but I keep the record of this error
-	glm::vec3 ab = t2 - t1;
-	glm::vec3 bc = t3 - t2;
-	glm::vec3 ca = t1 - t3;
-
-	glm::vec3 ap = point - t1;
-	glm::vec3 bp = point - t2;
-	glm::vec3 cp = point - t3;
-
-	float d1 = glm::dot(ab, ap);
-	float d2 = glm::dot(bc, bp);
-	float d3 = glm::dot(ca, cp);
-
-	return (d1 >= 0 && d2 >= 0 && d3 >= 0);// || (d1 <= 0 && d2 <= 0 && d3 <= 0);*/
-}
-
-bool lineTriangleIntersection(const glm::vec3& t1, const glm::vec3& t2, const glm::vec3& t3, const glm::vec3& line_origin, const glm::vec3& line_direction, bool lineasray, glm::vec3* res)
-{
-	glm::vec3 plane_normal = glm::normalize(glm::cross(t2 - t1, t3 - t1));
-	glm::vec3 point;
-	if (linePlaneIntersection(t1, plane_normal, line_origin, line_direction, lineasray, &point)) {
-		if (pointInTriangle(point, t1, t2, t3)) {
-			if (res) {
-				*res = point;
-			}
-			return true;
-		}
-	}
-	return false;
 }
 
 void DrawGlWireCube(float neg, float pos)
@@ -194,7 +130,7 @@ void DrawGlWireCapsule(float radius, float height, int turns)
 	glEnd();
 }
 
-void DrawBrick(const LevelData::BrickData* brick, float uo, float uf, float vo, float vf) {
+void DrawBrick(const MapData::BrickData* brick, float uo, float uf, float vo, float vf) {
 	if (brick) {
 		glBegin(GL_TRIANGLES);
 
@@ -204,9 +140,9 @@ void DrawBrick(const LevelData::BrickData* brick, float uo, float uf, float vo, 
 		const std::vector<int>& tris = brick->GetTriangleList();
 		int nbTris = (int)tris.size() / 3;
 		for (int i = 0; i < nbTris; ++i) {
-			const LevelData::Vertex* v1 = brick->GetVertex(tris[i * 3]);
-			const LevelData::Vertex* v2 = brick->GetVertex(tris[i * 3 + 1]);
-			const LevelData::Vertex* v3 = brick->GetVertex(tris[i * 3 + 2]);
+			const MapData::Vertex* v1 = brick->GetVertex(tris[i * 3]);
+			const MapData::Vertex* v2 = brick->GetVertex(tris[i * 3 + 1]);
+			const MapData::Vertex* v3 = brick->GetVertex(tris[i * 3 + 2]);
 			if (v1 && v2 && v3) {
 				glm::vec3 v1tov2 = v2->xyz - v1->xyz;
 				glm::vec3 v1tov3 = v3->xyz - v1->xyz;
@@ -224,7 +160,7 @@ void DrawBrick(const LevelData::BrickData* brick, float uo, float uf, float vo, 
 	}
 }
 
-void DrawBrick(const LevelData::Brick& brick, TextureManager& texMngr, bool flipTexV) {
+void DrawBrick(const MapData::Brick& brick, TextureManager& texMngr, bool flipTexV) {
 	if (brick.brickdata) {
 		glm::mat4 mat;
 		glPushMatrix();
@@ -234,7 +170,7 @@ void DrawBrick(const LevelData::Brick& brick, TextureManager& texMngr, bool flip
 		float uf = 1.0f;
 		float vo = 0.0f;
 		float vf = 1.0f;
-		const LevelData::TilesetData* tsdt = brick.tilesetdata;
+		const MapData::TilesetData* tsdt = brick.tilesetdata;
 		if (tsdt) {
 			texMngr.Bind(tsdt->file);
 			float tw = (float)texMngr.GetTexWidth(tsdt->file);
@@ -256,9 +192,9 @@ void DrawBrick(const LevelData::Brick& brick, TextureManager& texMngr, bool flip
 	}
 }
 
-void DrawBrickWireframe(const LevelData::Brick& brick)
+void DrawBrickWireframe(const MapData::Brick& brick)
 {
-	const LevelData::BrickData* const bd = brick.brickdata;
+	const MapData::BrickData* const bd = brick.brickdata;
 	if (bd) {
 		glm::mat4 mat;
 		glPushMatrix();
@@ -270,9 +206,9 @@ void DrawBrickWireframe(const LevelData::Brick& brick)
 		const std::vector<int>& tris = bd->GetTriangleList();
 		int nbTris = (int)tris.size() / 3;
 		for (int i = 0; i < nbTris; ++i) {
-			const LevelData::Vertex* v1 = bd->GetVertex(tris[i * 3]);
-			const LevelData::Vertex* v2 = bd->GetVertex(tris[i * 3 + 1]);
-			const LevelData::Vertex* v3 = bd->GetVertex(tris[i * 3 + 2]);
+			const MapData::Vertex* v1 = bd->GetVertex(tris[i * 3]);
+			const MapData::Vertex* v2 = bd->GetVertex(tris[i * 3 + 1]);
+			const MapData::Vertex* v3 = bd->GetVertex(tris[i * 3 + 2]);
 			if (v1 && v2 && v3) {
 				glVertex3f(v1->x, v1->y, v1->z);
 				glVertex3f(v2->x, v2->y, v2->z);
@@ -286,17 +222,17 @@ void DrawBrickWireframe(const LevelData::Brick& brick)
 	}
 }
 
-void DrawBrickHeap(const LevelData::BrickHeap& brickheap, TextureManager& texMngr, bool flipTexV) {
+void DrawBrickHeap(const MapData::BrickHeap& brickheap, TextureManager& texMngr, bool flipTexV) {
 	for (int i = 0; i < brickheap.size(); ++i) {
 		DrawBrick(brickheap[i], texMngr, flipTexV);
 	}
 }
 
-void DrawLevelData(const LevelData& level, TextureManager& txmgr, bool flipTexV) {
-	for (LevelData::const_iterator it = level.begin(); it != level.end(); ++it) {
+void DrawLevelData(const MapData& level, TextureManager& txmgr, bool flipTexV) {
+	for (MapData::const_iterator it = level.begin(); it != level.end(); ++it) {
 		glPushMatrix();
 
-		const LevelData::Coordinate& c = it->first;
+		const MapData::Coordinate& c = it->first;
 		glTranslatef((float)c.x, (float)c.y, (float)c.z);
 		DrawBrickHeap(it->second, txmgr, flipTexV);
 
@@ -304,22 +240,22 @@ void DrawLevelData(const LevelData& level, TextureManager& txmgr, bool flipTexV)
 	}
 }
 
-inline btVector3 Transform(const LevelData::Vertex* vert, const LevelData::Coordinate& c, const glm::mat4& mat) {
+inline btVector3 Transform(const MapData::Vertex* vert, const MapData::Coordinate& c, const glm::mat4& mat) {
 	glm::vec4 f = mat * glm::vec4(vert->xyz, 1.0f);
 	return btVector3((float) c.x + f.x, (float)c.y + f.y, (float)c.z + f.z);
 }
 
-btTriangleMesh * ConstructLevelCollision(const LevelData & level)
+btTriangleMesh * ConstructLevelCollision(const MapData & level)
 {
 	btTriangleMesh* data = new btTriangleMesh();
 	glm::mat4 mat;
 
 		
-	for (LevelData::const_iterator it = level.begin(); it != level.end(); ++it) {
-		const LevelData::Coordinate& c = it->first;
+	for (MapData::const_iterator it = level.begin(); it != level.end(); ++it) {
+		const MapData::Coordinate& c = it->first;
 
 		for (unsigned int i = 0; i < it->second.size(); ++i) {
-			const LevelData::Brick& brick = it->second[i];
+			const MapData::Brick& brick = it->second[i];
 
 			brick.matrix.CalcMatrix(mat);
 
@@ -327,9 +263,9 @@ btTriangleMesh * ConstructLevelCollision(const LevelData & level)
 				const std::vector<int>& tris = brick.brickdata->GetTriangleList();
 				int nbTris = tris.size() / 3;
 				for (int i = 0; i < nbTris; ++i) {
-					const LevelData::Vertex* v1 = brick.brickdata->GetVertex(tris[i * 3]);
-					const LevelData::Vertex* v2 = brick.brickdata->GetVertex(tris[i * 3 + 1]);
-					const LevelData::Vertex* v3 = brick.brickdata->GetVertex(tris[i * 3 + 2]);
+					const MapData::Vertex* v1 = brick.brickdata->GetVertex(tris[i * 3]);
+					const MapData::Vertex* v2 = brick.brickdata->GetVertex(tris[i * 3 + 1]);
+					const MapData::Vertex* v3 = brick.brickdata->GetVertex(tris[i * 3 + 2]);
 					if (v1 && v2 && v3) {
 						data->addTriangle(Transform(v1, c, mat), Transform(v2, c, mat), Transform(v3, c, mat), true);
 					}
@@ -339,16 +275,4 @@ btTriangleMesh * ConstructLevelCollision(const LevelData & level)
 	}
 
 	return data;
-}
-
-glm::mat4 LocRotScaleToMat4(const LocRotScale& poseBone)
-{
-	glm::mat4 tr = glm::mat4(1.0f);
-	tr = glm::translate(tr, poseBone.loc);
-
-	glm::mat4 rot = glm::mat4_cast(poseBone.rot);
-	tr = tr * rot;
-
-	tr = glm::scale(tr, poseBone.scale);
-	return tr;
 }

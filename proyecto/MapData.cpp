@@ -1,4 +1,4 @@
-#include "LevelData.h"
+#include "MapData.h"
 #include "MathUtils.h"
 #include <cfloat>
 #include <glm/gtx/norm.hpp>
@@ -6,16 +6,16 @@
 
 using json = nlohmann::json;
 
-LevelData::LevelData()
+MapData::MapData()
 {
 }
 
-LevelData::~LevelData()
+MapData::~MapData()
 {
 	Clear();
 }
 
-bool LevelData::Save(const char* filename) {
+bool MapData::Save(const char* filename) {
 	json j;
 
 	// TILESETS
@@ -143,7 +143,7 @@ bool LevelData::Save(const char* filename) {
 	return false;
 }*/
 
-bool LevelData::Load(const char* filename) {
+bool MapData::Load(const char* filename) {
 	// parse the json
 	std::ifstream ifs(filename);
 	json j = json::parse(ifs, nullptr, false, false);
@@ -157,7 +157,7 @@ bool LevelData::Load(const char* filename) {
 
 	// TILESETS
 	for (auto jts : j["tilesets"]) {
-		LevelData::TilesetData* tsd = undoRedoer.UseSPtr(new LevelData::TilesetData());
+		MapData::TilesetData* tsd = undoRedoer.UseSPtr(new MapData::TilesetData());
 
 		tsd->file = jts["file"];
 		tsd->ox = jts["ox"];
@@ -172,7 +172,7 @@ bool LevelData::Load(const char* filename) {
 
 	// BRICKS
 	for (auto jbd : j["bricks"]) {
-		bricks.push_back(undoRedoer.UseSPtr(new LevelData::BrickData(*this, jbd)));
+		bricks.push_back(undoRedoer.UseSPtr(new MapData::BrickData(*this, jbd)));
 	}
 
 	// LEVEL BRICK HEAPS
@@ -233,7 +233,7 @@ bool LevelData::Load(const char* filename) {
 	return false;
 }*/
 
-void LevelData::Clear()
+void MapData::Clear()
 {
 	undoRedoer.Clear();
 	tilesets.clear();
@@ -242,12 +242,12 @@ void LevelData::Clear()
 	//instances.Clear();
 }
 
-bool LevelData::Undo()
+bool MapData::Undo()
 {
 	return undoRedoer.Undo();
 }
 
-bool LevelData::Redo()
+bool MapData::Redo()
 {
 	return undoRedoer.Redo();
 }
@@ -255,13 +255,13 @@ bool LevelData::Redo()
 #define ReturnFalseOnOutOfRange(vector,index) if (index < 0 || index >= (int)vector.size()) {return false;} 
 #define ReturnNullOnOutOfRange(vector,index) if (index < 0 || index >= (int)vector.size()) {return nullptr;} 
 
-const LevelData::TilesetData * LevelData::GetTilesetData(const int index) const
+const MapData::TilesetData * MapData::GetTilesetData(const int index) const
 {
 	ReturnNullOnOutOfRange(tilesets, index);
 	return tilesets[index];
 }
 
-int LevelData::FindTilesetData(const TilesetData * tsdt) const
+int MapData::FindTilesetData(const TilesetData * tsdt) const
 {
 	for (unsigned int i = 0; i < tilesets.size(); ++i) {
 		if (tsdt == tilesets[i]) {
@@ -271,7 +271,7 @@ int LevelData::FindTilesetData(const TilesetData * tsdt) const
 	return -1;
 }
 
-bool LevelData::RemoveTilesetData(const int index)
+bool MapData::RemoveTilesetData(const int index)
 {
 	// todo : unvalidate tiles using this tileset
 	fprintf(stdout, "Warning, undoing of removing tileset not fully implemented. Expect undefined behaviour.\n");
@@ -279,12 +279,12 @@ bool LevelData::RemoveTilesetData(const int index)
 	return undoRedoer.RemoveThing(tilesets, index, true);
 }
 
-void LevelData::AddTilesetData()
+void MapData::AddTilesetData()
 {
 	undoRedoer.AddThing(tilesets, new TilesetData, true);
 }
 
-bool LevelData::UpdateTilesetData(int index, const char * file, unsigned int ox, unsigned int oy, unsigned int px, unsigned int py, unsigned int tw, unsigned int th)
+bool MapData::UpdateTilesetData(int index, const char * file, unsigned int ox, unsigned int oy, unsigned int px, unsigned int py, unsigned int tw, unsigned int th)
 {
 	ReturnFalseOnOutOfRange(tilesets, index);
 	TilesetData tsdt(file, ox, oy, px, py, tw, th);
@@ -293,13 +293,13 @@ bool LevelData::UpdateTilesetData(int index, const char * file, unsigned int ox,
 	return true;
 }
 
-LevelData::BrickData * LevelData::GetBrickData(const int index)
+MapData::BrickData * MapData::GetBrickData(const int index)
 {
 	ReturnNullOnOutOfRange(bricks, index);
 	return bricks[index];
 }
 
-int LevelData::FindBrickData(const BrickData * bd) const
+int MapData::FindBrickData(const BrickData * bd) const
 {
 	for (unsigned int i = 0; i < bricks.size(); ++i) {
 		if (bd == bricks[i]) {
@@ -309,7 +309,7 @@ int LevelData::FindBrickData(const BrickData * bd) const
 	return -1;
 }
 
-bool LevelData::RemoveBrickData(const int index)
+bool MapData::RemoveBrickData(const int index)
 {
 	// todo : remove all of this brick references in the level
 	fprintf(stdout, "Warning, undoing of removing brick data not fully implemented. Expect undefined behaviour.\n");
@@ -317,12 +317,12 @@ bool LevelData::RemoveBrickData(const int index)
 	return undoRedoer.RemoveThing(bricks, index, true);
 }
 
-void LevelData::AddBrickData()
+void MapData::AddBrickData()
 {
 	undoRedoer.AddThing(bricks, new BrickData(*this), true);
 }
 
-bool PushBrickIfDifferent(LevelData::BrickHeap & heap, const LevelData::Brick & brick) {
+bool PushBrickIfDifferent(MapData::BrickHeap & heap, const MapData::Brick & brick) {
 	for (unsigned int i = 0; i < heap.size(); ++i) {
 		if (heap[i] == brick) {
 			return false; // found the same, exit
@@ -332,7 +332,7 @@ bool PushBrickIfDifferent(LevelData::BrickHeap & heap, const LevelData::Brick & 
 	return true;
 }
 
-void LevelData::StackBrick(const Coordinate & c, const Brick & brick)
+void MapData::StackBrick(const Coordinate & c, const Brick & brick)
 {
 	BrickHeap& ref = level[c];
 	BrickHeap copy = ref;
@@ -341,7 +341,7 @@ void LevelData::StackBrick(const Coordinate & c, const Brick & brick)
 	}
 }
 
-void LevelData::StackBrick(const Coordinate & c, const BrickHeap & heap)
+void MapData::StackBrick(const Coordinate & c, const BrickHeap & heap)
 {
 	BrickHeap& ref = level[c];
 	BrickHeap copy = ref;
@@ -356,13 +356,13 @@ void LevelData::StackBrick(const Coordinate & c, const BrickHeap & heap)
 	}
 }
 
-void LevelData::ClearBrick(const Coordinate & c)
+void MapData::ClearBrick(const Coordinate & c)
 {
 	//level[c].clear();
 	undoRedoer.UpdateThing(level[c], BrickHeap());
 }
 
-void LevelData::UpdateBrickTile(const Coordinate & c, int brickIndex, int tilesetDataIndex, int tx, int ty)
+void MapData::UpdateBrickTile(const Coordinate & c, int brickIndex, int tilesetDataIndex, int tx, int ty)
 {
 	BrickHeap& ref = level[c];
 	BrickHeap copy = ref;
@@ -419,7 +419,7 @@ void LevelData::UpdateInstance(const std::string & field, const std::string & va
 	undoRedoer.UpdateThing(ref, copy);
 }*/
 
-bool LevelData::RayCast(const glm::vec3 & rayOrigin, const glm::vec3 & rayDirection, float limit, LevelData::RayCastResult* res) const
+bool MapData::RayCast(const glm::vec3 & rayOrigin, const glm::vec3 & rayDirection, float limit, MapData::RayCastResult* res) const
 {
 	glm::vec3 planeX(0.0f), planeY(0.0f), planeZ(0.0f), planeXup(0.0f), planeYup(0.0f), planeZup(0.0f), intsctX(0.0f), intsctY(0.0f), intsct(0.0f), intsctZ(0.0f), cAsVec3(0.0f);
 	float distPX, distPY, distPZ, intsctDist, curBrickDist = 0.0f;
@@ -516,11 +516,11 @@ bool LevelData::RayCast(const glm::vec3 & rayOrigin, const glm::vec3 & rayDirect
 	f >> file >> ox >> oy >> px >> py >> tw >> th;
 }*/
 
-LevelData::TilesetData::TilesetData() : file("undefined"), values {0}
+MapData::TilesetData::TilesetData() : file("undefined"), values {0}
 {
 }
 
-LevelData::TilesetData::TilesetData(const TilesetData & copy)
+MapData::TilesetData::TilesetData(const TilesetData & copy)
 {
 	this->file = copy.file;
 	this->ox = copy.ox;
@@ -531,7 +531,7 @@ LevelData::TilesetData::TilesetData(const TilesetData & copy)
 	this->tw = copy.tw;
 }
 
-LevelData::TilesetData::TilesetData(const char * file, int ox, int oy, int px, int py, int tw, int th)
+MapData::TilesetData::TilesetData(const char * file, int ox, int oy, int px, int py, int tw, int th)
 {
 	this->file = file;
 	this->ox = ox;
@@ -542,7 +542,7 @@ LevelData::TilesetData::TilesetData(const char * file, int ox, int oy, int px, i
 	this->tw = tw;
 }
 
-void LevelData::TilesetData::operator=(const TilesetData & copy)
+void MapData::TilesetData::operator=(const TilesetData & copy)
 {
 	this->file = copy.file;
 	this->ox = copy.ox;
@@ -553,7 +553,7 @@ void LevelData::TilesetData::operator=(const TilesetData & copy)
 	this->tw = copy.tw;
 }
 
-LevelData::TilesetData::~TilesetData()
+MapData::TilesetData::~TilesetData()
 {
 	ox = 0;
 }
@@ -569,19 +569,19 @@ void LevelData::Vertex::OldLoad(std::ifstream & f)
 	f >> x >> y >> z >> u >> v;
 }*/
 
-LevelData::Vertex::Vertex() : x(0.0f), y(0.0f), z(0.0f), u(0.0f), v(0.0f)
+MapData::Vertex::Vertex() : x(0.0f), y(0.0f), z(0.0f), u(0.0f), v(0.0f)
 {
 }
 
-LevelData::Vertex::Vertex(const Vertex & vert) : x(vert.x), y(vert.y), z(vert.z), u(vert.u), v(vert.v)
+MapData::Vertex::Vertex(const Vertex & vert) : x(vert.x), y(vert.y), z(vert.z), u(vert.u), v(vert.v)
 {
 }
 
-LevelData::Vertex::Vertex(const float x, const float y, const float z, const float u, const float v) : x(x), y(y), z(z), u(u), v(v)
+MapData::Vertex::Vertex(const float x, const float y, const float z, const float u, const float v) : x(x), y(y), z(z), u(u), v(v)
 {
 }
 
-void LevelData::Vertex::operator=(const Vertex & vert)
+void MapData::Vertex::operator=(const Vertex & vert)
 {
 	this->x = vert.x;
 	this->y = vert.y;
@@ -590,7 +590,7 @@ void LevelData::Vertex::operator=(const Vertex & vert)
 	this->v = vert.v;
 }
 
-LevelData::Vertex::~Vertex()
+MapData::Vertex::~Vertex()
 {
 }
 
@@ -625,11 +625,11 @@ void LevelData::BrickData::OldLoad(std::ifstream & f)
 	}
 }*/
 
-LevelData::BrickData::BrickData(LevelData & ld) : levelData(ld)
+MapData::BrickData::BrickData(MapData & ld) : levelData(ld)
 {
 }
 
-LevelData::BrickData::BrickData(LevelData& ld, nlohmann::json& json) : levelData(ld)
+MapData::BrickData::BrickData(MapData& ld, nlohmann::json& json) : levelData(ld)
 {
 	for (auto jv : json["vertices"]) {
 		vertices.push_back(levelData.undoRedoer.UseSPtr(new Vertex(jv[0], jv[1], jv[2], jv[3], jv[4])));
@@ -640,23 +640,23 @@ LevelData::BrickData::BrickData(LevelData& ld, nlohmann::json& json) : levelData
 	}
 }
 
-const LevelData::Vertex * LevelData::BrickData::GetVertex(const int index) const
+const MapData::Vertex * MapData::BrickData::GetVertex(const int index) const
 {
 	ReturnNullOnOutOfRange(vertices, index)
 	return vertices[index];
 }
 
-bool LevelData::BrickData::RemoveVertex(const int index)
+bool MapData::BrickData::RemoveVertex(const int index)
 {
 	return levelData.undoRedoer.RemoveThing(vertices,index, true);
 }
 
-void LevelData::BrickData::AddVertex()
+void MapData::BrickData::AddVertex()
 {
 	levelData.undoRedoer.AddThing(vertices, new Vertex, true);
 }
 
-bool LevelData::BrickData::UpdateVertex(const int index, float x, float y, float z, float u, float v)
+bool MapData::BrickData::UpdateVertex(const int index, float x, float y, float z, float u, float v)
 {
 	ReturnFalseOnOutOfRange(vertices, index);
 	Vertex vert(x, y, z, u, v);
@@ -664,7 +664,7 @@ bool LevelData::BrickData::UpdateVertex(const int index, float x, float y, float
 	return true;
 }
 
-bool LevelData::BrickData::UpdateTriangleList(const TriangleList & tri)
+bool MapData::BrickData::UpdateTriangleList(const TriangleList & tri)
 {
 	levelData.undoRedoer.UpdateThing(triangles, tri);
 	return true;
@@ -687,17 +687,17 @@ void LevelData::Brick::OldLoad(std::ifstream & f)
 	matrix.SetFromSingleInt(i);
 }*/
 
-bool LevelData::Brick::operator==(const Brick & comp) const
+bool MapData::Brick::operator==(const Brick & comp) const
 {
 	return brickdata == comp.brickdata && matrix == comp.matrix;
 }
 
-bool LevelData::Brick::operator!=(const Brick & comp) const
+bool MapData::Brick::operator!=(const Brick & comp) const
 {
 	return brickdata != comp.brickdata || matrix != comp.matrix;
 }
 
-LevelData::Brick::Brick(LevelData& ld)
+MapData::Brick::Brick(MapData& ld)
 	: levelData(ld)
 	, tilex(0)
 	, tiley(0)
@@ -706,7 +706,7 @@ LevelData::Brick::Brick(LevelData& ld)
 {
 }
 
-LevelData::Brick::Brick(LevelData& ld, nlohmann::json& json)
+MapData::Brick::Brick(MapData& ld, nlohmann::json& json)
 	: levelData(ld)
 	, tilex(json[1])
 	, tiley(json[2])
@@ -718,7 +718,7 @@ LevelData::Brick::Brick(LevelData& ld, nlohmann::json& json)
 	matrix.SetFromSingleInt(json[4]);
 }
 
-LevelData::Brick::Brick(const Brick & b)
+MapData::Brick::Brick(const Brick & b)
 	: levelData(b.levelData)
 	, tilex(b.tilex)
 	, tiley(b.tiley)
@@ -728,7 +728,7 @@ LevelData::Brick::Brick(const Brick & b)
 {
 }
 
-void LevelData::Brick::operator=(const Brick & b)
+void MapData::Brick::operator=(const Brick & b)
 {
 	tilex = b.tilex;
 	tiley = b.tiley;
@@ -737,7 +737,7 @@ void LevelData::Brick::operator=(const Brick & b)
 	matrix = b.matrix;
 }
 
-bool LevelData::Brick::RayCast(const glm::vec3 & rayOrigin, const glm::vec3 & rayDirection, const glm::vec3& position, glm::vec3* res, int* triangleIndex) const
+bool MapData::Brick::RayCast(const glm::vec3 & rayOrigin, const glm::vec3 & rayDirection, const glm::vec3& position, glm::vec3* res, int* triangleIndex) const
 {
 	glm::mat4 mat;
 	glm::vec4 t1, t2, t3, pos(position,0);
@@ -768,7 +768,7 @@ bool LevelData::Brick::RayCast(const glm::vec3 & rayOrigin, const glm::vec3 & ra
 	return dist != FLT_MAX;
 }
 
-void LevelData::Brick::TransformTriangle(const glm::vec3 & position, int triangleIndex, glm::vec3 & ot1, glm::vec3 & ot2, glm::vec3 & ot3) const
+void MapData::Brick::TransformTriangle(const glm::vec3 & position, int triangleIndex, glm::vec3 & ot1, glm::vec3 & ot2, glm::vec3 & ot3) const
 {
 	glm::mat4 mat;
 	glm::vec4 t1, t2, t3, pos(position, 0);
@@ -793,21 +793,21 @@ void LevelData::Coordinate::OldLoad(std::ifstream & f)
 	f >> x >> y >> z;
 }*/
 
-LevelData::Coordinate::Coordinate()
+MapData::Coordinate::Coordinate()
 	: x(0)
 	, y(0)
 	, z(0)
 {
 }
 
-LevelData::Coordinate::Coordinate(int X, int Y, int Z)
+MapData::Coordinate::Coordinate(int X, int Y, int Z)
 	: x(X)
 	, z(Z)
 	, y(Y)
 {
 }
 
-LevelData::Coordinate::Coordinate(const Coordinate & c)
+MapData::Coordinate::Coordinate(const Coordinate & c)
 	: x(c.x)
 	, y(c.y)
 	, z(c.z)
