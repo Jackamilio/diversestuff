@@ -4,6 +4,12 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+IMPLEMENT_EXPOSE_MEMBER(EditorCamera::DefaultInput) {
+	EXPOSE_VALUE(horAngle);
+	EXPOSE_VALUE(verAngle);
+	EXPOSE_VALUE(distance);
+}
+
 EditorCamera::EditorCamera() : focuspoint(0,0,0), up(0,0,1), horAngle(0), verAngle(0), distance(1)
 {
 }

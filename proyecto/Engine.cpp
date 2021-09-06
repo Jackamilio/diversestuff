@@ -299,12 +299,25 @@ bool Engine::OneLoop()
 	return stayOpen;
 }
 
-void RecursiveGuiHierarchyObject(Engine::Object* obj, const ProgramManager& programs) {
+static Engine::Object* selectedobj = nullptr;
+
+bool ImgObjTreeNode(Engine::Object* obj, bool leaf) {
+	const ImGuiTreeNodeFlags leafFlag = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet;
+	const bool ret = ImGui::TreeNodeEx((void*)obj,
+		(leaf ? leafFlag : 0) | (selectedobj == obj ? ImGuiTreeNodeFlags_Selected : 0),
+		obj->ObjectTypeName());
+	if (ImGui::IsItemClicked()) {
+		selectedobj = obj;
+	}
+	return ret;
+}
+
+void RecursiveGuiHierarchyObject(Engine::Object* obj, const ProgramManager& programs, int depth=0) {
 	Engine::ShaderGraphic* sg = dynamic_cast<Engine::ShaderGraphic*>(obj);
 	
+	ImGui::PushID(obj);
 	if (obj->ChildrenSize() > 0 || sg) {
-		if (ImGui::TreeNode(obj->ObjectTypeName())) {
-
+		if (depth==0 || ImgObjTreeNode(obj, false)) {
 			if (sg) {
 				if (ImGui::TreeNode("Programs")) {
 					for (auto it : sg->programChildren) {
@@ -313,7 +326,8 @@ void RecursiveGuiHierarchyObject(Engine::Object* obj, const ProgramManager& prog
 						if (it.second.ChildrenSize() > 0) {
 							if (ImGui::TreeNode(prgName.c_str())) {
 								for (int j = 0; j < it.second.ChildrenSize(); ++j) {
-									ImGui::BulletText(it.second.GetChild(j)->ObjectTypeName());
+									//ImGui::BulletText(it.second.GetChild(j)->ObjectTypeName());
+									ImgObjTreeNode(it.second.GetChild(j), true);
 								}
 								ImGui::TreePop();
 							}
@@ -327,37 +341,87 @@ void RecursiveGuiHierarchyObject(Engine::Object* obj, const ProgramManager& prog
 			}
 
 			for (int i = 0; i < obj->ChildrenSize(); ++i) {
-				RecursiveGuiHierarchyObject(obj->GetChild(i), programs);
+				RecursiveGuiHierarchyObject(obj->GetChild(i), programs, depth+1);
 			}
 
-			ImGui::TreePop();
+			if (depth > 0) { ImGui::TreePop(); }
 		}
 	}
 	else {
-		ImGui::BulletText(obj->ObjectTypeName());
+		ImgObjTreeNode(obj, true);
+	}
+	ImGui::PopID();
+}
+
+void ConstructUsedObjects(Engine::Object* obj, std::set<Engine::Object*>& usedObjs) {
+	usedObjs.insert(obj);
+
+	Engine::ShaderGraphic* sg = dynamic_cast<Engine::ShaderGraphic*>(obj);
+	if (sg) {
+		for (auto it : sg->programChildren) {
+			if (it.second.ChildrenSize() > 0) {
+				for (int j = 0; j < it.second.ChildrenSize(); ++j) {
+					usedObjs.insert(it.second.GetChild(j));
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < obj->ChildrenSize(); ++i) {
+		ConstructUsedObjects(obj->GetChild(i), usedObjs);
 	}
 }
 
 void Engine::ShowGui() {
 	if (guiEnabled) {
-		ImGui::ShowDemoWindow();
-
 		static bool win_objects = false;
+		static bool win_demo = false;
 
 		if (win_objects) {
+			// verify selectedobj validity
+			if (objectsTracker.find(selectedobj) == objectsTracker.end()) {
+				selectedobj = nullptr;
+			}
+
 			if (ImGui::Begin("Objects", &win_objects)) {
-				static bool show_hierarchy = false;
-				ImGui::Checkbox("Show hierarchy", &show_hierarchy);
-				if (show_hierarchy) {
-					RecursiveGuiHierarchyObject(&rootObject, graphics.programs);
-				}
-				else {
-					for (int i = 0; i < objectsTracker.size(); ++i) {
-						ImGui::Text(objectsTracker[i]->ObjectTypeName());
+				ImVec2 r = ImGui::GetContentRegionAvail();
+				r.x *= 0.4f;
+				if (ImGui::BeginChild("Objects list", r, true, ImGuiWindowFlags_HorizontalScrollbar)) {
+					static bool show_hierarchy = false;
+					ImGui::Checkbox("Show hierarchy", &show_hierarchy);
+					if (show_hierarchy) {
+						RecursiveGuiHierarchyObject(&rootObject, graphics.programs);
+						if (ImGui::TreeNode("Orphans")) {
+							std::set<Object*> usedObjs;
+							ConstructUsedObjects(&rootObject, usedObjs);
+							for (auto obj : objectsTracker) {
+								if (usedObjs.find(obj) == usedObjs.end()) {
+									ImgObjTreeNode(obj, true);
+								}
+							}
+							ImGui::TreePop();
+						}
+					}
+					else {
+						for (auto obj : objectsTracker) {
+							ImgObjTreeNode(obj, true);
+						}
 					}
 				}
+				ImGui::EndChild();
+				ImGui::SameLine();
+				r = ImGui::GetContentRegionAvail();
+				if (ImGui::BeginChild("Object infos", r)) {
+					if (selectedobj) {
+						selectedobj->ExposeFunction();
+					}
+				}
+				ImGui::EndChild();
 			}
 			ImGui::End();
+		}
+		if (win_demo) {
+			ImGui::ShowDemoWindow(&win_demo);
 		}
 
 		if (ImGui::BeginMainMenuBar())
@@ -365,6 +429,7 @@ void Engine::ShowGui() {
 			if (ImGui::BeginMenu("Windows"))
 			{
 				ImGui::MenuItem("Objects", nullptr, &win_objects);
+				ImGui::MenuItem("Demo", nullptr, &win_demo);
 
 				ImGui::EndMenu();
 			}
@@ -376,20 +441,12 @@ void Engine::ShowGui() {
 Engine::Object::Object() :
 	engine(Engine::Get())
 {
-	engine.objectsTracker.push_back(this);
+	engine.objectsTracker.insert(this);
 }
 
 Engine::Object::~Object()
 {
-	for (auto it = engine.objectsTracker.begin(); it != engine.objectsTracker.end(); ) {
-		if (*it == this) {
-			it = engine.objectsTracker.erase(it);
-			return;
-		}
-		else {
-			++it;
-		}
-	}
+	engine.objectsTracker.erase(this);
 }
 
 void Engine::Object::AddChild(Object* c, bool onTop)
@@ -414,6 +471,10 @@ void Engine::Object::RemoveChild(Object* c)
 	}
 }
 
+IMPLEMENT_EXPOSE_MEMBER(Engine::Object) {
+	ImGui::Text("This object did not implement exposing.");
+}
+
 void Engine::Dynamic::Collision(Engine::Dynamic* other, btPersistentManifold& manifold)
 {
 }
@@ -434,6 +495,10 @@ bool Engine::InputRoot::Event(ALLEGRO_EVENT & event)
 void Engine::DynamicRoot::Tick() {}
 void Engine::UpdateRoot::Step() {}
 void Engine::GraphicRoot::Draw() {}
+
+IMPLEMENT_EXPOSE_MEMBER(Engine::GraphicTarget) {
+	EXPOSE_VALUE(bitmap);
+}
 
 Engine::GraphicTarget::GraphicTarget(ALLEGRO_BITMAP* bitmap) :
 	ownsBitmap(false),

@@ -53,7 +53,7 @@ bool MapEditor::Event(ALLEGRO_EVENT& event) {
 	}
 	else {
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-			if (event.keyboard.keycode == ALLEGRO_KEY_F1) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_F2) {
 				showGui = false;
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_T) {

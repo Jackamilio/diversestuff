@@ -7,8 +7,6 @@
 
 class EditorCamera {
 public:
-	OTN(EditorCamera)
-
 	EditorCamera();
 	EditorCamera(const EditorCamera& cam);
 	void operator=(const EditorCamera& cam);
@@ -41,6 +39,7 @@ public:
 class EditorCamera::DefaultInput : public EditorCamera, public Engine::Input {
 public:
 	OTN(EditorCamera::DefaultInput)
+	IMPLEMENT_EXPOSE;
 	float powerDist;
 
 	DefaultInput(float powerDist = 1.0f);

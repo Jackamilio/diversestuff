@@ -4,10 +4,10 @@
 #include <allegro5/allegro.h>
 #include <vector>
 #include <map>
+#include <set>
 #include <string>
 #include <bullet/btBulletDynamicsCommon.h>
 #include <glm/glm.hpp>
-#include <typeinfo>
 #include "GraphicContext.h"
 #include "Shader.h"
 #include "Exposing.h"
@@ -15,6 +15,10 @@
 #define OTN(name) const char* ObjectTypeName() const { return #name; }
 
 class Engine {
+private:
+	// must be initialized first
+	class Object;
+	std::set<Object*> objectsTracker;
 public:
 	// default uber mother class
 	friend class Object;
@@ -32,6 +36,7 @@ public:
 
 		inline int ChildrenSize() const { return children.size(); }
 		inline Object* GetChild(int i) { return children[i]; }
+		virtual IMPLEMENT_EXPOSE;
 
 	private:
 		std::vector<Object*> children;
@@ -42,9 +47,6 @@ private:
 		OTN(RootObject);
 	};
 	RootObject rootObject;
-
-	// must be initialized first
-	std::vector<Object*> objectsTracker;
 
 public:
 	static Engine& Get();
@@ -118,7 +120,9 @@ public:
 	private:
 		bool ownsBitmap;
 	public:
-		OTN(GraphicTarget)
+		OTN(GraphicTarget);
+		IMPLEMENT_EXPOSE;
+
 		ALLEGRO_BITMAP* bitmap;
 		glm::vec4 clearColor;
 
