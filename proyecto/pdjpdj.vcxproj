@@ -114,6 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessorDefinitions>ALLEGRO_UNSTABLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>/external:I "bullet" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -168,12 +169,14 @@
     <ClCompile Include="MathUtils.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="OrthoMatrix.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="MapEditor.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="UndoRedoer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Arborescent.h" />
     <ClInclude Include="Dump.h" />
     <ClInclude Include="Editorcamera.h" />
     <ClInclude Include="Engine.h" />
@@ -195,6 +198,7 @@
     <ClInclude Include="ModelManager.h" />
     <ClInclude Include="OrthoMatrix.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="TemporaryOrTesting.h" />
     <ClInclude Include="TextureManager.h" />

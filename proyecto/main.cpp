@@ -10,6 +10,7 @@
 #include "Editorcamera.h"
 #include "imgui.h"
 #include "MapEditor.h"
+#include "Scene.h"
 
 ALLEGRO_FONT* fetchDefaultFont()
 {
@@ -24,13 +25,19 @@ ALLEGRO_FONT* fetchDefaultFont()
 	return defaultFont;
 }
 
-class FPSCounter : public Engine::Graphic {
+class FPSCounter : public Engine::Graphic, public SceneObject<FPSCounter> {
 public:
-	OTN(FPSCounter)
-	double samplingDuration;
+	OTN(FPSCounter);
+	IMPLEMENT_EXPOSE{
+		EXPOSE_VALUE(samplingDuration);
+	}
+
+	float samplingDuration;
 	double lastTime;
 	int nbSamples;
 	int lastFps;
+
+	int ypos;
 
 	FPSCounter() {
 		engine.overlayGraphic.AddChild(this);
@@ -39,18 +46,25 @@ public:
 		lastTime = engine.time;
 		nbSamples = 0;
 		lastFps = (int)(1.0 / engine.dtTarget);
+
+		static int nextypos = 40;
+		ypos = nextypos;
+		nextypos += 15;
+	}
+	~FPSCounter() {
+		engine.overlayGraphic.RemoveChild(this);
 	}
 
 	void Draw() {
 
 		++nbSamples;
-		if (engine.time - lastTime > samplingDuration) {
-			lastFps = (int)((double)nbSamples / samplingDuration);
+		if (engine.time - lastTime > (double)samplingDuration) {
+			lastFps = (int)((float)nbSamples / samplingDuration);
 			nbSamples = 0;
 			lastTime = engine.time;
 		}
 
-		al_draw_textf(fetchDefaultFont(), al_map_rgb(255, 255, 255), 10, 10, 0, "FPS : %i", lastFps);
+		al_draw_textf(fetchDefaultFont(), al_map_rgb(255, 255, 255), 10, ypos, 0, "FPS : %i", lastFps);
 	}
 };
 

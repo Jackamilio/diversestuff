@@ -269,7 +269,7 @@ Model::Model(const std::string& file, GraphicContext& g) : graphics(g)
 			if (scene->HasAnimations()) {
 				for (unsigned int i = 0; i < scene->mNumAnimations; ++i) {
 					std::string animName(scene->mAnimations[i]->mName.C_Str());
-					int t = animName.find('|');
+					int t = (int)animName.find('|');
 					std::string skelName = animName.substr(0, t);
 					animName = animName.substr(t + 1, animName.size() - t - 1);
 
@@ -364,7 +364,7 @@ Model::Bone& Model::FindOrAddBone(const aiScene* scene, std::string boneName, in
 	}
 
 	// create the bone
-	boneId = skeleton->bones.size();
+	boneId = (int)skeleton->bones.size();
 	skeleton->bones.resize(boneId + 1);
 	Bone& bone = skeleton->bones[boneId];
 	bone.name = boneName;

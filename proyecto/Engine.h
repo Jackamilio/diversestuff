@@ -11,18 +11,23 @@
 #include "GraphicContext.h"
 #include "Shader.h"
 #include "Exposing.h"
+#include "Arborescent.h"
 
-#define OTN(name) const char* ObjectTypeName() const { return #name; }
+// forcing the second line to use the static version
+// this way the compiler will complain if the user forgets to update this when he renames his class
+#define OTN(name) static inline const char* StaticObjectTypeName() { return #name; } \
+const char* ObjectTypeName() const { return name::StaticObjectTypeName(); }
 
 class Engine {
+public:
+	class Object;
 private:
 	// must be initialized first
-	class Object;
 	std::set<Object*> objectsTracker;
 public:
 	// default uber mother class
 	friend class Object;
-	class Object {
+	class Object : public Arborescent<Object> {
 	public:
 		Engine& engine;
 
@@ -30,16 +35,7 @@ public:
 		~Object();
 
 		virtual const char* ObjectTypeName() const = 0;
-
-		void AddChild(Object* c, bool onTop = false);
-		void RemoveChild(Object* c);
-
-		inline int ChildrenSize() const { return children.size(); }
-		inline Object* GetChild(int i) { return children[i]; }
 		virtual IMPLEMENT_EXPOSE;
-
-	private:
-		std::vector<Object*> children;
 	};
 
 private:
@@ -59,20 +55,20 @@ public:
 
 	// mother node classes
 	template<class T>
-	class Node : virtual public Object {
+	class Node : virtual public Object, public Arborescent<T> {
 	private:
 		using Object::AddChild;
 		using Object::RemoveChild;
 		using Object::ChildrenSize;
 		using Object::GetChild;
-
-		std::vector<T*> children;
+		using Arborescent<T>::AddChild;
+		using Arborescent<T>::RemoveChild;
 	public:
 		void AddChild(T* c, bool onTop = false);
 		void RemoveChild(T* c);
 
-		inline int ChildrenSize() const { return children.size(); }
-		inline T* GetChild(int i) { return children[i]; }
+		inline int ChildrenSize() const { return Arborescent<T>::ChildrenSize(); }
+		inline T* GetChild(int i) { return Arborescent<T>::GetChild(i); }
 	};
 	class Input : public Node<Input> {
 	public:
@@ -245,28 +241,16 @@ private:
 };
 
 template<class T>
-inline void Engine::Node<T>::AddChild(T * c, bool onTop)
+inline void Engine::Node<T>::AddChild(T* c, bool onTop)
 {
-	if (onTop) {
-		children.insert(children.begin(), c);
-	}
-	else {
-		children.push_back(c);
-	}
+	Arborescent<T>::AddChild(c, onTop);
 	Object::AddChild((Object*)c);
 }
 
 template<class T>
 inline void Engine::Node<T>::RemoveChild(T* c)
 {
-	for (auto it = children.begin(); it != children.end(); ) {
-		if (*it  == c) {
-			it = children.erase(it);
-		}
-		else {
-			++it;
-		}
-	}
+	Arborescent<T>::RemoveChild(c);
 	Object::RemoveChild((Object*)c);
 }
 

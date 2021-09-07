@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "imgui.h"
 #include "imgui_impl_allegro5.h"
+#include "Scene.h"
 
 namespace DearImguiIntegration {
 	void Init(ALLEGRO_DISPLAY* display) {
@@ -120,7 +121,7 @@ Engine::~Engine()
 
 void RecursiveTick(Engine::Dynamic* dynamic) {
 	dynamic->Tick();
-	for (unsigned int i = 0; i < dynamic->ChildrenSize(); ++i) {
+	for (int i = 0; i < dynamic->ChildrenSize(); ++i) {
 		RecursiveTick(dynamic->GetChild(i));
 	}
 }
@@ -320,7 +321,7 @@ void RecursiveGuiHierarchyObject(Engine::Object* obj, const ProgramManager& prog
 		if (depth==0 || ImgObjTreeNode(obj, false)) {
 			if (sg) {
 				if (ImGui::TreeNode("Programs")) {
-					for (auto it : sg->programChildren) {
+					for (auto&& it : sg->programChildren) {
 						const Program& prg = *it.first;
 						std::string prgName = programs.GetKey(prg, "program not found");
 						if (it.second.ChildrenSize() > 0) {
@@ -358,7 +359,7 @@ void ConstructUsedObjects(Engine::Object* obj, std::set<Engine::Object*>& usedOb
 
 	Engine::ShaderGraphic* sg = dynamic_cast<Engine::ShaderGraphic*>(obj);
 	if (sg) {
-		for (auto it : sg->programChildren) {
+		for (auto&& it : sg->programChildren) {
 			if (it.second.ChildrenSize() > 0) {
 				for (int j = 0; j < it.second.ChildrenSize(); ++j) {
 					usedObjs.insert(it.second.GetChild(j));
@@ -376,6 +377,7 @@ void Engine::ShowGui() {
 	if (guiEnabled) {
 		static bool win_objects = false;
 		static bool win_demo = false;
+		static bool win_scene = false;
 
 		if (win_objects) {
 			// verify selectedobj validity
@@ -423,6 +425,18 @@ void Engine::ShowGui() {
 		if (win_demo) {
 			ImGui::ShowDemoWindow(&win_demo);
 		}
+		if (win_scene) {
+			if (ImGui::Begin("Scene", &win_scene)) {
+				for (auto&& it : ConstructorCollection::Get().themap) {
+					if (ImGui::Button("Spawn")) {
+						it.second->Construct();
+					}
+					ImGui::SameLine();
+					ImGui::Text(it.first.c_str());
+				}
+			}
+			ImGui::End();
+		}
 
 		if (ImGui::BeginMainMenuBar())
 		{
@@ -430,6 +444,7 @@ void Engine::ShowGui() {
 			{
 				ImGui::MenuItem("Objects", nullptr, &win_objects);
 				ImGui::MenuItem("Demo", nullptr, &win_demo);
+				ImGui::MenuItem("Scene", nullptr, &win_scene);
 
 				ImGui::EndMenu();
 			}
@@ -449,7 +464,7 @@ Engine::Object::~Object()
 	engine.objectsTracker.erase(this);
 }
 
-void Engine::Object::AddChild(Object* c, bool onTop)
+/*void Engine::Object::AddChild(Object* c, bool onTop)
 {
 	if (onTop) {
 		children.insert(children.begin(), c);
@@ -469,7 +484,7 @@ void Engine::Object::RemoveChild(Object* c)
 			++it;
 		}
 	}
-}
+}*/
 
 IMPLEMENT_EXPOSE_MEMBER(Engine::Object) {
 	ImGui::Text("This object did not implement exposing.");

@@ -261,7 +261,7 @@ btTriangleMesh * ConstructMapCollision(const MapData & level)
 
 			if (brick.brickdata) {
 				const std::vector<int>& tris = brick.brickdata->GetTriangleList();
-				int nbTris = tris.size() / 3;
+				int nbTris = (int)tris.size() / 3;
 				for (int i = 0; i < nbTris; ++i) {
 					const MapData::Vertex* v1 = brick.brickdata->GetVertex(tris[i * 3]);
 					const MapData::Vertex* v2 = brick.brickdata->GetVertex(tris[i * 3 + 1]);
