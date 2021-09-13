@@ -16,3 +16,6 @@
 /proyecto/packages
 /proyecto/x64
 /proyecto/.vs
+/proyecto/test/Debug
+/proyecto/test/x64
+/proyecto/test/.vs

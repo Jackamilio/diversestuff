@@ -14,9 +14,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="dump.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -149,9 +146,6 @@
       <Filter>Dear imgui</Filter>
     </ClInclude>
     <ClInclude Include="MapEditor.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="TemporaryOrTesting.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="json.hpp">

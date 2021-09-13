@@ -7,10 +7,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Exposing.h"
 #include <map>
-#include "Editorcamera.h"
 #include "imgui.h"
 #include "MapEditor.h"
 #include "Scene.h"
+#include "TemporaryOrTesting.h"
 
 ALLEGRO_FONT* fetchDefaultFont()
 {
@@ -83,7 +83,7 @@ int main(int nbarg, char ** args) {
 
 		TestCamera camera;
 		EngineMap map("niveau.lvl");
-		MapEditor editor(map);
+		MapEditor editor(map.mapdt, &map);
 		TestModel tm("personnage.fbx", "Cours");
 		TestCharacter tc;
 		FPSCounter fc;

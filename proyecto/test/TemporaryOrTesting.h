@@ -8,7 +8,6 @@ class EngineMap : public Engine::Graphic {
 public:
 	OTN(EngineMap)
 	MapData mapdt;
-	const Model* model;
 
 	btTriangleMesh* mapMesh;
 	btBvhTriangleMeshShape* shape;
@@ -22,7 +21,6 @@ public:
 		body(nullptr)
 	{
 		mapdt.Load(map);
-		model = &engine.graphics.models.Get(&mapdt);
 
 		btTransform t;
 		t.setIdentity();
@@ -46,8 +44,11 @@ public:
 	}
 
 	void Draw() {
-		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(1.0));
-		model->Draw();
+		const Model* model = &engine.graphics.models.Get(&mapdt);
+		if (model) {
+			engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(1.0));
+			model->Draw();
+		}
 	}
 };
 

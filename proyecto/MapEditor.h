@@ -5,14 +5,11 @@
 #include "Editorcamera.h"
 #include "Interpolator.h"
 
-#include "TemporaryOrTesting.h"
-
 class MapEditor : public Engine::Input, public Engine::Update, public Engine::TripleGraphic {
 public:
-	OTN(MapEditor)
-	Engine& engine;
-	EngineMap& map;
+	OTN(MapEditor);
 	MapData& mapdt;
+	Graphic* toUpdate;
 	bool showGui;
 	bool lastShowGui;
 	bool tilemode;
@@ -42,7 +39,7 @@ public:
 	Interpolator<glm::vec3> lerper;
 	MapData::Coordinate lastClic;
 
-	MapEditor(EngineMap& map);
+	MapEditor(MapData& mapdt, Graphic* toUpdate);
 
 	bool Event(ALLEGRO_EVENT& event);
 

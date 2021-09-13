@@ -7,10 +7,9 @@
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_native_dialog.h>
 
-MapEditor::MapEditor(EngineMap& map) :
-	engine(map.engine),
-	map(map),
-	mapdt(map.mapdt),
+MapEditor::MapEditor(MapData& mapdt, Graphic* toUpdate) :
+	mapdt(mapdt),
+	toUpdate(toUpdate),
 	showGui(false),
 	lastShowGui(false),
 	tilemode(false),
@@ -382,7 +381,7 @@ void MapEditor::Step() {
 
 		if (showGui) {
 			// show the debug level, and not the correct one anymore
-			engine.mainGraphic.RemoveChildFromProgram(&map, "test.pgr");
+			engine.mainGraphic.RemoveChildFromProgram(toUpdate, "test.pgr");
 			engine.mainGraphic.AddChild(this);
 			engine.graphicTargets.AddChild(&brickDataPreview, true);
 			engine.graphicTargets.AddChild(&brickHeapPreview, true);
@@ -395,9 +394,8 @@ void MapEditor::Step() {
 
 			// tell him to reload
 			engine.graphics.models.RemoveValue(&mapdt);
-			map.model = &engine.graphics.models.Get(&mapdt);
 
-			engine.mainGraphic.AddChildToProgram(&map, "test.pgr");
+			engine.mainGraphic.AddChildToProgram(toUpdate, "test.pgr");
 		}
 	}
 

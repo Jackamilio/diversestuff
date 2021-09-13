@@ -8,3 +8,5 @@ Sat 04/09 - Brick heap preview and rotating done. Saving and loading with new js
 Sun 05/09 - Re-integrated Assimp and Bullet. Started debug navigation of nodes.
 Mon 06/09 - Continued node navigation. Restarted a simpler exposing system.
 Tue 07/09 - Started a scene system. Can spawn stuff ingame now!
+
+Mon 13/09 - Separated the solution into two projects
