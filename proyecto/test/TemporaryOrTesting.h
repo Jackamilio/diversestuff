@@ -71,14 +71,17 @@ public:
 	}
 
 	void Step() {
-		model.GetPose("Marche", (float)engine.time, wpose, true);
-		model.GetPose("Cours", (float)engine.time, wpose2, true);
-		model.MixPoses(wpose, wpose2, glm::clamp((float)glm::sin(engine.time * 0.5f) + 0.5f, 0.0f, 1.0f));
+		//model.GetPose("Marche", (float)engine.time, wpose, true);
+		//model.GetPose("Cours", (float)engine.time, wpose2, true);
+		//model.MixPoses(wpose, wpose2, glm::clamp((float)glm::sin(engine.time * 0.5f) + 0.5f, 0.0f, 1.0f));
+		//model.FinalizePose(wpose, fpose);
+
+		model.GetPose(animName, (float)engine.time, wpose, true);
 		model.FinalizePose(wpose, fpose);
 	}
 
 	void Draw() {
-		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(1.0));
+		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(0.1));
 		model.Draw(fpose);
 	}
 
