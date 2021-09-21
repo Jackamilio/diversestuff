@@ -84,8 +84,8 @@ int main(int nbarg, char ** args) {
 		TestCamera camera;
 		EngineMap map("niveau.lvl");
 		MapEditor editor(map.mapdt, &map);
-		TestModel tm("simplechar.fbx", "waving");
-		TestCharacter tc;
+		//TestModel tm("simplechar.fbx", "walk");
+		TestCharacter tc("simplechar.fbx");
 		FPSCounter fc;
 
 		camera.trackbody = tc.body;

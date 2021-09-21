@@ -58,15 +58,23 @@ public:
 	class Node : virtual public Object, public Arborescent<T> {
 	private:
 		using Object::AddChild;
+		using Object::AddChildBefore;
+		using Object::AddChildAfter;
 		using Object::RemoveChild;
+		using Object::HasChild;
 		using Object::ChildrenSize;
 		using Object::GetChild;
 		using Arborescent<T>::AddChild;
+		using Arborescent<T>::AddChildBefore;
+		using Arborescent<T>::AddChildAfter;
 		using Arborescent<T>::RemoveChild;
 	public:
 		void AddChild(T* c, bool onTop = false);
+		void AddChildBefore(T* c, T* target);
+		void AddChildAfter(T* c, T* target);
 		void RemoveChild(T* c);
 
+		inline bool HasChild(T* c) const { return Arborescent<T>::HasChild(c); }
 		inline int ChildrenSize() const { return Arborescent<T>::ChildrenSize(); }
 		inline T* GetChild(int i) { return Arborescent<T>::GetChild(i); }
 	};
@@ -245,6 +253,20 @@ inline void Engine::Node<T>::AddChild(T* c, bool onTop)
 {
 	Arborescent<T>::AddChild(c, onTop);
 	Object::AddChild((Object*)c);
+}
+
+template<class T>
+inline void Engine::Node<T>::AddChildBefore(T* c, T* target)
+{
+	Arborescent<T>::AddChildBefore(c, target);
+	Object::AddChildBefore((Object*)c, (Object*)target);
+}
+
+template<class T>
+inline void Engine::Node<T>::AddChildAfter(T* c, T* target)
+{
+	Arborescent<T>::AddChildAfter(c, target);
+	Object::AddChildAfter((Object*)c, (Object*)target);
 }
 
 template<class T>

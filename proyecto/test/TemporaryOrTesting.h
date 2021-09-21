@@ -52,44 +52,6 @@ public:
 	}
 };
 
-class TestModel : public Engine::Update, public Engine::DoubleGraphic {
-public:
-	OTN(TestModel)
-	const Model& model;
-	Model::WorkingPose wpose;
-	Model::WorkingPose wpose2;
-	Model::FinalPose fpose;
-	const char* animName;
-
-	TestModel(const char* modelfile, const char* anim) :
-		model(engine.graphics.models.Get(modelfile)),
-		animName(anim)
-	{
-		engine.updateRoot.AddChild(this);
-		engine.mainGraphic.AddChildToProgram(this, "test.pgr");
-		//engine.debugGraphic.AddChild(GetSecondGraphic());
-	}
-
-	void Step() {
-		//model.GetPose("Marche", (float)engine.time, wpose, true);
-		//model.GetPose("Cours", (float)engine.time, wpose2, true);
-		//model.MixPoses(wpose, wpose2, glm::clamp((float)glm::sin(engine.time * 0.5f) + 0.5f, 0.0f, 1.0f));
-		//model.FinalizePose(wpose, fpose);
-
-		model.GetPose(animName, (float)engine.time, wpose, true);
-		model.FinalizePose(wpose, fpose);
-	}
-
-	void Draw() {
-		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(0.1));
-		model.Draw(fpose);
-	}
-
-	void SecondDraw() {
-		model.DrawPose(wpose);
-	}
-};
-
 class TestCamera : public Engine::Update {
 public:
 	OTN(TestCamera)
@@ -120,9 +82,54 @@ public:
 	}
 };
 
-class TestCharacter : public Engine::Dynamic, public Engine::Update, public Engine::Graphic {
+class TestModel : public Engine::Update, public Engine::DoubleGraphic {
 public:
-	OTN(TestCharacter)
+	OTN(TestModel);
+	const Model& model;
+	Model::WorkingPose wpose;
+	Model::WorkingPose wpose2;
+	Model::FinalPose fpose;
+	const char* animName;
+
+	TestModel(const char* modelfile, const char* anim) :
+		model(engine.graphics.models.Get(modelfile)),
+		animName(anim)
+	{
+		engine.updateRoot.AddChild(this);
+		engine.mainGraphic.AddChildToProgram(this, "test.pgr");
+		//engine.debugGraphic.AddChild(GetSecondGraphic());
+	}
+
+	void Step() {
+		//model.GetPose("Marche", (float)engine.time, wpose, true);
+		//model.GetPose("Cours", (float)engine.time, wpose2, true);
+		//model.MixPoses(wpose, wpose2, glm::clamp((float)glm::sin(engine.time * 0.5f) + 0.5f, 0.0f, 1.0f));
+		//model.FinalizePose(wpose, fpose);
+
+		model.GetPose(animName, (float)engine.time, wpose, true);
+		model.FinalizePose(wpose, fpose);
+	}
+
+	void Draw() {
+		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", glm::mat4(0.13));
+		model.Draw(fpose);
+	}
+
+	void SecondDraw() {
+		model.DrawPose(wpose);
+	}
+};
+
+class TestCharacter : public Engine::Dynamic, public Engine::Update, public Engine::DoubleGraphic {
+public:
+	OTN(TestCharacter);
+	IMPLEMENT_EXPOSE {
+		EXPOSE_VALUE(speed);
+		EXPOSE_VALUE(modelscale);
+	}
+	float speed = 5.0f;
+	float modelscale = 0.13f;
+
 	btCapsuleShape* shape;
 	btMotionState* motion;
 	btRigidBody* body;
@@ -130,7 +137,13 @@ public:
 	bool grounded;
 	glm::vec3 groundContact;
 
-	TestCharacter() {
+	const Model& model;
+	Model::WorkingPose wpose;
+	Model::FinalPose fpose;
+
+	TestCharacter(const char* modelfile) :
+		model(engine.graphics.models.Get(modelfile))
+	{
 		grounded = false;
 
 		btTransform t;
@@ -149,7 +162,8 @@ public:
 
 		engine.dynamicRoot.AddChild(this);
 		engine.updateRoot.AddChild(this);
-		engine.debugGraphic.AddChild(this);
+		engine.debugGraphic.AddChild(GetSecondGraphic());
+		engine.mainGraphic.AddChildToProgram(this, "test.pgr");
 	}
 
 	void Collision(Dynamic* other, btPersistentManifold& manifold) {
@@ -164,7 +178,7 @@ public:
 	}
 
 	void Tick() {
-		float scl = al_key_down(&Engine::Input::keyboardState, ALLEGRO_KEY_SPACE) ? 5.0 : 0.0f;
+		float scl = al_key_down(&Engine::Input::keyboardState, ALLEGRO_KEY_SPACE) ? speed : 0.0f;
 		EditorCamera& camera = engine.Access<TestCamera*>()->camera;
 		body->setLinearVelocity(btVector3(cos(camera.horAngle) * scl, -sin(camera.horAngle) * scl, grounded ? 0.0f : body->getLinearVelocity().z()));
 		body->setGravity(btVector3(0.0f, 0.0f, grounded ? 0.0f : -10.0f));
@@ -174,13 +188,23 @@ public:
 	void Step() {
 		grounded = false;
 
-		const btVector3& pos = body->getCenterOfMassTransform().getOrigin();
-
+		model.GetPose("walk", (float)engine.time, wpose, true);
+		model.FinalizePose(wpose, fpose);
 		//engine.graphics.pointLights[2][0] = glm::vec4(pos.x(), pos.y(), pos.z(), 1.5f + sinf(engine.time));
 		//engine.graphics.pointLights[2][1] = glm::vec4(0.7f, 0.7f, 0.7f, 0.0f);
 	}
 
 	void Draw() {
+		const btVector3& pos = body->getCenterOfMassTransform().getOrigin();
+
+		glm::mat4 mat(1.0f);
+		mat = glm::translate(mat, glm::vec3(pos.x(), pos.y(), pos.z() - shape->getHalfHeight() - shape->getRadius()));
+		mat = glm::scale(mat, glm::vec3(modelscale, modelscale, modelscale));
+		engine.graphics.programs.GetCurrent()->SetUniform("trWorld", mat);
+		model.Draw(fpose);
+	}
+
+	void SecondDraw() {
 		btTransform tr = body->getCenterOfMassTransform();
 		glm::mat4 mat(1.0);
 		tr.getOpenGLMatrix(&mat[0].x);

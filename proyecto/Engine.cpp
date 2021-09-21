@@ -446,6 +446,19 @@ void Engine::ShowGui() {
 				ImGui::MenuItem("Demo", nullptr, &win_demo);
 				ImGui::MenuItem("Scene", nullptr, &win_scene);
 
+				bool hasDebugChild = defaultGraphicTarget.HasChild(&debugGraphic);
+				bool debugDraw = hasDebugChild;
+				ImGui::MenuItem("Debug draw", nullptr, &debugDraw);
+				
+				if (debugDraw != hasDebugChild) {
+					if (debugDraw) {
+						defaultGraphicTarget.AddChildAfter(&debugGraphic, &mainGraphic);
+					}
+					else {
+						defaultGraphicTarget.RemoveChild(&debugGraphic);
+					}
+				}
+
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
@@ -623,6 +636,10 @@ Engine::OverlayGraphic::OverlayGraphic()
 
 void Engine::OverlayGraphic::Draw()
 {
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, (double)al_get_display_width(engine.display), (double)al_get_display_height(engine.display), 0, 1, -1);

@@ -26,7 +26,7 @@ void main()
 		trBone  += bones[boneids[3]] * weights[3];
 	}
 
-	mat4 boneWorld = trBone * trWorld;
+	mat4 boneWorld = trWorld * trBone;
 	vec4 skinnedPos = boneWorld * vec4(pos, 1.0);
 
 	io_pos = skinnedPos.xyz;
