@@ -126,9 +126,11 @@ public:
 	IMPLEMENT_EXPOSE {
 		EXPOSE_VALUE(speed);
 		EXPOSE_VALUE(modelscale);
+		EXPOSE_VALUE(walkrunblend);
 	}
 	float speed = 5.0f;
 	float modelscale = 0.13f;
+	float walkrunblend = 0.0f;
 
 	btCapsuleShape* shape;
 	btMotionState* motion;
@@ -139,6 +141,7 @@ public:
 
 	const Model& model;
 	Model::WorkingPose wpose;
+	Model::WorkingPose wpose2;
 	Model::FinalPose fpose;
 
 	TestCharacter(const char* modelfile) :
@@ -188,7 +191,10 @@ public:
 	void Step() {
 		grounded = false;
 
-		model.GetPose("walk", (float)engine.time, wpose, true);
+		float looptime = fmodf((float)engine.time, 3.0f) / 3.0f;
+		model.GetPose("walk", looptime * model.GetAnimDuration("walk"), wpose);
+		model.GetPose("run", looptime * model.GetAnimDuration("run"), wpose2);
+		model.MixPoses(wpose, wpose2, walkrunblend);
 		model.FinalizePose(wpose, fpose);
 		//engine.graphics.pointLights[2][0] = glm::vec4(pos.x(), pos.y(), pos.z(), 1.5f + sinf(engine.time));
 		//engine.graphics.pointLights[2][1] = glm::vec4(0.7f, 0.7f, 0.7f, 0.0f);

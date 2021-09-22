@@ -93,7 +93,8 @@ public:
 	void DrawSkeleton() const;
 	void DrawPose(const WorkingPose& debugPose) const;
 
-	bool GetPose(std::string animName, float t, WorkingPose& pose, bool loop = true) const;
+	bool GetPose(const std::string& animName, float t, WorkingPose& pose, bool loop = true) const;
+	float GetAnimDuration(const std::string& animName) const;
 	static void FinalizePose(const WorkingPose& in, FinalPose& out);
 	static void MixPoses(WorkingPose& inout, const WorkingPose& to, float f);
 
@@ -106,6 +107,7 @@ private:
 	Bone& FindOrAddBone(const aiScene* scene, std::string boneName, int& boneId);
 	Bone* FindBone(std::string boneName, int& boneId);
 	Skeleton* FindSkeleton(std::string skelName);
+	const Animation* FindAnimation(const std::string& animName, const Skeleton** skeleton = nullptr) const;
 
 	void GenerateVBOS();
 };

@@ -395,6 +395,21 @@ Model::Skeleton * Model::FindSkeleton(std::string skelName)
 	return 0;
 }
 
+const Model::Animation* Model::FindAnimation(const std::string& animName, const Skeleton** skeleton) const
+{
+	for (int i = 0; i < skeletons.size(); ++i) {
+		for (int j = 0; j < skeletons[i].animations.size(); ++j) {
+			if (skeletons[i].animations[j].name == animName) {
+				if (skeleton) {
+					*skeleton = &skeletons[i];
+				}
+				return &skeletons[i].animations[j];
+			}
+		}
+	}
+	return nullptr;
+}
+
 void Model::GenerateVBOS()
 {
 	for (int i = 0; i < meshes.size(); ++i) {
@@ -689,20 +704,10 @@ void RecursiveGetGlobalPose(Model::FinalPose& fpose, const Model::WorkingPose& w
 	}
 }
 
-bool Model::GetPose(std::string animName, float t, Model::WorkingPose& pose, bool loop) const
+bool Model::GetPose(const std::string& animName, float t, Model::WorkingPose& pose, bool loop) const
 {
 	// first find anim
-	const Animation* anim = 0;
-	for (int i = 0; i < skeletons.size(); ++i) {
-		for (int j = 0; j < skeletons[i].animations.size(); ++j) {
-			if (skeletons[i].animations[j].name == animName) {
-				anim = &skeletons[i].animations[j];
-				pose.skeleton = &skeletons[i];
-				break;
-			}
-		}
-		if (anim) { break; }
-	}
+	const Animation* anim = FindAnimation(animName, &pose.skeleton);
 
 	if (anim) {
 		if (loop) {
@@ -743,6 +748,14 @@ bool Model::GetPose(std::string animName, float t, Model::WorkingPose& pose, boo
 	}
 
 	return false;
+}
+
+float Model::GetAnimDuration(const std::string& animName) const {
+	const Animation* anim = FindAnimation(animName);
+	if (anim) {
+		return anim->duration;
+	}
+	return 0.0f;
 }
 
 void Model::FinalizePose(const WorkingPose& in, FinalPose& out)
