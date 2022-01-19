@@ -92,10 +92,10 @@ int main()
         windowTest.AddForDisplacement(&subwindow, &subwindow);
 
         Button buttonTest;
-        buttonTest += glm::ivec2(175, 175);
+        buttonTest += glm::ivec2(40, 40);
         buttonTest.resize(35, 35);
 
-        windowTest.AddForDisplacement(&buttonTest, &buttonTest);
+        subwindow.AddForDisplacement(&buttonTest, &buttonTest);
 
         TextRect tr(font, family);
         tr.SetText("Hello World!");

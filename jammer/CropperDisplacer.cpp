@@ -1,5 +1,5 @@
 #include "CropperDisplacer.h"
-#include "Rect.h"
+#include "DefaultColors.h"
 
 CropperDisplacer::CropperDisplacer() : cropping(nullptr)
 {
@@ -56,12 +56,25 @@ bool CropperDisplacer::Event(ALLEGRO_EVENT& event)
 
 void CropperDisplacer::Draw()
 {
+	if (cropping) {
+		glm::ivec2 cropsize;
+		al_get_clipping_rectangle(&previousCropping.tl.x, &previousCropping.tl.y, &cropsize.x, &cropsize.y);
+		previousCropping.resize(cropsize);
+		Rect newCrop(*cropping);
+		newCrop.transform(engine.graphics.CurrentOverlayTransform());
+		newCrop.cropFrom(previousCropping);
+
+		//al_reset_clipping_rectangle();
+		//engine.graphics.PushOverlayTransform();
+		//engine.graphics.IdentityOverlayTransform();
+		//newCrop.draw(green, 1);
+		//engine.graphics.PopOverlayTransform();
+
+		al_set_clipping_rectangle(newCrop.tl.x, newCrop.tl.y, newCrop.w(), newCrop.h());
+	}
+
 	engine.graphics.PushOverlayTransform();
 	engine.graphics.TranslateOverlayTransform(GetDisplaceOffset());
-	
-	if (cropping) {
-		al_set_clipping_rectangle(cropping->tl.x, cropping->tl.y, cropping->w(), cropping->h());
-	}
 }
 
 void CropperDisplacer::PostDraw()
@@ -69,6 +82,6 @@ void CropperDisplacer::PostDraw()
 	engine.graphics.PopOverlayTransform();
 
 	if (cropping) {
-		al_reset_clipping_rectangle();
+		al_set_clipping_rectangle(previousCropping.tl.x, previousCropping.tl.y, previousCropping.w(), previousCropping.h());
 	}
 }

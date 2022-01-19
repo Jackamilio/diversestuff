@@ -34,6 +34,7 @@ public:
 
 	void PushOverlayTransform();
 	void PopOverlayTransform();
+	void IdentityOverlayTransform();
 	void TranslateOverlayTransform(const glm::ivec2& offset);
 	inline ALLEGRO_TRANSFORM& CurrentOverlayTransform() { return overlayTransforms.top(); }
 

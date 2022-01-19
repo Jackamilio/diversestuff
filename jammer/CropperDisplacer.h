@@ -3,12 +3,13 @@
 
 #include "Engine.h"
 #include <stack>
-
-class Rect;
+#include "Rect.h"
 
 class CropperDisplacer : public Engine::Input, public Engine::Graphic {
 protected:
 	Rect* cropping;
+	Rect previousCropping;
+
 public:
 	CropperDisplacer();
 

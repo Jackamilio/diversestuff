@@ -88,6 +88,26 @@ public:
 	inline void draw_filled_rounded(float rx, float ry, ALLEGRO_COLOR color) {
 		al_draw_filled_rounded_rectangle(tl.x, tl.y, br.x, br.y, rx, ry, color);
 	}
+
+	void cropFrom(const Rect& other) {
+		tl.x = max(tl.x, other.tl.x);
+		tl.y = max(tl.y, other.tl.y);
+		br.x = min(br.x, other.br.x);
+		br.y = min(br.y, other.br.y);
+	}
+
+	void transform(const ALLEGRO_TRANSFORM& transform) {
+		float ftlx = tl.x;
+		float ftly = tl.y;
+		float fbrx = br.x;
+		float fbry = br.y;
+		al_transform_coordinates(&transform, &ftlx, &ftly);
+		al_transform_coordinates(&transform, &fbrx, &fbry);
+		tl.x = ftlx;
+		tl.y = ftly;
+		br.x = fbrx;
+		br.y = fbry;
+	}
 };
 
 

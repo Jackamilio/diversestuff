@@ -50,6 +50,12 @@ void GraphicContext::PopOverlayTransform()
 	al_use_transform(&CurrentOverlayTransform());
 }
 
+void GraphicContext::IdentityOverlayTransform()
+{
+	al_identity_transform(&CurrentOverlayTransform());
+	al_use_transform(&CurrentOverlayTransform());
+}
+
 void GraphicContext::TranslateOverlayTransform(const glm::ivec2& offset)
 {
 	al_translate_transform(&CurrentOverlayTransform(), offset.x, offset.y);
