@@ -5,10 +5,15 @@
 #include "TextureManager.h"
 #include "ModelManager.h"
 #include <glm/glm.hpp>
+#include <stack>
 
 #define MAX_LIGHTS 8
 
 class GraphicContext {
+private:
+	std::stack<ALLEGRO_TRANSFORM> overlayTransforms;
+	void InitOverlayTransforms();
+
 public:
 	TextureManager textures;
 	ProgramManager programs;
@@ -26,6 +31,11 @@ public:
 	void Clear();
 
 	void SetCommonUniforms();
+
+	void PushOverlayTransform();
+	void PopOverlayTransform();
+	void TranslateOverlayTransform(const glm::ivec2& offset);
+	inline ALLEGRO_TRANSFORM& CurrentOverlayTransform() { return overlayTransforms.top(); }
 
 private:
 

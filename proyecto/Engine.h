@@ -93,10 +93,12 @@ public:
 	class Update : public Node<Update> {
 	public:
 		virtual void Step() = 0;
+		virtual void PostStep() {}
 	};
 	class Graphic : public Node<Graphic> {
 	public:
 		virtual void Draw() = 0;
+		virtual void PostDraw() {}
 	};
 
 	// root node classes
@@ -198,6 +200,11 @@ public:
 		inline Engine::Graphic* GetThirdGraphic() { return (Engine::Graphic*)&thg; }
 		virtual void ThirdDraw() = 0;
 	};
+
+	// Recursive functions made public if the user wants to bypass them then reuse it
+	static bool RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event);
+	static void RecursiveUpdate(Engine::Update* update);
+	static void RecursiveGraphic(Engine::Graphic* graphic);
 
 	// engine node instances
 	InputRoot inputRoot;

@@ -18,4 +18,9 @@ bool linePlaneIntersection(const glm::vec3& plane_center, const glm::vec3& plane
 bool pointInTriangle(const glm::vec3& point, const glm::vec3& t1, const glm::vec3& t2, const glm::vec3& t3);
 bool lineTriangleIntersection(const glm::vec3& t1, const glm::vec3& t2, const glm::vec3& t3, const glm::vec3& line_origin, const glm::vec3& line_direction, bool lineasray, glm::vec3* res = 0);
 
+template<class T>
+inline bool valueInside(T value, T left, T right) {
+	return left <= value && value < right;
+}
+
 #endif//___MATH_UTILS_H___

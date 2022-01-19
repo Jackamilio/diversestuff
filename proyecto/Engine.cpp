@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include "imgui_impl_allegro5.h"
 #include "Scene.h"
+#include "DefaultColors.h"
 
 namespace DearImguiIntegration {
 	void Init(ALLEGRO_DISPLAY* display) {
@@ -152,6 +153,8 @@ bool Engine::Init()
 		return true;
 	}
 
+	InitDefaultColors();
+
 	if (!al_install_system(ALLEGRO_VERSION_INT, nullptr)) {
 		fprintf(stderr, "failed to initialize allegro!\n");
 		return false;
@@ -227,7 +230,7 @@ bool Engine::Init()
 	return true;
 }
 
-bool RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event) {
+bool Engine::RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event) {
 	if (!input->Event(event)) {
 		for (int i = 0; i < input->ChildrenSize(); ++i) {
 			if (RecursiveInput(input->GetChild(i), event)) {
@@ -239,18 +242,20 @@ bool RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event) {
 	return true;
 }
 
-void RecursiveUpdate(Engine::Update* update) {
+void Engine::RecursiveUpdate(Engine::Update* update) {
 	update->Step();
 	for (int i = 0; i < update->ChildrenSize(); ++i) {
 		RecursiveUpdate(update->GetChild(i));
 	}
+	update->PostStep();
 }
 
-void RecursiveGraphic(Engine::Graphic* graphic) {
+void Engine::RecursiveGraphic(Engine::Graphic* graphic) {
 	graphic->Draw();
 	for (int i = 0; i < graphic->ChildrenSize(); ++i) {
 		RecursiveGraphic(graphic->GetChild(i));
 	}
+	graphic->PostDraw();
 }
 
 bool Engine::OneLoop()

@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{8b4d04b5-f9de-4c2b-a654-e1913cadf468}</ProjectGuid>
-    <RootNamespace>test</RootNamespace>
+    <ProjectGuid>{def224d9-57b0-4565-a903-264d7efa9b18}</ProjectGuid>
+    <RootNamespace>jammer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -78,18 +78,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>..\;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
-    <Allegro_AddonFont>true</Allegro_AddonFont>
-    <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
-    <Allegro_AddonTTF>true</Allegro_AddonTTF>
+    <ExternalIncludePath>..\proyecto\;$(ExternalIncludePath)</ExternalIncludePath>
     <Allegro_AddonImage>true</Allegro_AddonImage>
+    <Allegro_AddonTTF>true</Allegro_AddonTTF>
+    <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
     <Allegro_AddonDialog>true</Allegro_AddonDialog>
+    <Allegro_AddonFont>true</Allegro_AddonFont>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <ExternalIncludePath>..\;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -129,7 +126,6 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -146,35 +142,49 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>proyecto.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ProjectReference Include="..\proyecto\proyecto.vcxproj">
+      <Project>{5130049c-13cb-4557-a567-2bf8b21cefd8}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\proyecto.vcxproj">
-      <Project>{5130049c-13cb-4557-a567-2bf8b21cefd8}</Project>
-    </ProjectReference>
+    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="CropperDisplacer.cpp" />
+    <ClCompile Include="DraggableManager.cpp" />
+    <ClCompile Include="jammer.cpp" />
+    <ClCompile Include="Draggable.cpp" />
+    <ClCompile Include="TextRect.cpp" />
+    <ClCompile Include="TextRectFamily.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TemporaryOrTesting.h" />
+    <ClInclude Include="Button.h" />
+    <ClInclude Include="CropperDisplacer.h" />
+    <ClInclude Include="Draggable.h" />
+    <ClInclude Include="DraggableManager.h" />
+    <ClInclude Include="guimaster.h" />
+    <ClInclude Include="Rect.h" />
+    <ClInclude Include="TextRect.h" />
+    <ClInclude Include="TextRectFamily.h" />
+    <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\glm.0.9.9.800\build\native\glm.targets" Condition="Exists('..\packages\glm.0.9.9.800\build\native\glm.targets')" />
-    <Import Project="..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets" Condition="Exists('..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" />
-    <Import Project="..\packages\Allegro.5.2.7.1\build\native\Allegro.targets" Condition="Exists('..\packages\Allegro.5.2.7.1\build\native\Allegro.targets')" />
+    <Import Project="..\proyecto\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets" Condition="Exists('..\proyecto\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" />
+    <Import Project="..\proyecto\packages\Allegro.5.2.7.1\build\native\Allegro.targets" Condition="Exists('..\proyecto\packages\Allegro.5.2.7.1\build\native\Allegro.targets')" />
+    <Import Project="..\proyecto\packages\glm.0.9.9.800\build\native\glm.targets" Condition="Exists('..\proyecto\packages\glm.0.9.9.800\build\native\glm.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>Ce projet fait référence à des packages NuGet qui sont manquants sur cet ordinateur. Utilisez l'option de restauration des packages NuGet pour les télécharger. Pour plus d'informations, consultez http://go.microsoft.com/fwlink/?LinkID=322105. Le fichier manquant est : {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\glm.0.9.9.800\build\native\glm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glm.0.9.9.800\build\native\glm.targets'))" />
-    <Error Condition="!Exists('..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets'))" />
-    <Error Condition="!Exists('..\packages\Allegro.5.2.7.1\build\native\Allegro.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Allegro.5.2.7.1\build\native\Allegro.targets'))" />
+    <Error Condition="!Exists('..\proyecto\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\proyecto\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets'))" />
+    <Error Condition="!Exists('..\proyecto\packages\Allegro.5.2.7.1\build\native\Allegro.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\proyecto\packages\Allegro.5.2.7.1\build\native\Allegro.targets'))" />
+    <Error Condition="!Exists('..\proyecto\packages\glm.0.9.9.800\build\native\glm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\proyecto\packages\glm.0.9.9.800\build\native\glm.targets'))" />
   </Target>
 </Project>
