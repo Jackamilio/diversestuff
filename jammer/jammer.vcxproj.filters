@@ -30,7 +30,7 @@
     <ClCompile Include="Draggable.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="DraggableManager.cpp">
+    <ClCompile Include="GuiMaster.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Window.cpp">
@@ -44,9 +44,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="guimaster.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Rect.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -59,7 +56,7 @@
     <ClInclude Include="Draggable.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="DraggableManager.h">
+    <ClInclude Include="GuiMaster.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Window.h">

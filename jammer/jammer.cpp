@@ -11,6 +11,8 @@
 #include "Window.h"
 #include "Button.h"
 
+#include "GuiMaster.h"
+
 ALLEGRO_FONT* fetchDefaultFont()
 {
     static ALLEGRO_FONT* defaultFont = NULL;
@@ -74,28 +76,35 @@ int main()
     al_init_primitives_addon();
 
     if (engine.Init()) {
-        ALLEGRO_FONT* font = fetchDefaultFont();
+        GuiMaster::Init();
 
-        TextRectFamily family;
+        GuiMaster& gui = GuiMaster::Get();
 
-        Window windowTest(family);
-        windowTest.tl = glm::ivec2(40, 40);
+        Engine::Engine::Get().inputRoot.AddChild(&gui);
+        Engine::Engine::Get().overlayGraphic.AddChild(&gui);
+
+        Window windowTest;
+        windowTest.tl = glm::ivec2(200, 40);
         windowTest.resize(400, 300);
 
-        engine.inputRoot.AddChild(&windowTest);
-        engine.overlayGraphic.AddChild(&windowTest);
+        gui.AddChild(&windowTest);
 
-        Window subwindow(family);
-        subwindow.tl = glm::ivec2(20, 20);
+        Window subwindow;
+        subwindow.tl = glm::ivec2(150, 20);
         subwindow.resize(200, 150);
 
-        windowTest.AddForDisplacement(&subwindow, &subwindow);
+        windowTest.AddChild(&subwindow);
 
         Button buttonTest;
         buttonTest += glm::ivec2(40, 40);
         buttonTest.resize(35, 35);
 
-        subwindow.AddForDisplacement(&buttonTest, &buttonTest);
+        subwindow.AddChild(&buttonTest);
+
+        TextRectFamily family;
+        gui.AddChild(&family);
+        
+        ALLEGRO_FONT* font = fetchDefaultFont();
 
         TextRect tr(font, family);
         tr.SetText("Hello World!");
@@ -119,5 +128,7 @@ int main()
         family.promoteToBigBro(&tr4);
 
         while (engine.OneLoop()) {}
+
+        GuiMaster::End();
     }
 }

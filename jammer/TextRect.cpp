@@ -62,9 +62,13 @@ TextRect* TextRect::getLastBro() {
 }
 
 TextRect::TextRect(ALLEGRO_FONT* font, TextRectFamily& fam) :
-    Draggable(fam), family(fam),
-    bigBro(nullptr), littleBro(nullptr),
-    pos{}, text(nullptr), font(font) {}
+    family(fam),
+    bigBro(nullptr),
+    littleBro(nullptr),
+    pos{},
+    text(nullptr),
+    font(font)
+{}
 
 void TextRect::SetText(const char* t) {
     text = t;
@@ -178,9 +182,9 @@ bool TextRect::hitCheck(const glm::ivec2& opos) const
     return isInside(opos - pos);
 }
 
-bool TextRect::Event(ALLEGRO_EVENT& event) {
-    if (!Draggable::Event(event)) {
-        return littleBro ? littleBro->Event(event) : false;
+Engine::InputStatus TextRect::Event(ALLEGRO_EVENT& event) {
+    if (Draggable::Event(event) == Engine::InputStatus::ignored) {
+        return littleBro ? littleBro->Event(event) : Engine::InputStatus::ignored;
     }
-    return true;
+    return Engine::InputStatus::grabbed;
 }

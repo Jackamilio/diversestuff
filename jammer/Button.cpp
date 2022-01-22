@@ -9,13 +9,13 @@ Button::~Button()
 {
 }
 
-bool Button::Event(ALLEGRO_EVENT& event)
+Engine::InputStatus Button::Event(ALLEGRO_EVENT& event)
 {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN || event.type == ALLEGRO_EVENT_MOUSE_AXES || event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
         if (isInside(glm::ivec2(event.mouse.x, event.mouse.y))) {
             if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
                 state = State::Clicked;
-                return true;
+                return Engine::InputStatus::grabbed;
             }
             else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
                 state = State::Hovered;
@@ -36,7 +36,7 @@ bool Button::Event(ALLEGRO_EVENT& event)
             }
         }
     }
-    return false;
+    return Engine::InputStatus::ignored;
 }
 
 void Button::Draw()

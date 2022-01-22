@@ -2,9 +2,9 @@
 #define __BUTTON_H__
 
 #include "Rect.h"
-#include "Engine.h"
+#include "GuiMaster.h"
 
-class Button : public Rect, public Engine::Input, public Engine::Graphic {
+class Button : public Rect, public GuiElement {
 public:
 	enum class State {
 		Neutral,
@@ -13,7 +13,6 @@ public:
 		NeutralHeld
 	};
 
-	OTN(Button);
 private:
 
 	State state;
@@ -23,8 +22,8 @@ public:
 	Button();
 	~Button();
 
-	bool Event(ALLEGRO_EVENT& event);
-	void Draw();
+	virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
+	virtual void Draw();
 };
 
 #endif //__BUTTON_H__

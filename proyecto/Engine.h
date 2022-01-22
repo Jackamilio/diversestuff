@@ -78,11 +78,16 @@ public:
 		inline int ChildrenSize() const { return Arborescent<T>::ChildrenSize(); }
 		inline T* GetChild(int i) { return Arborescent<T>::GetChild(i); }
 	};
+	enum class InputStatus {
+		grabbed,
+		ignored,
+		notforchildren
+	};
 	class Input : public Node<Input> {
 	public:
 		static ALLEGRO_MOUSE_STATE mouseState;
 		static ALLEGRO_KEYBOARD_STATE keyboardState;
-		virtual bool Event(ALLEGRO_EVENT& event) = 0;
+		virtual InputStatus Event(ALLEGRO_EVENT& event) = 0;
 	};
 	class Dynamic : public Node<Dynamic> {
 	public:
@@ -104,22 +109,22 @@ public:
 	// root node classes
 	class InputRoot : public Input {
 	public:
-		OTN(InputRoot)
-		bool Event(ALLEGRO_EVENT& event);
+		OTN(InputRoot);
+		InputStatus Event(ALLEGRO_EVENT& event);
 	};
 	class DynamicRoot : public Dynamic {
 	public:
-		OTN(DynamicRoot)
+		OTN(DynamicRoot);
 		void Tick();
 	};
 	class UpdateRoot : public Update {
 	public:
-		OTN(UpdateRoot)
+		OTN(UpdateRoot);
 		void Step();
 	};
 	class GraphicRoot : public Graphic {
 	public:
-		OTN(GraphicRoot)
+		OTN(GraphicRoot);
 		void Draw();
 	};
 	class GraphicTarget : public Graphic {
@@ -202,7 +207,7 @@ public:
 	};
 
 	// Recursive functions made public if the user wants to bypass them then reuse it
-	static bool RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event);
+	static bool RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event, bool doroot = true);
 	static void RecursiveUpdate(Engine::Update* update);
 	static void RecursiveGraphic(Engine::Graphic* graphic);
 

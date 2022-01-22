@@ -41,7 +41,7 @@ public:
 
 	MapEditor(MapData& mapdt, Graphic* toUpdate);
 
-	bool Event(ALLEGRO_EVENT& event);
+	Engine::InputStatus Event(ALLEGRO_EVENT& event);
 
 	void Draw();
 	void SecondDraw();

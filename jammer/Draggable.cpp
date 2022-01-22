@@ -1,28 +1,24 @@
 #include "Draggable.h"
 
-Draggable::Draggable(DraggableManager& dgblmgr) : manager(dgblmgr)
-{
-}
-
-bool Draggable::Event(ALLEGRO_EVENT& event) {
+Engine::InputStatus Draggable::Event(ALLEGRO_EVENT& event) {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
         if (hitCheck(glm::ivec2(event.mouse.x, event.mouse.y))) {
             Grabbed();
-            manager.Track(this);
-            return true;
+            gui.Track(this);
+            return Engine::InputStatus::grabbed;
         }
     }
     else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
-        if (manager.IsTracked(this)) {
+        if (gui.IsTracked(this)) {
             Dropped();
-            manager.UnTrack(this);
-            return true;
+            gui.UnTrack(this);
+            return Engine::InputStatus::grabbed;
         }
     }
-    else if (event.type == ALLEGRO_EVENT_MOUSE_AXES && manager.IsTracked(this)) {
+    else if (event.type == ALLEGRO_EVENT_MOUSE_AXES && gui.IsTracked(this)) {
         Dragged(glm::ivec2(event.mouse.dx, event.mouse.dy));
 
-        return true;
+        return Engine::InputStatus::grabbed;
     }
-    return false;
+    return Engine::InputStatus::ignored;
 }

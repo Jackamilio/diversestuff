@@ -42,13 +42,13 @@ MapEditor::MapEditor(MapData& mapdt, Graphic* toUpdate) :
 	lerper.target = &levelCamera.focuspoint;
 }
 
-bool MapEditor::Event(ALLEGRO_EVENT& event) {
+Engine::InputStatus MapEditor::Event(ALLEGRO_EVENT& event) {
 	if (!showGui) {
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN && event.keyboard.keycode == ALLEGRO_KEY_F2) {
 			showGui = true;
 			tilemode = false; // always start without tilemode?
 		}
-		return showGui;
+		return showGui ? Engine::InputStatus::grabbed : Engine::InputStatus::ignored;
 	}
 	else {
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
@@ -107,7 +107,7 @@ bool MapEditor::Event(ALLEGRO_EVENT& event) {
 			else if (gridUp.z == -1.0f) {
 				gridUp = glm::vec3(1.0f, 0.0f, 0.0f);
 			}
-			return true;
+			return Engine::InputStatus::grabbed;
 		}
 		
 		/*static double lastclick = 0.0;
@@ -125,7 +125,7 @@ bool MapEditor::Event(ALLEGRO_EVENT& event) {
 		if (rightheld || middleclick) {
 			HandlePick( rightheld, middleclick);
 		}
-		return true; // block any event regardless
+		return Engine::InputStatus::grabbed; // block any event regardless
 	}
 }
 

@@ -9,13 +9,11 @@
 
 using std::vector;
 
-class TextRectFamily : public Engine::Input, public Engine::Graphic, public DraggableManager {
+class TextRectFamily : public GuiElement {
 private:
     vector<TextRect*> bigBrothers;
 
 public:
-    OTN(TextRectFamily);
-
     class Iterator {
     private:
         vector<TextRect*>::iterator bigBroIt, endBroIt;
@@ -34,10 +32,9 @@ public:
     Iterator end();
 
     TextRectFamily();
-    ~TextRectFamily();
 
     void Draw();
-    bool Event(ALLEGRO_EVENT& event);
+    Engine::InputStatus Event(ALLEGRO_EVENT& event);
 
     void promoteToBigBro(TextRect* tr);
     void demoteFromBigBro(TextRect* tr);

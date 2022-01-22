@@ -155,7 +155,7 @@
   <ItemGroup>
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="CropperDisplacer.cpp" />
-    <ClCompile Include="DraggableManager.cpp" />
+    <ClCompile Include="GuiMaster.cpp" />
     <ClCompile Include="jammer.cpp" />
     <ClCompile Include="Draggable.cpp" />
     <ClCompile Include="TextRect.cpp" />
@@ -166,8 +166,7 @@
     <ClInclude Include="Button.h" />
     <ClInclude Include="CropperDisplacer.h" />
     <ClInclude Include="Draggable.h" />
-    <ClInclude Include="DraggableManager.h" />
-    <ClInclude Include="guimaster.h" />
+    <ClInclude Include="GuiMaster.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="TextRect.h" />
     <ClInclude Include="TextRectFamily.h" />

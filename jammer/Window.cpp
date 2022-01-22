@@ -1,8 +1,9 @@
 #include "Window.h"
 #include "DefaultColors.h"
 
-Window::Window(DraggableManager& manager) :
-	Draggable(manager), headBandHeight(20) {
+Window::Window() :
+	headBandHeight(20)
+{
 	cropping = this;
 }
 
@@ -32,12 +33,12 @@ void Window::PostDraw() {
 	draw(white, 1);
 }
 
-bool Window::Event(ALLEGRO_EVENT& event)
+Engine::InputStatus Window::Event(ALLEGRO_EVENT& event)
 {
-	if (!Draggable::Event(event)) {
+	if (Draggable::Event(event) == Engine::InputStatus::ignored) {
 		return CropperDisplacer::Event(event);
 	}
-	return false;
+	return Engine::InputStatus::ignored;
 }
 
 void Window::Dragged(const glm::ivec2& delta)

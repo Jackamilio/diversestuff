@@ -33,18 +33,10 @@ TextRectFamily::Iterator TextRectFamily::end() {
 
 TextRectFamily::TextRectFamily() : shadowBroPos()
 {
-    engine.overlayGraphic.AddChild(this);
-    engine.inputRoot.AddChild(this);
-}
-
-TextRectFamily::~TextRectFamily()
-{
-    engine.overlayGraphic.RemoveChild(this);
-    engine.inputRoot.RemoveChild(this);
 }
 
 void TextRectFamily::Draw() {
-    TextRect* draggedBro = dynamic_cast<TextRect*>(trackedDraggable);
+    TextRect* draggedBro = dynamic_cast<TextRect*>(gui.CurrentDraggable());
 
     // shadow
     if (shadowBro && draggedBro)
@@ -66,13 +58,13 @@ void TextRectFamily::Draw() {
     }
 }
 
-bool TextRectFamily::Event(ALLEGRO_EVENT& event) {
+Engine::InputStatus TextRectFamily::Event(ALLEGRO_EVENT& event) {
     for (auto bro : bigBrothers) {
-        if (bro->Event(event)) {
-            return true;
+        if (bro->Event(event) == Engine::InputStatus::grabbed) {
+            return Engine::InputStatus::grabbed;
         }
     }
-    return false;
+    return Engine::InputStatus::ignored;
 }
 
 void TextRectFamily::promoteToBigBro(TextRect* tr) {

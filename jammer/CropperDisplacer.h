@@ -1,11 +1,11 @@
 #ifndef __CROPPER_DISPLACER_H__
 #define __CROPPER_DISPLACER_H__
 
-#include "Engine.h"
 #include <stack>
 #include "Rect.h"
+#include "GuiMaster.h"
 
-class CropperDisplacer : public Engine::Input, public Engine::Graphic {
+class CropperDisplacer : virtual public GuiElement {
 protected:
 	Rect* cropping;
 	Rect previousCropping;
@@ -13,12 +13,9 @@ protected:
 public:
 	CropperDisplacer();
 
-	void AddForDisplacement(Engine::Input* inputobj, Engine::Graphic* graphicobj);
-	void RemoveFromDisplacement(Engine::Input* inputobj, Engine::Graphic* graphicobj);
-
-	bool Event(ALLEGRO_EVENT& event);
-	void Draw();
-	void PostDraw();
+	virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
+	virtual void Draw();
+	virtual void PostDraw();
 
 	virtual glm::ivec2 GetDisplaceOffset() const = 0;
 };

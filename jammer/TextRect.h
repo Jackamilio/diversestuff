@@ -3,14 +3,12 @@
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
-#include "Engine.h"
 #include "Rect.h"
 #include "Draggable.h"
 
 class TextRectFamily;
 
-class TextRect : public Engine::Graphic, public Rect, public Draggable {
-    OTN(TextRect)
+class TextRect : public Rect, public Draggable {
     friend class TextRectFamily;
 private:
     TextRectFamily& family;
@@ -18,11 +16,9 @@ private:
     TextRect* littleBro;
 
     bool isUnderBro(const TextRect& bro);
-
     bool isAboveBro(const TextRect& bro);
 
     void placeUnderBigBroRecursive();
-
     void placeAboveLittleBroRecursive();
 
     TextRect* getLastBro();
@@ -48,7 +44,7 @@ public:
 
     virtual bool hitCheck(const glm::ivec2& pos) const;
 
-    virtual bool Event(ALLEGRO_EVENT& event);
+    virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
 };
 
 #endif //__TEXT_RECT_H__
