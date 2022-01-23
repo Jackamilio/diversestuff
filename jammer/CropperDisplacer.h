@@ -18,6 +18,11 @@ public:
 	virtual void PostDraw();
 
 	virtual glm::ivec2 GetDisplaceOffset() const = 0;
+	glm::ivec2 CalculateGlobalDIsplaceOffset() const;
+
+	inline bool InsideCropping(const glm::ivec2& pos) const {
+		return cropping && cropping->isInside(pos);
+	}
 };
 
 #endif //__CROPPER_DISPLACER_H__

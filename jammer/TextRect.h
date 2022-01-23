@@ -7,6 +7,7 @@
 #include "Draggable.h"
 
 class TextRectFamily;
+class TextRectDropLocation;
 
 class TextRect : public Rect, public Draggable {
     friend class TextRectFamily;
@@ -26,6 +27,7 @@ public:
     glm::ivec2 pos;
     const char* text;
     ALLEGRO_FONT* font;
+    TextRectDropLocation* currentDropLocation;
 
     TextRect(ALLEGRO_FONT* font, TextRectFamily& fam);
 
@@ -44,7 +46,7 @@ public:
 
     virtual bool hitCheck(const glm::ivec2& pos) const;
 
-    virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
+    //virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
 };
 
 #endif //__TEXT_RECT_H__

@@ -35,7 +35,7 @@ TextRectFamily::TextRectFamily() : shadowBroPos()
 {
 }
 
-void TextRectFamily::Draw() {
+/*void TextRectFamily::Draw() {
     TextRect* draggedBro = dynamic_cast<TextRect*>(gui.CurrentDraggable());
 
     // shadow
@@ -46,26 +46,26 @@ void TextRectFamily::Draw() {
     }
 
     // big bros
-    for (TextRect* bro : bigBrothers) {
-        if (bro != draggedBro) {
-            bro->Draw();
-        }
-    }
+    //for (TextRect* bro : bigBrothers) {
+    //    if (bro != draggedBro) {
+    //        bro->Draw();
+    //    }
+    //}
 
     // dragged bro above others
     if (draggedBro) {
         draggedBro->Draw();
     }
-}
+}*/
 
-Engine::InputStatus TextRectFamily::Event(ALLEGRO_EVENT& event) {
-    for (auto bro : bigBrothers) {
-        if (bro->Event(event) == Engine::InputStatus::grabbed) {
-            return Engine::InputStatus::grabbed;
-        }
-    }
-    return Engine::InputStatus::ignored;
-}
+//Engine::InputStatus TextRectFamily::Event(ALLEGRO_EVENT& event) {
+//    for (auto bro : bigBrothers) {
+//        if (bro->Event(event) == Engine::InputStatus::grabbed) {
+//            return Engine::InputStatus::grabbed;
+//        }
+//    }
+//    return Engine::InputStatus::ignored;
+//}
 
 void TextRectFamily::promoteToBigBro(TextRect* tr) {
     bigBrothers.push_back(tr);
@@ -75,5 +75,55 @@ void TextRectFamily::demoteFromBigBro(TextRect* tr) {
     auto it = std::find(bigBrothers.begin(), bigBrothers.end(), tr);
     if (it != bigBrothers.end()) {
         bigBrothers.erase(it);
+    }
+}
+
+void TextRectFamily::addDropLocation(TextRectDropLocation* droploc)
+{
+    dropLocations.push_back(droploc);
+}
+
+TextRectDefaultDL::TextRectDefaultDL(GuiElement& dl) : droplocation(dl)
+{
+}
+
+bool TextRectDefaultDL::AcceptTextRect(TextRect* tr, const glm::ivec2& pos)
+{
+    droplocation.AddChild(tr);
+    tr->currentDropLocation = this;
+    return true;
+}
+
+void TextRectDefaultDL::RejectTextRect(TextRect* tr)
+{
+    droplocation.RemoveChild(tr);
+    tr->currentDropLocation = nullptr;
+}
+
+TextRectCPDL::TextRectCPDL(CropperDisplacer& cpdl) : droplocation(cpdl)
+{
+}
+
+bool TextRectCPDL::AcceptTextRect(TextRect* tr, const glm::ivec2& pos)
+{
+    glm::ivec2 globaloffset(droplocation.CalculateGlobalDIsplaceOffset());
+    if (droplocation.InsideCropping(pos - globaloffset + droplocation.GetDisplaceOffset())) {
+        if (tr->currentDropLocation != this) {
+            tr->pos -= globaloffset;
+            droplocation.AddChild(tr);
+            tr->currentDropLocation = this;
+        }
+        return true;
+    }
+    return false;
+}
+
+void TextRectCPDL::RejectTextRect(TextRect* tr)
+{
+    if (tr->currentDropLocation == this) {
+        glm::ivec2 globaloffset(droplocation.CalculateGlobalDIsplaceOffset());
+        tr->pos += globaloffset;
+        droplocation.RemoveChild(tr);
+        tr->currentDropLocation = this;
     }
 }

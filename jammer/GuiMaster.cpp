@@ -66,7 +66,7 @@ void GuiMaster::RecursiveDraw(GuiElement* guielem, bool doroot)
 		guielem->Draw();
 	}
 
-	for (int i = 0; i < guielem->ChildrenSize(); ++i) {
+	for (int i = guielem->ChildrenSize() - 1; i >= 0 ; --i) {
 		RecursiveDraw(guielem->GetChild(i));
 	}
 
@@ -119,7 +119,15 @@ void GuiMaster::TranslateTransform(const glm::ivec2& offset)
 	al_use_transform(&CurrentTransform());
 }
 
-GuiElement::GuiElement() : gui(GuiMaster::Get())
+void GuiElement::ReplaceParentFromChild(GuiElement* child)
+{
+	if (child->parent && parent != this) {
+		child->parent->RemoveChild(child);
+	}
+	child->parent = this;
+}
+
+GuiElement::GuiElement() : parent(nullptr), gui(GuiMaster::Get())
 {
 }
 
@@ -129,4 +137,14 @@ GuiElement::~GuiElement()
 
 void GuiElement::PutOnTop()
 {
+	if (Parent()) {
+		Parent()->AddChild(this, true);
+	}
+}
+
+void GuiElement::PutAtBottom()
+{
+	if (Parent()) {
+		Parent()->AddChild(this, false);
+	}
 }

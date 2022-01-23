@@ -67,7 +67,8 @@ TextRect::TextRect(ALLEGRO_FONT* font, TextRectFamily& fam) :
     littleBro(nullptr),
     pos{},
     text(nullptr),
-    font(font)
+    font(font),
+    currentDropLocation(nullptr)
 {}
 
 void TextRect::SetText(const char* t) {
@@ -81,12 +82,18 @@ void TextRect::SetText(const char* t) {
 }
 
 void TextRect::Draw() {
+    // shadow
+    if (family.shadowBro && gui.CurrentDraggable() == this)
+    {
+        Rect shadowRect = *this + family.shadowBroPos;
+        shadowRect.draw_filled(lightgrey);
+    }
+
+    // self
     Rect rect = *this + pos;
     rect.draw_filled(black);
     rect.draw(grey, 1);
     al_draw_text(font, white, pos.x, pos.y, 0, text);
-
-    if (littleBro) littleBro->Draw();
 }
 
 void TextRect::Grabbed() {
@@ -95,6 +102,13 @@ void TextRect::Grabbed() {
         bigBro = nullptr;
         family.promoteToBigBro(this);
     }
+
+    if (currentDropLocation) {
+        currentDropLocation->RejectTextRect(this);
+    }
+    glm::ivec2 mousepos(Engine::Input::mouseState.x, Engine::Input::mouseState.y);
+    family.dropLocations[0]->AcceptTextRect(this, mousepos);
+    PutOnTop();
 }
 
 void TextRect::Dropped() {
@@ -127,6 +141,15 @@ void TextRect::Dropped() {
             break;
         }
     }
+
+    glm::ivec2 mousepos(Engine::Input::mouseState.x, Engine::Input::mouseState.y);
+    for (int i = family.dropLocations.size() - 1; i >= 0; --i) {
+        if (family.dropLocations[i]->AcceptTextRect(this, mousepos)) {
+            break;
+        }
+    }
+
+    PutAtBottom();
 }
 
 void TextRect::Dragged(const glm::ivec2& delta) {
@@ -182,9 +205,9 @@ bool TextRect::hitCheck(const glm::ivec2& opos) const
     return isInside(opos - pos);
 }
 
-Engine::InputStatus TextRect::Event(ALLEGRO_EVENT& event) {
-    if (Draggable::Event(event) == Engine::InputStatus::ignored) {
-        return littleBro ? littleBro->Event(event) : Engine::InputStatus::ignored;
-    }
-    return Engine::InputStatus::grabbed;
-}
+//Engine::InputStatus TextRect::Event(ALLEGRO_EVENT& event) {
+//    if (Draggable::Event(event) == Engine::InputStatus::ignored) {
+//        return littleBro ? littleBro->Event(event) : Engine::InputStatus::ignored;
+//    }
+//    return Engine::InputStatus::grabbed;
+//}

@@ -83,6 +83,8 @@ int main()
         Engine::Engine::Get().inputRoot.AddChild(&gui);
         Engine::Engine::Get().overlayGraphic.AddChild(&gui);
 
+        TextRectFamily family;
+
         Window windowTest;
         windowTest.tl = glm::ivec2(200, 40);
         windowTest.resize(400, 300);
@@ -100,9 +102,6 @@ int main()
         buttonTest.resize(35, 35);
 
         subwindow.AddChild(&buttonTest);
-
-        TextRectFamily family;
-        gui.AddChild(&family);
         
         ALLEGRO_FONT* font = fetchDefaultFont();
 
@@ -122,10 +121,23 @@ int main()
         tr4.SetText("Hai caramba, holà que tal");
         tr4.Place(30, 150);
 
+        gui.AddChild(&tr);
+        gui.AddChild(&tr2);
+        gui.AddChild(&tr3);
+        gui.AddChild(&tr4);
+
         family.promoteToBigBro(&tr);
         family.promoteToBigBro(&tr2);
         family.promoteToBigBro(&tr3);
         family.promoteToBigBro(&tr4);
+
+        TextRectDefaultDL trddl(gui);
+        TextRectCPDL trcpdl(windowTest);
+        TextRectCPDL subtrcpdl(subwindow);
+
+        family.addDropLocation(&trddl);
+        family.addDropLocation(&trcpdl);
+        family.addDropLocation(&subtrcpdl);
 
         while (engine.OneLoop()) {}
 
