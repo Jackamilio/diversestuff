@@ -51,6 +51,16 @@ bool Window::hitCheck(const glm::ivec2& pos) const
 	return HeadBandRect().isInside(pos);
 }
 
+void Window::SetPos(const glm::ivec2& tsl)
+{
+	*this += tsl - topleft;
+}
+
+glm::ivec2 Window::GetPos() const
+{
+	return topleft;
+}
+
 glm::ivec2 Window::GetDisplaceOffset() const
 {
 	return topleft;

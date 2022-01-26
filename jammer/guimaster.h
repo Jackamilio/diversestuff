@@ -1,60 +1,14 @@
 #ifndef __GUI_MASTER_H__
 #define __GUI_MASTER_H__
 
-#include "Arborescent.h"
-#include "Engine.h"
 #include <stack>
+#include <unordered_map>
+#include <vector>
+#include <typeindex>
+#include "CropperDisplacer.h"
+#include "DropLocation.h"
 
-class GuiMaster;
-
-class GuiElement : virtual public Arborescent<GuiElement> {
-private:
-	GuiElement* parent;
-
-	using Arborescent<GuiElement>::AddChild;
-	using Arborescent<GuiElement>::AddChildBefore;
-	using Arborescent<GuiElement>::AddChildAfter;
-	using Arborescent<GuiElement>::RemoveChild;
-
-	void ReplaceParentFromChild(GuiElement* child);
-
-public:
-	GuiMaster& gui;
-
-	inline void AddChild(GuiElement* c, bool onTop = false) {
-		ReplaceParentFromChild(c);
-		Arborescent<GuiElement>::AddChild(c, onTop);
-	}
-	inline void AddChildBefore(GuiElement* c, GuiElement* target) {
-		ReplaceParentFromChild(c);
-		Arborescent<GuiElement>::AddChildBefore(c, target);
-	}
-	inline void AddChildAfter(GuiElement* c, GuiElement* target) {
-		ReplaceParentFromChild(c);
-		Arborescent<GuiElement>::AddChildAfter(c, target);
-	}
-	inline void RemoveChild(GuiElement* c) {
-		c->parent = nullptr;
-		Arborescent<GuiElement>::RemoveChild(c);
-	}
-
-	inline GuiElement* Parent() { return parent; }
-	inline const GuiElement* Parent() const { return parent; }
-
-	GuiElement();
-	virtual ~GuiElement(); // To be safe
-
-	void PutOnTop();
-	void PutAtBottom();
-
-	virtual Engine::InputStatus Event(ALLEGRO_EVENT& event) { return Engine::InputStatus::ignored; }
-	virtual void Draw() {}
-	virtual void PostDraw() {}
-};
-
-class Draggable;
-
-class GuiMaster : virtual public GuiElement, public Engine::Input, public Engine::Graphic {
+class GuiMaster : virtual public CropperDisplacer, public Engine::Input, public Engine::Graphic {
 private:
 	using Engine::Input::AddChild;
 	using Engine::Input::AddChildBefore;
@@ -76,6 +30,9 @@ private:
 	void InitTransforms();
 
 	Draggable* trackedDraggable;
+	glm::ivec2 draggableGrabbedPosition;
+	std::unordered_map<std::type_index, std::vector<DropLocationBase*>> dropLocations;
+	DropLocationBase* draggableGrabbedLocation;
 
 public:
 	OTN(GuiMaster);
@@ -94,9 +51,12 @@ public:
 	static GuiMaster& Get();
 
 	GuiMaster();
+	~GuiMaster();
 
 	Engine::InputStatus Event(ALLEGRO_EVENT& event);
 	void Draw();
+
+	virtual glm::ivec2 GetDisplaceOffset() const;
 
 	//
 	static bool RecursiveEvent(GuiElement* guielem, ALLEGRO_EVENT& event, bool doroot = true);
@@ -109,6 +69,13 @@ public:
 	bool IsTracked(Draggable* dgbl) const;
 	inline bool IsDragging() const { return trackedDraggable != nullptr; }
 	inline Draggable* CurrentDraggable() { return trackedDraggable; }
+	inline glm::ivec2& CurDraggableGrabbedPosition() { return draggableGrabbedPosition; }
+	DropLocationBase*& CurDraggableGrabbedLocation() { return draggableGrabbedLocation; }
+
+	template<class T>
+	void AddDropLocation(CropperDisplacer& cpdl);
+	template<class T>
+	std::vector<DropLocation<T>*>& GetDropLocations();
 
 	// transformations
 	void PushTransform();
@@ -117,5 +84,19 @@ public:
 	void TranslateTransform(const glm::ivec2& offset);
 	inline ALLEGRO_TRANSFORM& CurrentTransform() { return transforms.top(); }
 };
+
+template<class T>
+inline void GuiMaster::AddDropLocation(CropperDisplacer& cpdl)
+{
+	std::type_index id = std::type_index(typeid(T));
+	dropLocations[id].push_back(new DropLocation<T>(cpdl));
+}
+
+template<class T>
+inline std::vector<DropLocation<T>*>& GuiMaster::GetDropLocations()
+{
+	std::type_index id = std::type_index(typeid(T));
+	return *reinterpret_cast<std::vector<DropLocation<T>*>*>(&dropLocations[id]);
+}
 
 #endif //__DRAGGABLE_MANAGER_H__

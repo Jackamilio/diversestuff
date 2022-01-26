@@ -2,33 +2,29 @@
 #include "TextRectFamily.h"
 #include "DefaultColors.h"
 #include <allegro5/allegro_primitives.h>
+#include "GuiMaster.h"
 
 const int dropL = 20;
 const int dropR = 30;
 
-bool TextRect::isUnderBro(const TextRect& bro) {
-    //const int broleft = bro.x + bro.ox;
-    //const int broDown = bro.y + bro.h;
-    //return valueInside(x + ox, broleft - dropL, broleft + dropR) && valueInside(y + oy, broDown, broDown + bro.h - bro.oy);
-    const glm::ivec2 brobl = bro.pos + bro.bl();
+bool TextRect::isUnderBro(const TextRect& bro, bool checkAdjusted) {
+    const glm::ivec2 brobl = (checkAdjusted ? bro.GetAdjustedPos() : bro.pos) + bro.bl();
     const glm::ivec2 mytl = pos + tl;
     return valueInside(mytl.x, brobl.x - dropL, brobl.x + dropR) && valueInside(mytl.y, brobl.y, brobl.y + bro.h());
 }
 
-bool TextRect::isAboveBro(const TextRect& bro) {
-    //const int broleft = bro.x + bro.ox;
-    //const int broUp = bro.y;
-    //return valueInside(x + ox, broleft - dropL, broleft + dropR) && valueInside(y + h, broUp - bro.h + bro.oy, broUp);
-    const int broleft = bro.pos.x + bro.tl.x;
-    const int broUp = bro.pos.y;
+bool TextRect::isAboveBro(const TextRect& bro, bool checkAdjusted) {
+    //const int broleft = bro.pos.x + bro.tl.x;
+    //const int broUp = bro.pos.y;
+    glm::ivec2 bap = checkAdjusted ? bro.GetAdjustedPos() : bro.pos;
+    const int broleft = bap.x + bro.tl.x;
+    const int broUp = bap.y;
     const glm::ivec2 mybl = pos + bl();
     return valueInside(mybl.x, broleft - dropL, broleft + dropR) && valueInside(mybl.y, broUp - bro.h(), broUp);
 }
 
 void TextRect::placeUnderBigBroRecursive() {
     if (bigBro) {
-        //x = bigBro->x + bigBro->ox - ox;
-        //y = bigBro->y + bigBro->h - oy;
         pos = bigBro->pos;
         pos.x += bigBro->tl.x - tl.x;
         pos.y += bigBro->h();
@@ -41,8 +37,6 @@ void TextRect::placeUnderBigBroRecursive() {
 
 void TextRect::placeAboveLittleBroRecursive() {
     if (littleBro) {
-        //x = littleBro->x + littleBro->ox - ox;
-        //y = littleBro->y - h + oy;
         pos = littleBro->pos;
         pos.x += littleBro->tl.x - tl.x;
         pos.y -= littleBro->h();
@@ -67,8 +61,7 @@ TextRect::TextRect(ALLEGRO_FONT* font, TextRectFamily& fam) :
     littleBro(nullptr),
     pos{},
     text(nullptr),
-    font(font),
-    currentDropLocation(nullptr)
+    font(font)
 {}
 
 void TextRect::SetText(const char* t) {
@@ -96,26 +89,35 @@ void TextRect::Draw() {
     al_draw_text(font, white, pos.x, pos.y, 0, text);
 }
 
-void TextRect::Grabbed() {
+void TextRect::GrabbedBis() {
     if (bigBro) {
         bigBro->littleBro = nullptr;
         bigBro = nullptr;
         family.promoteToBigBro(this);
     }
 
-    if (currentDropLocation) {
-        currentDropLocation->RejectTextRect(this);
+    TextRect* curBro = this->littleBro;
+    while (curBro) {
+        if (curBro->currentDropLocation) {
+            curBro->currentDropLocation->Reject(curBro);
+        }
+        gui.AddChild(curBro);
+        curBro->PutOnTop();
+        curBro = curBro->littleBro;
     }
-    glm::ivec2 mousepos(Engine::Input::mouseState.x, Engine::Input::mouseState.y);
-    family.dropLocations[0]->AcceptTextRect(this, mousepos);
-    PutOnTop();
 }
 
-void TextRect::Dropped() {
-    TextRect* lastBro = getLastBro();
+void TextRect::DroppedBis() {
+    // accept all little bros into the new drop location
+    TextRect* curLilBro = this->littleBro;
+    while (curLilBro) {
+        currentDropLocation->ForceAccept(curLilBro);
+        curLilBro = curLilBro->littleBro;
+    }
 
+    TextRect* lastBro = getLastBro();
     for (auto bro : family) {
-        if (bro != this && isUnderBro(*bro)) {
+        if (bro != this && currentDropLocation == bro->currentDropLocation && isUnderBro(*bro)) {
             bigBro = bro;
             if (bro->littleBro) {
                 lastBro->littleBro = bro->littleBro;
@@ -128,7 +130,7 @@ void TextRect::Dropped() {
             family.demoteFromBigBro(this);
             break;
         }
-        else if (bro != lastBro && !bro->bigBro && lastBro->isAboveBro(*bro)) {
+        else if (bro != lastBro && bro->currentDropLocation == lastBro->currentDropLocation && !bro->bigBro && lastBro->isAboveBro(*bro)) {
             lastBro->littleBro = bro;
             if (bro->bigBro) {
                 bro->bigBro->littleBro = this;
@@ -142,31 +144,36 @@ void TextRect::Dropped() {
         }
     }
 
-    glm::ivec2 mousepos(Engine::Input::mouseState.x, Engine::Input::mouseState.y);
-    for (int i = family.dropLocations.size() - 1; i >= 0; --i) {
-        if (family.dropLocations[i]->AcceptTextRect(this, mousepos)) {
-            break;
-        }
-    }
-
     PutAtBottom();
 }
 
+void TextRect::DroppedBack()
+{
+    if (littleBro) {
+        glm::ivec2 savepos = pos;
+        pos += currentDropLocation->GetGlobalOffset();
+        littleBro->placeUnderBigBroRecursive();
+        pos = savepos;
+    }
+}
+
 void TextRect::Dragged(const glm::ivec2& delta) {
+    // move the bloc of bros
     TextRect* curBro = this;
     do {
         curBro->pos += delta;
         curBro = curBro->littleBro;
     } while (curBro);
 
-    if (family.displacedBro && family.displacedBro->bigBro && !isUnderBro(*family.displacedBro->bigBro)) {
+    // displacement preview before dropping
+    if (family.displacedBro && family.displacedBro->bigBro && !isUnderBro(*family.displacedBro->bigBro, true)) {
         family.displacedBro->placeUnderBigBroRecursive();
         family.displacedBro = nullptr;
     }
 
     if (!family.displacedBro) {
         for (auto bro : family) {
-            if (bro != this && bro->littleBro && isUnderBro(*bro)) {
+            if (bro != this && bro->littleBro && isUnderBro(*bro, true)) {
                 family.displacedBro = bro->littleBro;
                 bro->littleBro->pos.y += br.y - tl.y;
                 if (bro->littleBro->littleBro) {
@@ -176,23 +183,20 @@ void TextRect::Dragged(const glm::ivec2& delta) {
         }
     }
 
+    // shadow position of the drop
     family.shadowBro = false;
     TextRect* lastBro = getLastBro();
     for (auto bro : family) {
-        if (bro != this && isUnderBro(*bro)) {
+        if (bro != this && isUnderBro(*bro, true)) {
             family.shadowBro = true;
-            //family.shadowBroX = bro->x + bro->ox - ox;
-            //family.shadowBroY = bro->y + bro->h - oy;
-            family.shadowBroPos = bro->pos;
+            family.shadowBroPos = bro->GetAdjustedPos();
             family.shadowBroPos.x += bro->tl.x - tl.x;
             family.shadowBroPos.y += bro->br.y - tl.y;
             break;
         }
-        else if (bro != lastBro && !bro->bigBro && lastBro->isAboveBro(*bro)) {
+        else if (bro != lastBro && !bro->bigBro && lastBro->isAboveBro(*bro, true)) {
             family.shadowBro = true;
-            //family.shadowBroX = bro->x + bro->ox - lastBro->ox;
-            //family.shadowBroY = bro->y - lastBro->h + lastBro->oy;
-            family.shadowBroPos = bro->pos;
+            family.shadowBroPos = bro->GetAdjustedPos();
             family.shadowBroPos.x += bro->tl.x - lastBro->tl.x;
             family.shadowBroPos.y -= lastBro->h();
             break;
@@ -205,9 +209,22 @@ bool TextRect::hitCheck(const glm::ivec2& opos) const
     return isInside(opos - pos);
 }
 
-//Engine::InputStatus TextRect::Event(ALLEGRO_EVENT& event) {
-//    if (Draggable::Event(event) == Engine::InputStatus::ignored) {
-//        return littleBro ? littleBro->Event(event) : Engine::InputStatus::ignored;
-//    }
-//    return Engine::InputStatus::grabbed;
-//}
+void TextRect::SetPos(const glm::ivec2& tsl)
+{
+    pos = tsl;
+}
+
+glm::ivec2 TextRect::GetPos() const
+{
+    return pos;
+}
+
+glm::ivec2 TextRect::GetAdjustedPos() const
+{
+    if (currentDropLocation) {
+        return currentDropLocation->GetGlobalOffset() + pos;
+    }
+    else {
+        return pos;
+    }
+}

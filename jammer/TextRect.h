@@ -4,20 +4,19 @@
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
 #include "Rect.h"
-#include "Draggable.h"
+#include "Droppable.h"
 
 class TextRectFamily;
-class TextRectDropLocation;
 
-class TextRect : public Rect, public Draggable {
+class TextRect : public Rect, public Droppable<TextRect> {
     friend class TextRectFamily;
 private:
     TextRectFamily& family;
     TextRect* bigBro;
     TextRect* littleBro;
 
-    bool isUnderBro(const TextRect& bro);
-    bool isAboveBro(const TextRect& bro);
+    bool isUnderBro(const TextRect& bro, bool checkAdjusted = false);
+    bool isAboveBro(const TextRect& bro, bool checkAdjusted = false);
 
     void placeUnderBigBroRecursive();
     void placeAboveLittleBroRecursive();
@@ -27,7 +26,6 @@ public:
     glm::ivec2 pos;
     const char* text;
     ALLEGRO_FONT* font;
-    TextRectDropLocation* currentDropLocation;
 
     TextRect(ALLEGRO_FONT* font, TextRectFamily& fam);
 
@@ -40,13 +38,16 @@ public:
 
     void Draw();
 
-    virtual void Grabbed();
-    virtual void Dropped();
+    virtual void GrabbedBis();
+    virtual void DroppedBis();
+    virtual void DroppedBack();
     virtual void Dragged(const glm::ivec2& delta);
 
     virtual bool hitCheck(const glm::ivec2& pos) const;
+    virtual void SetPos(const glm::ivec2& tsl);
+    virtual glm::ivec2 GetPos() const;
 
-    //virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
+    glm::ivec2 GetAdjustedPos() const;
 };
 
 #endif //__TEXT_RECT_H__

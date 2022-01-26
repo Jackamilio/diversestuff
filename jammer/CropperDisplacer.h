@@ -3,7 +3,7 @@
 
 #include <stack>
 #include "Rect.h"
-#include "GuiMaster.h"
+#include "GuiElement.h"
 
 class CropperDisplacer : virtual public GuiElement {
 protected:
@@ -18,10 +18,13 @@ public:
 	virtual void PostDraw();
 
 	virtual glm::ivec2 GetDisplaceOffset() const = 0;
-	glm::ivec2 CalculateGlobalDIsplaceOffset() const;
+	glm::ivec2 CalculateGlobalDisplaceOffset() const;
 
 	inline bool InsideCropping(const glm::ivec2& pos) const {
-		return cropping && cropping->isInside(pos);
+		if (cropping) {
+			return cropping->isInside(pos);
+		}
+		return true;
 	}
 };
 

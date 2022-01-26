@@ -10,7 +10,7 @@
 
 using std::vector;
 
-class TextRectDropLocation {
+/*class TextRectDropLocation {
 public:
     virtual bool AcceptTextRect(TextRect* tr, const glm::ivec2& pos) = 0;
     virtual void RejectTextRect(TextRect* tr) = 0;
@@ -32,7 +32,7 @@ public:
     TextRectCPDL(CropperDisplacer& cpdl);
     bool AcceptTextRect(TextRect* tr, const glm::ivec2& pos);
     void RejectTextRect(TextRect* tr);
-};
+};*/
 
 class TextRectFamily //: public GuiElement
 {
@@ -65,8 +65,8 @@ public:
     void promoteToBigBro(TextRect* tr);
     void demoteFromBigBro(TextRect* tr);
 
-    vector<TextRectDropLocation*> dropLocations;
-    void addDropLocation(TextRectDropLocation* droploc);
+    //vector<TextRectDropLocation*> dropLocations;
+    //void addDropLocation(TextRectDropLocation* droploc);
 
     TextRect* displacedBro = nullptr;
 

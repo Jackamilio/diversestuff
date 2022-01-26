@@ -91,18 +91,22 @@ int main()
 
         gui.AddChild(&windowTest);
 
-        Window subwindow;
-        subwindow.tl = glm::ivec2(150, 20);
-        subwindow.resize(200, 150);
+        Window windowTest2;
+        windowTest2.tl = glm::ivec2(150, 20);
+        windowTest2.resize(200, 150);
 
-        windowTest.AddChild(&subwindow);
+        gui.AddChild(&windowTest2);
 
         Button buttonTest;
         buttonTest += glm::ivec2(40, 40);
         buttonTest.resize(35, 35);
 
-        subwindow.AddChild(&buttonTest);
+        windowTest2.AddChild(&buttonTest);
         
+        //gui.AddDropLocation<TextRect>(gui);
+        gui.AddDropLocation<TextRect>(windowTest);
+        gui.AddDropLocation<TextRect>(windowTest2);
+
         ALLEGRO_FONT* font = fetchDefaultFont();
 
         TextRect tr(font, family);
@@ -121,23 +125,16 @@ int main()
         tr4.SetText("Hai caramba, holà que tal");
         tr4.Place(30, 150);
 
-        gui.AddChild(&tr);
-        gui.AddChild(&tr2);
-        gui.AddChild(&tr3);
-        gui.AddChild(&tr4);
+        // todo: have a special add for droppables
+        windowTest.AddChild(&tr);
+        windowTest.AddChild(&tr2);
+        windowTest.AddChild(&tr3);
+        windowTest.AddChild(&tr4);
 
         family.promoteToBigBro(&tr);
         family.promoteToBigBro(&tr2);
         family.promoteToBigBro(&tr3);
         family.promoteToBigBro(&tr4);
-
-        TextRectDefaultDL trddl(gui);
-        TextRectCPDL trcpdl(windowTest);
-        TextRectCPDL subtrcpdl(subwindow);
-
-        family.addDropLocation(&trddl);
-        family.addDropLocation(&trcpdl);
-        family.addDropLocation(&subtrcpdl);
 
         while (engine.OneLoop()) {}
 

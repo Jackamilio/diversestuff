@@ -78,7 +78,7 @@ void TextRectFamily::demoteFromBigBro(TextRect* tr) {
     }
 }
 
-void TextRectFamily::addDropLocation(TextRectDropLocation* droploc)
+/*void TextRectFamily::addDropLocation(TextRectDropLocation* droploc)
 {
     dropLocations.push_back(droploc);
 }
@@ -124,6 +124,6 @@ void TextRectCPDL::RejectTextRect(TextRect* tr)
         glm::ivec2 globaloffset(droplocation.CalculateGlobalDIsplaceOffset());
         tr->pos += globaloffset;
         droplocation.RemoveChild(tr);
-        tr->currentDropLocation = this;
+        tr->currentDropLocation = nullptr;
     }
-}
+}*/

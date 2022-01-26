@@ -1,5 +1,6 @@
 #include "CropperDisplacer.h"
 #include "DefaultColors.h"
+#include "GuiMaster.h"
 
 CropperDisplacer::CropperDisplacer() : cropping(nullptr)
 {
@@ -78,7 +79,7 @@ void CropperDisplacer::PostDraw()
 	}
 }
 
-glm::ivec2 CropperDisplacer::CalculateGlobalDIsplaceOffset() const
+glm::ivec2 CropperDisplacer::CalculateGlobalDisplaceOffset() const
 {
 	glm::ivec2 offset(GetDisplaceOffset());
 

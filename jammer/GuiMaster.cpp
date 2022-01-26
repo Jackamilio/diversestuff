@@ -28,9 +28,18 @@ GuiMaster& GuiMaster::Get()
 	return *singleton;
 }
 
-GuiMaster::GuiMaster() : trackedDraggable(nullptr)
+GuiMaster::GuiMaster() : trackedDraggable(nullptr), draggableGrabbedPosition{}, draggableGrabbedLocation(nullptr)
 {
 	InitTransforms();
+}
+
+GuiMaster::~GuiMaster()
+{
+	for (auto dlv : dropLocations) {
+		for (auto dl : dlv.second) {
+			delete dl;
+		}
+	}
 }
 
 Engine::InputStatus GuiMaster::Event(ALLEGRO_EVENT& event)
@@ -41,6 +50,11 @@ Engine::InputStatus GuiMaster::Event(ALLEGRO_EVENT& event)
 void GuiMaster::Draw()
 {
 	RecursiveDraw(this, false);
+}
+
+glm::ivec2 GuiMaster::GetDisplaceOffset() const
+{
+	return glm::ivec2();
 }
 
 bool GuiMaster::RecursiveEvent(GuiElement* guielem, ALLEGRO_EVENT& event, bool doroot)
@@ -117,34 +131,4 @@ void GuiMaster::TranslateTransform(const glm::ivec2& offset)
 {
 	al_translate_transform(&CurrentTransform(), offset.x, offset.y);
 	al_use_transform(&CurrentTransform());
-}
-
-void GuiElement::ReplaceParentFromChild(GuiElement* child)
-{
-	if (child->parent && parent != this) {
-		child->parent->RemoveChild(child);
-	}
-	child->parent = this;
-}
-
-GuiElement::GuiElement() : parent(nullptr), gui(GuiMaster::Get())
-{
-}
-
-GuiElement::~GuiElement()
-{
-}
-
-void GuiElement::PutOnTop()
-{
-	if (Parent()) {
-		Parent()->AddChild(this, true);
-	}
-}
-
-void GuiElement::PutAtBottom()
-{
-	if (Parent()) {
-		Parent()->AddChild(this, false);
-	}
 }
