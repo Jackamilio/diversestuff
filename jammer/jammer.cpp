@@ -125,11 +125,10 @@ int main()
         tr4.SetText("Hai caramba, holà que tal");
         tr4.Place(30, 150);
 
-        // todo: have a special add for droppables
-        windowTest.AddChild(&tr);
-        windowTest.AddChild(&tr2);
-        windowTest.AddChild(&tr3);
-        windowTest.AddChild(&tr4);
+        tr.SetDropLocation(windowTest);
+        tr2.SetDropLocation(windowTest);
+        tr3.SetDropLocation(windowTest);
+        tr4.SetDropLocation(windowTest);
 
         family.promoteToBigBro(&tr);
         family.promoteToBigBro(&tr2);

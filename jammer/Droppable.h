@@ -7,6 +7,10 @@
 
 template<class T>
 class Droppable : public Draggable {
+	friend class DropLocation<T>;
+protected:
+	DropLocation<T>* currentDropLocation;
+
 public:
 	virtual void Grabbed() final;
 	virtual void Dropped() final;
@@ -15,9 +19,9 @@ public:
 	virtual void DroppedBis() {};
 	virtual void DroppedBack() {};
 
-	DropLocation<T>* currentDropLocation;
-
 	Droppable();
+
+	void SetDropLocation(CropperDisplacer& cpdl);
 };
 
 template<class T>
@@ -67,6 +71,20 @@ inline Droppable<T>::Droppable() : currentDropLocation(nullptr)
 	assert(!dl.empty() && "Add valid drop locations before creating droppables.");
 	currentDropLocation = dl[0];
 	currentDropLocation->location.AddChild(this);
+}
+
+template<class T>
+inline void Droppable<T>::SetDropLocation(CropperDisplacer& cpdl)
+{
+	for (auto dl : gui.GetDropLocations<T>()) {
+		if (&dl->location == &cpdl) {
+			currentDropLocation = (DropLocation<T>*)(dl);
+			cpdl.AddChild(this);
+			return;
+		}
+	}
+
+	assert(false && "This is not a valid drop location.");
 }
 
 #endif //__DROPPABLE_H__
