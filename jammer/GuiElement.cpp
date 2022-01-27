@@ -30,3 +30,26 @@ void GuiElement::PutAtBottom()
 		Parent()->AddChild(this, false);
 	}
 }
+
+int GuiElement::CalculatePriority() const
+{
+	int parentpriority = 0;
+	const GuiElement* parent = Parent();
+
+	int siblingpriority = 0;
+	if (parent) {
+		for (; siblingpriority < parent->ChildrenSize(); ++siblingpriority) {
+			if (parent->GetChild(siblingpriority) == this) {
+				siblingpriority = parent->ChildrenSize() - siblingpriority;
+				break;
+			}
+		}
+	}
+
+	while (parent) {
+		++parentpriority;
+		parent = parent->Parent();
+	}
+
+	return parentpriority << 16 | siblingpriority;
+}

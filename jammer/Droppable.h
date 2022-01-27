@@ -4,6 +4,8 @@
 #include "Draggable.h"
 #include "DropLocation.h"
 #include "GuiMaster.h"
+#include <map>
+#include <utility>
 
 template<class T>
 class Droppable : public Draggable {
@@ -40,18 +42,32 @@ inline void Droppable<T>::Grabbed()
 template<class T>
 inline void Droppable<T>::Dropped()
 {
-	bool droplocfound = false;
+	// try dropping in all drop locations
 	glm::ivec2 mousepos(Engine::Input::mouseState.x, Engine::Input::mouseState.y);
-	std::vector<DropLocation<T>*>& dropLocations = gui.GetDropLocations<T>();
-	for (int i = (int)dropLocations.size() - 1; i >= 0; --i) {
-		if (dropLocations[i]->Accept(this, mousepos)) {
-			droplocfound = true;
-			break;
+
+	std::vector<DropLocation<T>*> & dropLocations = gui.GetDropLocations<T>();
+	std::map<int, std::pair<glm::ivec2, DropLocation<T>*>> foundlocations;
+
+	for (auto loc : dropLocations) {
+		// GetGlobalOffset is expensive so we store it
+		glm::ivec2 globaloffset(loc->GetGlobalOffset());
+		if (loc->location.InsideCropping(mousepos - globaloffset + loc->location.GetDisplaceOffset())) {
+			// CalculatePriority is not perfect but should suffice here
+			foundlocations[loc->location.CalculatePriority()] = std::pair<glm::ivec2, DropLocation<T>*>(globaloffset,loc);
 		}
 	}
 
+	if (!foundlocations.empty()) {
+		// this is reimplementing DropLocation<T>::Accept, but GetGlobalOffset is not called too much
+		std::pair<glm::ivec2, DropLocation<T>*>& firstfound = foundlocations.rbegin()->second;
+		if (currentDropLocation != firstfound.second) {
+			Move(-firstfound.first);
+			firstfound.second->location.AddChild(this);
+			currentDropLocation = firstfound.second;
+		}
+	}
 	// if no valid drop location found, warp back to where it was
-	if (!droplocfound) {
+	else {
 		DropLocationBase* loc = gui.CurDraggableGrabbedLocation();
 		loc = loc ? loc : (DropLocationBase*)dropLocations[0];
 		loc->location.AddChild(this);

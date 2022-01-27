@@ -103,9 +103,9 @@ int main()
 
         windowTest2.AddChild(&buttonTest);
         
-        //gui.AddDropLocation<TextRect>(gui);
-        gui.AddDropLocation<TextRect>(windowTest);
         gui.AddDropLocation<TextRect>(windowTest2);
+        gui.AddDropLocation<TextRect>(gui);
+        gui.AddDropLocation<TextRect>(windowTest);
 
         ALLEGRO_FONT* font = fetchDefaultFont();
 

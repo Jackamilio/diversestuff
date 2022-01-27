@@ -17,6 +17,7 @@ public:
 
 	inline int ChildrenSize() const { return (int)children.size(); }
 	inline T* GetChild(int i) { return children[i]; }
+	inline const T* GetChild(int i) const { return children[i]; }
 };
 
 template<class T>

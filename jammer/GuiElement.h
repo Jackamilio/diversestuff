@@ -47,6 +47,8 @@ public:
 	void PutOnTop();
 	void PutAtBottom();
 
+	int CalculatePriority() const;
+
 	virtual Engine::InputStatus Event(ALLEGRO_EVENT& event) { return Engine::InputStatus::ignored; }
 	virtual void Draw() {}
 	virtual void PostDraw() {}
