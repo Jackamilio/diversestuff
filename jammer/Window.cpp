@@ -35,10 +35,12 @@ void Window::PostDraw() {
 
 Engine::InputStatus Window::Event(ALLEGRO_EVENT& event)
 {
-	if (Draggable::Event(event) == Engine::InputStatus::ignored) {
-		return CropperDisplacer::Event(event);
+	if (CropperDisplacer::Event(event) != Engine::InputStatus::grabbed) {
+		if (Draggable::Event(event) == Engine::InputStatus::ignored) {
+			return Engine::InputStatus::ignored;
+		}
 	}
-	return Engine::InputStatus::ignored;
+	return Engine::InputStatus::notforchildren;
 }
 
 void Window::Dragged(const glm::ivec2& delta)
