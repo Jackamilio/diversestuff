@@ -5,10 +5,7 @@
 Engine::InputStatus Draggable::Event(ALLEGRO_EVENT& event) {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
         if (hitCheck(glm::ivec2(event.mouse.x, event.mouse.y))) {
-            gui.CurDraggableGrabbedPosition() = GetPos();
-            PutOnTop();
-            Grabbed();
-            gui.Track(this);
+            ForceGrab();
             return Engine::InputStatus::grabbed;
         }
     }
@@ -25,4 +22,12 @@ Engine::InputStatus Draggable::Event(ALLEGRO_EVENT& event) {
         return Engine::InputStatus::grabbed;
     }
     return Engine::InputStatus::ignored;
+}
+
+void Draggable::ForceGrab()
+{
+    gui.CurDraggableGrabbedPosition() = GetPos();
+    PutOnTop();
+    Grabbed();
+    gui.Track(this);
 }

@@ -5,8 +5,9 @@
 #include <allegro5/allegro_font.h>
 
 #include "Scene.h"
-#include "TextRect.h"
-#include "TextRectFamily.h"
+#include "Instruction.h"
+#include "InstructionFamily.h"
+#include "InstructionModel.h"
 
 #include "Window.h"
 #include "Button.h"
@@ -83,57 +84,46 @@ int main()
         Engine::Engine::Get().inputRoot.AddChild(&gui);
         Engine::Engine::Get().overlayGraphic.AddChild(&gui);
 
-        TextRectFamily family;
+        Window instructionsList;
+        instructionsList.tl = glm::ivec2(1, 20);
+        instructionsList.resize(300, 719);
 
-        Window windowTest;
-        windowTest.tl = glm::ivec2(200, 40);
-        windowTest.resize(400, 300);
+        gui.AddChild(&instructionsList);
 
-        gui.AddChild(&windowTest);
+        Window scene;
+        scene.tl = glm::ivec2(800, 100);
+        scene.resize(540, 420);
 
-        Window windowTest2;
-        windowTest2.tl = glm::ivec2(150, 20);
-        windowTest2.resize(200, 150);
-
-        gui.AddChild(&windowTest2);
-
-        Button buttonTest;
-        buttonTest += glm::ivec2(40, 40);
-        buttonTest.resize(35, 35);
-
-        windowTest2.AddChild(&buttonTest);
+        gui.AddChild(&scene);
         
-        gui.AddDropLocation<TextRect>(windowTest2);
-        gui.AddDropLocation<TextRect>(gui);
-        gui.AddDropLocation<TextRect>(windowTest);
+        gui.AddDropLocation<Instruction>(instructionsList);
+        gui.AddDropLocation<Instruction>(gui);
 
         ALLEGRO_FONT* font = fetchDefaultFont();
 
-        TextRect tr(font, family);
+        InstructionFamily family;
+
+        InstructionModel tr(font, family);
+        
         tr.SetText("Hello World!");
         tr.Place(20, 20);
 
-        TextRect tr2(font, family);
+        InstructionModel tr2(font, family);
         tr2.SetText("Hey I'm a brother.");
-        tr2.Place(50, 50);
+        tr2.Place(20, 50);
 
-        TextRect tr3(font, family);
+        InstructionModel tr3(font, family);
         tr3.SetText("Hello I'm a sibling as well!!");
-        tr3.Place(30, 100);
+        tr3.Place(20, 80);
 
-        TextRect tr4(font, family);
+        InstructionModel tr4(font, family);
         tr4.SetText("Hai caramba, holà que tal");
-        tr4.Place(30, 150);
+        tr4.Place(20, 110);
 
-        tr.SetDropLocation(windowTest);
-        tr2.SetDropLocation(windowTest);
-        tr3.SetDropLocation(windowTest);
-        tr4.SetDropLocation(windowTest);
-
-        family.promoteToBigBro(&tr);
-        family.promoteToBigBro(&tr2);
-        family.promoteToBigBro(&tr3);
-        family.promoteToBigBro(&tr4);
+        instructionsList.AddChild(&tr);
+        instructionsList.AddChild(&tr2);
+        instructionsList.AddChild(&tr3);
+        instructionsList.AddChild(&tr4);
 
         while (engine.OneLoop()) {}
 

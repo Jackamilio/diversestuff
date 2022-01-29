@@ -15,6 +15,12 @@ GuiElement::GuiElement() : parent(nullptr), gui(GuiMaster::Get())
 
 GuiElement::~GuiElement()
 {
+	if (parent) {
+		parent->RemoveChild(this);
+	}
+	for (int i = 0; i < ChildrenSize(); ++i) {
+		GetChild(i)->parent = nullptr;
+	}
 }
 
 void GuiElement::PutOnTop()

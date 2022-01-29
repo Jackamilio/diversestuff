@@ -159,10 +159,11 @@
     <ClCompile Include="Droppable.cpp" />
     <ClCompile Include="GuiElement.cpp" />
     <ClCompile Include="GuiMaster.cpp" />
+    <ClCompile Include="InstructionModel.cpp" />
     <ClCompile Include="jammer.cpp" />
     <ClCompile Include="Draggable.cpp" />
-    <ClCompile Include="TextRect.cpp" />
-    <ClCompile Include="TextRectFamily.cpp" />
+    <ClCompile Include="Instruction.cpp" />
+    <ClCompile Include="InstructionFamily.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -173,9 +174,10 @@
     <ClInclude Include="Droppable.h" />
     <ClInclude Include="GuiElement.h" />
     <ClInclude Include="GuiMaster.h" />
+    <ClInclude Include="InstructionModel.h" />
     <ClInclude Include="Rect.h" />
-    <ClInclude Include="TextRect.h" />
-    <ClInclude Include="TextRectFamily.h" />
+    <ClInclude Include="Instruction.h" />
+    <ClInclude Include="InstructionFamily.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
