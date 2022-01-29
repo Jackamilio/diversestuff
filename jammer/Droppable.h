@@ -46,20 +46,19 @@ inline void Droppable<T>::Dropped()
 	glm::ivec2 mousepos(Engine::Input::mouseState.x, Engine::Input::mouseState.y);
 
 	std::vector<DropLocation<T>*> & dropLocations = gui.GetDropLocations<T>();
-	std::map<int, std::pair<glm::ivec2, DropLocation<T>*>> foundlocations;
+	std::map<GuiElement::Lineage, std::pair<glm::ivec2, DropLocation<T>*>> foundlocations;
 
 	for (auto loc : dropLocations) {
 		// GetGlobalOffset is expensive so we store it
 		glm::ivec2 globaloffset(loc->GetGlobalOffset());
 		if (loc->location.InsideCropping(mousepos - globaloffset + loc->location.GetDisplaceOffset())) {
-			// CalculatePriority is not perfect but should suffice here
-			foundlocations[loc->location.CalculatePriority()] = std::pair<glm::ivec2, DropLocation<T>*>(globaloffset,loc);
+			foundlocations[loc->location.CompileLineage()] = std::pair<glm::ivec2, DropLocation<T>*>(globaloffset,loc);
 		}
 	}
 
 	if (!foundlocations.empty()) {
 		// this is reimplementing DropLocation<T>::Accept, but GetGlobalOffset is not called too much
-		std::pair<glm::ivec2, DropLocation<T>*>& firstfound = foundlocations.rbegin()->second;
+		std::pair<glm::ivec2, DropLocation<T>*>& firstfound = foundlocations.begin()->second;
 		if (currentDropLocation != firstfound.second) {
 			Move(-firstfound.first);
 			firstfound.second->location.AddChild(this);

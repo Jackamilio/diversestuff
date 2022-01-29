@@ -47,7 +47,13 @@ public:
 	void PutOnTop();
 	void PutAtBottom();
 
-	int CalculatePriority() const;
+	//int CalculatePriority() const;
+	//typedef std::vector<const GuiElement*> Lineage;
+	class Lineage : public std::vector<const GuiElement*> {
+	public:
+		bool operator<(const Lineage& rhs) const;
+	};
+	Lineage CompileLineage() const;
 
 	virtual Engine::InputStatus Event(ALLEGRO_EVENT& event) { return Engine::InputStatus::ignored; }
 	virtual void Draw() {}
