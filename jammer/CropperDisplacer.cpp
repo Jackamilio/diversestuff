@@ -19,7 +19,7 @@ Engine::InputStatus CropperDisplacer::Event(ALLEGRO_EVENT& event)
 
 		// deny input for children outside cropping
 		bool insidecropping = InsideCropping(glm::ivec2(event.mouse.x, event.mouse.y));
-		if (!insidecropping) {
+		if (cropping && !insidecropping) {
 			return Engine::InputStatus::notforchildren;
 		}
 
@@ -32,7 +32,7 @@ Engine::InputStatus CropperDisplacer::Event(ALLEGRO_EVENT& event)
 		bool ret = GuiMaster::RecursiveEvent(this, event, false);
 
 		// grab the button down in any case if it was inside the cropping
-		if (insidecropping && event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+		if (cropping && insidecropping && event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
 			ret = true;
 		}
 

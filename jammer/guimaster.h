@@ -38,13 +38,8 @@ public:
 	OTN(GuiMaster);
 
 	// BS compiler can't realise they can't use the other overloaded function so I have to manually tell this mf
-	inline void AddChild(GuiElement* c, bool onTop = false) { GuiElement::AddChild(c, onTop); }
-	inline void AddChildBefore(GuiElement* c, GuiElement* target) { GuiElement::AddChildBefore(c, target); }
-	inline void AddChildAfter(GuiElement* c, GuiElement* target) { GuiElement::AddChildAfter(c, target); }
+	inline void AddChild(GuiElement* c, GuiElement::Priority p = GuiElement::Priority::Default) { GuiElement::AddChild(c, p); }
 	inline void RemoveChild(GuiElement* c) { GuiElement::RemoveChild(c); }
-	inline bool HasChild(GuiElement* c) const { return Arborescent<GuiElement>::HasChild(c); }
-	inline int ChildrenSize() const { return Arborescent<GuiElement>::ChildrenSize(); }
-	inline GuiElement* GetChild(int i) { return Arborescent<GuiElement>::GetChild(i); }
 
 	static void Init();
 	static void End();

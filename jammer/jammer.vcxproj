@@ -164,6 +164,7 @@
     <ClCompile Include="Draggable.cpp" />
     <ClCompile Include="Instruction.cpp" />
     <ClCompile Include="InstructionFamily.cpp" />
+    <ClCompile Include="PureDisplacer.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +176,7 @@
     <ClInclude Include="GuiElement.h" />
     <ClInclude Include="GuiMaster.h" />
     <ClInclude Include="InstructionModel.h" />
+    <ClInclude Include="PureDisplacer.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Instruction.h" />
     <ClInclude Include="InstructionFamily.h" />

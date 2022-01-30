@@ -35,12 +35,18 @@ void Window::PostDraw() {
 
 Engine::InputStatus Window::Event(ALLEGRO_EVENT& event)
 {
-	if (CropperDisplacer::Event(event) != Engine::InputStatus::grabbed) {
-		if (Draggable::Event(event) == Engine::InputStatus::ignored) {
-			return Engine::InputStatus::ignored;
-		}
+	if (CropperDisplacer::Event(event) == Engine::InputStatus::grabbed) {
+		return Engine::InputStatus::grabbed;
+	}
+	else if (Draggable::Event(event) == Engine::InputStatus::grabbed) {
+			return Engine::InputStatus::grabbed;
 	}
 	return Engine::InputStatus::notforchildren;
+}
+
+void Window::Grabbed()
+{
+	PutOnTop();
 }
 
 void Window::Dragged(const glm::ivec2& delta)

@@ -5,7 +5,7 @@
 InstructionFamily::Iterator::Iterator(vector<Instruction*>& vec) : bigBroIt(vec.begin()), endBroIt(vec.end()), curBro(*bigBroIt) {}
 InstructionFamily::Iterator::Iterator(vector<Instruction*>& vec, int dummy) : bigBroIt(vec.end()), endBroIt(vec.end()), curBro(nullptr) {}
 
-const bool InstructionFamily::Iterator::operator !=(Iterator& r) {
+bool InstructionFamily::Iterator::operator !=(Iterator& r) const {
     return bigBroIt != r.bigBroIt || curBro != r.curBro;
 }
 

@@ -1,16 +1,89 @@
 #include "GuiElement.h"
 #include "GuiMaster.h"
 
-void GuiElement::ReplaceParentFromChild(GuiElement* child)
+GuiElement::Iterator GuiElement::begin()
 {
-	if (child->parent && parent != this) {
-		child->parent->RemoveChild(child);
+	return Iterator(children.begin(), children.end());
+}
+
+GuiElement::Iterator GuiElement::end()
+{
+	return Iterator(children.end(), children.end());
+}
+
+GuiElement::ReverseIterator GuiElement::rbegin()
+{
+	return ReverseIterator(children.rbegin(), children.rend());
+}
+
+GuiElement::ReverseIterator GuiElement::rend()
+{
+	return ReverseIterator(children.rend(), children.rend());
+}
+
+GuiElement::ConstIterator GuiElement::begin() const
+{
+	return ConstIterator(children.begin(), children.end());
+}
+
+GuiElement::ConstIterator GuiElement::end() const
+{
+	return ConstIterator(children.end(), children.end());
+}
+
+GuiElement::Iterator GuiElement::find(GuiElement* c)
+{
+	for (auto mapIt = children.begin(); mapIt != children.end(); ++mapIt) {
+		std::vector<GuiElement*>& vec = mapIt->second;
+		for (int i = 0; i < (int)vec.size(); ++i) {
+			if (vec[i] == c) {
+				return Iterator(mapIt, children.end(), i);
+			}
+		}
 	}
-	child->parent = this;
+	return end();
+}
+
+void GuiElement::AddChild(GuiElement* c, Priority p)
+{
+	// replace parent
+	if (c->parent) {
+		if (parent == this) {
+			return;
+		}
+		else {
+			c->parent->RemoveChild(c);
+		}
+	}
+	c->parent = this;
+
+	children[p].push_back(c);
+}
+
+void GuiElement::RemoveChild(GuiElement* c)
+{
+	c->parent = nullptr;
+	/*for (auto vecs : children) {
+		std::vector<GuiElement*>& vec = vecs.second;
+		for (auto it = vec.begin(); it != vec.end(); ++it) {
+			if (*it == c) {
+				vec.erase(it);
+				return;
+			}
+		}
+	}*/
+	Iterator it = find(c);
+	if (it != end()) {
+		it.mapIt->second.erase(it.mapIt->second.begin()+it.curElem);
+		if (it.mapIt->second.empty()) {
+			children.erase(it.mapIt);
+		}
+	}
 }
 
 GuiElement::GuiElement() : parent(nullptr), gui(GuiMaster::Get())
 {
+	children.clear();
 }
 
 GuiElement::~GuiElement()
@@ -18,22 +91,30 @@ GuiElement::~GuiElement()
 	if (parent) {
 		parent->RemoveChild(this);
 	}
-	for (int i = 0; i < ChildrenSize(); ++i) {
-		GetChild(i)->parent = nullptr;
+	for (auto child : *this) {
+		child->parent = nullptr;
 	}
 }
 
 void GuiElement::PutOnTop()
 {
-	if (Parent()) {
-		Parent()->AddChild(this, true);
+	if (parent) {
+		Iterator it = parent->find(this);
+		if (it != parent->end()) {
+			it.mapIt->second.erase(it.mapIt->second.begin() + it.curElem);
+			it.mapIt->second.push_back(this);
+		}
 	}
 }
 
 void GuiElement::PutAtBottom()
 {
-	if (Parent()) {
-		Parent()->AddChild(this, false);
+	if (parent) {
+		Iterator it = parent->find(this);
+		if (it != parent->end()) {
+			it.mapIt->second.erase(it.mapIt->second.begin() + it.curElem);
+			it.mapIt->second.insert(it.mapIt->second.begin(), this);
+		}
 	}
 }
 
@@ -76,8 +157,7 @@ bool GuiElement::Lineage::operator<(const Lineage& rhs) const
 			if (*lcri != *rcri) { // we are finally different
 				const GuiElement* sameParent = *prev_lcri;
 				// look for oursleves
-				for (int i = 0; i < sameParent->ChildrenSize(); ++i) {
-					const GuiElement* curChild = sameParent->GetChild(i);
+				for (auto curChild : *sameParent) {
 					if (curChild == *lcri) {
 						return true; // self found first, we are bigger!
 					}

@@ -27,7 +27,7 @@ public:
         Iterator(vector<Instruction*>& vec);
         Iterator(vector<Instruction*>& vec, int dummy);
 
-        const bool operator !=(Iterator& r);
+        bool operator !=(Iterator& r) const;
         void operator ++();
         Instruction* operator*();
     };

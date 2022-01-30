@@ -27,7 +27,6 @@ Engine::InputStatus Draggable::Event(ALLEGRO_EVENT& event) {
 void Draggable::ForceGrab()
 {
     gui.CurDraggableGrabbedPosition() = GetPos();
-    PutOnTop();
     Grabbed();
     gui.Track(this);
 }

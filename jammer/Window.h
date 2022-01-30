@@ -19,6 +19,7 @@ public:
 	virtual void PostDraw();
 	virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
 
+	virtual void Grabbed();
 	virtual void Dragged(const glm::ivec2& delta);
 	virtual bool hitCheck(const glm::ivec2& pos) const;
 	virtual void SetPos(const glm::ivec2& tsl);

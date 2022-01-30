@@ -84,6 +84,8 @@ void Instruction::Draw() {
 }
 
 void Instruction::GrabbedBis() {
+    PutOnTop();
+
     if (bigBro) {
         bigBro->littleBro = nullptr;
         bigBro = nullptr;

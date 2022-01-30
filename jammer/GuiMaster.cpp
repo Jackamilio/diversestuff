@@ -65,8 +65,8 @@ bool GuiMaster::RecursiveEvent(GuiElement* guielem, ALLEGRO_EVENT& event, bool d
 	}
 
 	if (ret == Engine::InputStatus::ignored) {
-		for (int i = 0; i < guielem->ChildrenSize(); ++i) {
-			if (RecursiveEvent(guielem->GetChild(i), event)) {
+		for (auto child : *guielem) {
+			if (RecursiveEvent(child, event)) {
 				return true;
 			}
 		}
@@ -80,8 +80,8 @@ void GuiMaster::RecursiveDraw(GuiElement* guielem, bool doroot)
 		guielem->Draw();
 	}
 
-	for (int i = guielem->ChildrenSize() - 1; i >= 0 ; --i) {
-		RecursiveDraw(guielem->GetChild(i));
+	for (auto it = guielem->rbegin(); it != guielem->rend(); ++it) {
+		RecursiveDraw(*it);
 	}
 
 	if (doroot) {

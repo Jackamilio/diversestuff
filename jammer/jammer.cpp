@@ -11,6 +11,7 @@
 
 #include "Window.h"
 #include "Button.h"
+#include "PureDisplacer.h"
 
 #include "GuiMaster.h"
 
@@ -91,13 +92,22 @@ int main()
         gui.AddChild(&instructionsList);
 
         Window scene;
-        scene.tl = glm::ivec2(800, 100);
+        scene.tl = glm::ivec2(100, 100);
         scene.resize(540, 420);
 
         gui.AddChild(&scene);
+
+        PureDisplacer pure;
+        gui.AddChild(&pure, GuiElement::Priority::Bottom);
+
+        Button buttontest;
+        buttontest.tl = glm::ivec2(350, 50);
+        buttontest.resize(20, 20);
+
+        pure.AddChild(&buttontest, GuiElement::Priority::Bottom);
         
         gui.AddDropLocation<Instruction>(instructionsList);
-        gui.AddDropLocation<Instruction>(gui);
+        gui.AddDropLocation<Instruction>(pure);
 
         ALLEGRO_FONT* font = fetchDefaultFont();
 
