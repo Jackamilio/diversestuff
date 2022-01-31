@@ -3,6 +3,7 @@
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
+#include <functional>
 #include "Rect.h"
 #include "GuiElement.h"
 
@@ -14,6 +15,8 @@ public:
     glm::ivec2 pos;
     const char* text;
     ALLEGRO_FONT* font;
+    bool isTrigger;
+    std::function<bool()> function;
 
     InstructionModel(ALLEGRO_FONT* font, InstructionFamily& fam);
 

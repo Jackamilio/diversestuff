@@ -15,6 +15,8 @@
 
 #include "GuiMaster.h"
 
+#include <functional>
+
 ALLEGRO_FONT* fetchDefaultFont()
 {
     static ALLEGRO_FONT* defaultFont = NULL;
@@ -71,6 +73,26 @@ public:
     }
 };
 
+class SpriteTest : public GuiElement {
+public:
+    const Texture& texture;
+    glm::vec2 position;
+    float direction;
+
+    SpriteTest(const char* image_file) :
+        texture(gui.engine.graphics.textures.Get(image_file)),
+        position{},
+        direction(0.0f)
+    {
+    }
+
+    virtual void Draw() {
+        glm::vec2 center(texture.GetWidth(), texture.GetHeight());
+        center *= 0.5f;
+        al_draw_rotated_bitmap(texture.GetAlValue(), center.x, center.y, position.x, position.y, direction, 0);
+    }
+};
+
 int main()
 {
     Engine& engine = Engine::Get();
@@ -92,19 +114,22 @@ int main()
         gui.AddChild(&instructionsList);
 
         Window scene;
-        scene.tl = glm::ivec2(100, 100);
+        scene.tl = glm::ivec2(700, 50);
         scene.resize(540, 420);
 
         gui.AddChild(&scene);
 
+        SpriteTest sprite("cutemonkey.png");
+        sprite.position = glm::vec2(270, 210);
+        scene.AddChild(&sprite);
+
         PureDisplacer pure;
         gui.AddChild(&pure, GuiElement::Priority::Bottom);
 
-        Button buttontest;
-        buttontest.tl = glm::ivec2(350, 50);
-        buttontest.resize(20, 20);
-
-        pure.AddChild(&buttontest, GuiElement::Priority::Bottom);
+        //Button buttontest;
+        //buttontest.tl = glm::ivec2(350, 50);
+        //buttontest.resize(20, 20);
+        //pure.AddChild(&buttontest, GuiElement::Priority::Bottom);
         
         gui.AddDropLocation<Instruction>(instructionsList);
         gui.AddDropLocation<Instruction>(pure);
@@ -113,29 +138,55 @@ int main()
 
         InstructionFamily family;
 
-        InstructionModel tr(font, family);
-        
-        tr.SetText("Hello World!");
-        tr.Place(20, 20);
+        int yoffset = 20;
+        InstructionModel* curmodel;
+        std::vector<InstructionModel*> deletelater;
+        auto newmodel = [&font, &family, &curmodel, &yoffset, &instructionsList, &deletelater](const char* name) {
+            curmodel = new InstructionModel(font, family);
+            curmodel->SetText(name);
+            curmodel->Place(20, yoffset);
+            yoffset += 20;
+            instructionsList.AddChild(curmodel);
+            deletelater.push_back(curmodel);
+        };
 
-        InstructionModel tr2(font, family);
-        tr2.SetText("Hey I'm a brother.");
-        tr2.Place(20, 50);
+        newmodel("Avancer un peu");
+        curmodel->function = [&sprite]() {
+            sprite.position.x += 0.2f;
+            return true;
+        };
 
-        InstructionModel tr3(font, family);
-        tr3.SetText("Hello I'm a sibling as well!!");
-        tr3.Place(20, 80);
+        newmodel("Tourner à gauche");
+        curmodel->function = [&sprite]() {
+            sprite.direction -= 0.01f;
+            return true;
+        };
 
-        InstructionModel tr4(font, family);
-        tr4.SetText("Hai caramba, holà que tal");
-        tr4.Place(20, 110);
+        newmodel("Tourner à droite");
+        curmodel->function = [&sprite]() {
+            sprite.direction += 0.01f;
+            return true;
+        };
 
-        instructionsList.AddChild(&tr);
-        instructionsList.AddChild(&tr2);
-        instructionsList.AddChild(&tr3);
-        instructionsList.AddChild(&tr4);
+        newmodel("Je déclenche tout yo");
+        curmodel->isTrigger = true;
+        curmodel->function = []() {return true; };
+
+        newmodel("Stop ce mf script");
+        curmodel->function = []() {return false; };
+
+        newmodel("Reviens par là, le singe!");
+        curmodel->function = [&sprite]() {
+            sprite.position = glm::vec2(270, 210);
+            sprite.direction = 0.0f;
+            return true;
+        };
 
         while (engine.OneLoop()) {}
+
+        for (auto inst : deletelater) {
+            delete inst;
+        }
 
         GuiMaster::End();
     }

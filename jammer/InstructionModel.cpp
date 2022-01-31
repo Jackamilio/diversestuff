@@ -7,7 +7,8 @@ InstructionModel::InstructionModel(ALLEGRO_FONT* font, InstructionFamily& fam) :
     family(fam),
     pos{},
     text(nullptr),
-    font(font)
+    font(font),
+    isTrigger(false)
 {
 }
 

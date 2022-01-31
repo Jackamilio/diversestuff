@@ -1,6 +1,7 @@
 #include "InstructionFamily.h"
 #include <allegro5/allegro_primitives.h>
 #include "DefaultColors.h"
+#include "InstructionModel.h"
 
 InstructionFamily::Iterator::Iterator(vector<Instruction*>& vec) : bigBroIt(vec.begin()), endBroIt(vec.end()), curBro(*bigBroIt) {}
 InstructionFamily::Iterator::Iterator(vector<Instruction*>& vec, int dummy) : bigBroIt(vec.end()), endBroIt(vec.end()), curBro(nullptr) {}
@@ -46,11 +47,22 @@ InstructionFamily::~InstructionFamily()
 
 void InstructionFamily::Step()
 {
+    // delayed instruction deletion
     for (auto inst : waitingDestruction) {
         demoteFromBigBro(inst);
         delete inst;
     }
     waitingDestruction.clear();
+
+    // execute code!
+    for (auto bro : bigBrothers) {
+        if (bro->model.isTrigger) {
+            Instruction* curinst = bro;
+            while (curinst && curinst->model.function()) {
+                curinst = curinst->littleBro;
+            }
+        }
+    }
 }
 
 void InstructionFamily::promoteToBigBro(Instruction* tr) {
