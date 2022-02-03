@@ -15,6 +15,7 @@ class InstructionFamily : public Engine::Update
     OTN(InstructionFamily);
 private:
     vector<Instruction*> bigBrothers;
+    vector<Instruction*> orphanedParameters;
     vector<Instruction*> waitingDestruction;
 
 public:
@@ -35,7 +36,7 @@ public:
     Iterator begin();
     Iterator end();
 
-    InstructionFamily();
+    InstructionFamily(ALLEGRO_FONT* font);
     ~InstructionFamily();
 
     void Step();
@@ -43,10 +44,16 @@ public:
     void promoteToBigBro(Instruction* tr);
     void demoteFromBigBro(Instruction* tr);
 
+    void orphanParameter(Instruction* tr);
+    void unorphanParameter(Instruction* tr);
+
     inline void DestroyInstruction(Instruction* tr) {
         waitingDestruction.push_back(tr);
     }
 
+    ALLEGRO_FONT* font;
+
+    InstructionModel* emptyParameter = nullptr;
     Instruction* displacedBro = nullptr;
 
     bool shadowBro = false;

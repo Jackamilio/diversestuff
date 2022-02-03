@@ -32,9 +32,13 @@ InstructionFamily::Iterator InstructionFamily::end() {
     return Iterator(bigBrothers, 0);
 }
 
-InstructionFamily::InstructionFamily() : shadowBroPos()
+InstructionFamily::InstructionFamily(ALLEGRO_FONT* font) : font(font), shadowBroPos{}
 {
     engine.updateRoot.AddChild(this);
+
+    emptyParameter = new InstructionModel(*this);
+    emptyParameter->type = InstructionModel::Type::Parameter;
+    emptyParameter->SetText("...");
 }
 
 InstructionFamily::~InstructionFamily()
@@ -43,6 +47,8 @@ InstructionFamily::~InstructionFamily()
     for (auto bro : bigBrothers) {
         delete bro;
     }
+
+    delete emptyParameter;
 }
 
 void InstructionFamily::Step()
@@ -50,15 +56,17 @@ void InstructionFamily::Step()
     // delayed instruction deletion
     for (auto inst : waitingDestruction) {
         demoteFromBigBro(inst);
+        unorphanParameter(inst);
         delete inst;
     }
     waitingDestruction.clear();
 
     // execute code!
+    ParameterList dummylist;
     for (auto bro : bigBrothers) {
-        if (bro->model.isTrigger) {
+        if (bro->model.type == InstructionModel::Type::Trigger) {
             Instruction* curinst = bro;
-            while (curinst && curinst->model.function()) {
+            while (curinst && curinst->model.function(dummylist)) {
                 curinst = curinst->littleBro;
             }
         }
@@ -73,5 +81,16 @@ void InstructionFamily::demoteFromBigBro(Instruction* tr) {
     auto it = std::find(bigBrothers.begin(), bigBrothers.end(), tr);
     if (it != bigBrothers.end()) {
         bigBrothers.erase(it);
+    }
+}
+
+void InstructionFamily::orphanParameter(Instruction* tr) {
+    orphanedParameters.push_back(tr);
+}
+
+void InstructionFamily::unorphanParameter(Instruction* tr) {
+    auto it = std::find(orphanedParameters.begin(), orphanedParameters.end(), tr);
+    if (it != orphanedParameters.end()) {
+        orphanedParameters.erase(it);
     }
 }

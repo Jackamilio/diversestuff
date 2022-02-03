@@ -46,6 +46,17 @@ public:
 		resize(glm::ivec2(newWidth, newHeight));
 	}
 
+	inline void expand(int addition) {
+		tl.x -= addition;
+		tl.y -= addition;
+		br.x += addition;
+		br.y += addition;
+	}
+
+	inline void shrink(int substraction) {
+		expand(-substraction);
+	}
+
 	void operator=(const Rect& rhs) {
 		tl = rhs.tl;
 		br = rhs.br;
@@ -87,6 +98,17 @@ public:
 
 	inline void draw_filled_rounded(float rx, float ry, ALLEGRO_COLOR color) {
 		al_draw_filled_rounded_rectangle(tl.x, tl.y, br.x, br.y, rx, ry, color);
+	}
+
+	inline void draw_outlined(ALLEGRO_COLOR filling, ALLEGRO_COLOR outline, float thickness) {
+		// slower but prettier this way than using a draw above a filled
+		al_draw_filled_rectangle(tl.x, tl.y, br.x, br.y, outline);
+		al_draw_filled_rectangle(tl.x + thickness, tl.y + thickness, br.x - thickness, br.y - thickness, filling);
+	}
+
+	inline void draw_outlined_rounded(float rx, float ry, ALLEGRO_COLOR filling, ALLEGRO_COLOR outline, float thickness) {
+		al_draw_filled_rounded_rectangle(tl.x, tl.y, br.x, br.y, rx, ry, outline);
+		al_draw_filled_rounded_rectangle(tl.x + thickness, tl.y + thickness, br.x - thickness, br.y - thickness, rx, ry, filling);
 	}
 
 	void cropFrom(const Rect& other) {

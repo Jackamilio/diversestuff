@@ -1,21 +1,22 @@
 #include <iostream>
+#include <functional>
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
 
 #include "Scene.h"
+
 #include "Instruction.h"
 #include "InstructionFamily.h"
 #include "InstructionModel.h"
 
+#include "GuiMaster.h"
 #include "Window.h"
 #include "Button.h"
 #include "PureDisplacer.h"
 
-#include "GuiMaster.h"
-
-#include <functional>
+#include "DefaultColors.h"
 
 ALLEGRO_FONT* fetchDefaultFont()
 {
@@ -90,6 +91,13 @@ public:
         glm::vec2 center(texture.GetWidth(), texture.GetHeight());
         center *= 0.5f;
         al_draw_rotated_bitmap(texture.GetAlValue(), center.x, center.y, position.x, position.y, direction, 0);
+
+        const int round = 5;
+        const int shrinkage = 1;
+        al_draw_filled_rounded_rectangle(20, 20, 200, 200, round, round, green);
+
+        if (al_key_down(&gui.engine.inputRoot.keyboardState, ALLEGRO_KEY_SPACE))
+        al_draw_filled_rounded_rectangle(20 + shrinkage, 20 + shrinkage, 200 - shrinkage, 200 - shrinkage, round, round, red);
     }
 };
 
@@ -134,52 +142,63 @@ int main()
         gui.AddDropLocation<Instruction>(instructionsList);
         gui.AddDropLocation<Instruction>(pure);
 
-        ALLEGRO_FONT* font = fetchDefaultFont();
-
-        InstructionFamily family;
+        InstructionFamily family(fetchDefaultFont());
 
         int yoffset = 20;
         InstructionModel* curmodel;
         std::vector<InstructionModel*> deletelater;
-        auto newmodel = [&font, &family, &curmodel, &yoffset, &instructionsList, &deletelater](const char* name) {
-            curmodel = new InstructionModel(font, family);
+        auto newmodel = [&](const char* name, InstructionModel::Type type = InstructionModel::Type::Default, int nbparams = 0) {
+            curmodel = new InstructionModel(family);
+            curmodel->type = type;
+            curmodel->parametersTaken = nbparams;
             curmodel->SetText(name);
             curmodel->Place(20, yoffset);
-            yoffset += 20;
+            yoffset += 25;
             instructionsList.AddChild(curmodel);
             deletelater.push_back(curmodel);
         };
 
         newmodel("Avancer un peu");
-        curmodel->function = [&sprite]() {
+        curmodel->function = [&sprite](ParameterList&) {
             sprite.position.x += 0.2f;
             return true;
         };
 
         newmodel("Tourner à gauche");
-        curmodel->function = [&sprite]() {
+        curmodel->function = [&sprite](ParameterList&) {
             sprite.direction -= 0.01f;
             return true;
         };
 
         newmodel("Tourner à droite");
-        curmodel->function = [&sprite]() {
+        curmodel->function = [&sprite](ParameterList&) {
             sprite.direction += 0.01f;
             return true;
         };
 
-        newmodel("Je déclenche tout yo");
-        curmodel->isTrigger = true;
-        curmodel->function = []() {return true; };
+        newmodel("Je déclenche tout yo", InstructionModel::Type::Trigger);
+        curmodel->function = [](ParameterList&) {return true; };
 
         newmodel("Stop ce mf script");
-        curmodel->function = []() {return false; };
+        curmodel->function = [](ParameterList&) {return false; };
 
         newmodel("Reviens par là, le singe!");
-        curmodel->function = [&sprite]() {
+        curmodel->function = [&sprite](ParameterList&) {
             sprite.position = glm::vec2(270, 210);
             sprite.direction = 0.0f;
             return true;
+        };
+
+        newmodel("Nourris moi de params", InstructionModel::Type::Default, 2);
+
+        newmodel("VRAI", InstructionModel::Type::Parameter);
+        curmodel->evaluate = [](ParameterList&) {
+            return 1.0f;
+        };
+
+        newmodel("FAUX", InstructionModel::Type::Parameter);
+        curmodel->evaluate = [](ParameterList&) {
+            return 0.0f;
         };
 
         while (engine.OneLoop()) {}

@@ -6,19 +6,32 @@
 #include <functional>
 #include "Rect.h"
 #include "GuiElement.h"
+#include <vector>
 
+class Instruction;
 class InstructionFamily;
+
+typedef float Parameter;
+typedef std::vector<Parameter> ParameterList;
 
 class InstructionModel : public Rect, public GuiElement {
 public:
     InstructionFamily& family;
     glm::ivec2 pos;
     const char* text;
-    ALLEGRO_FONT* font;
-    bool isTrigger;
-    std::function<bool()> function;
 
-    InstructionModel(ALLEGRO_FONT* font, InstructionFamily& fam);
+    enum class Type { Default, Trigger, Parameter };
+
+    Type type;
+    int parametersTaken;
+
+    union {
+        std::function<bool(ParameterList&)> function;
+        std::function<Parameter(ParameterList&)> evaluate;
+    };
+
+    InstructionModel(InstructionFamily& fam);
+    ~InstructionModel();
 
     inline void Place(int _x, int _y) {
         pos.x = _x;

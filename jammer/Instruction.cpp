@@ -59,16 +59,25 @@ Instruction::Instruction(InstructionModel& model) :
     bigBro(nullptr),
     littleBro(nullptr),
     pos{}
-{}
+{
+    parameters.reserve((size_t)model.parametersTaken);
+    parameters.resize((size_t)model.parametersTaken, nullptr);
+}
 
 Instruction::~Instruction()
 {
     delete littleBro;
+    for (auto param : parameters) {
+        delete param;
+    }
 }
 
 inline void Instruction::Destroy()
 {
     model.family.DestroyInstruction(this);
+    for (auto param : parameters) { // might want to recurse this
+        model.family.DestroyInstruction(param);
+    }
 }
 
 void Instruction::Draw() {
@@ -86,20 +95,36 @@ void Instruction::Draw() {
 void Instruction::GrabbedBis() {
     PutOnTop();
 
-    if (bigBro) {
-        bigBro->littleBro = nullptr;
-        bigBro = nullptr;
-        model.family.promoteToBigBro(this);
+    for (auto param : parameters) {
+        if (param->currentDropLocation) {
+            param->currentDropLocation->Reject(param);
+        }
+        gui.AddChild(param);
+        param->PutOnTop();
     }
 
-    Instruction* curBro = this->littleBro;
-    while (curBro) {
-        if (curBro->currentDropLocation) {
-            curBro->currentDropLocation->Reject(curBro);
+    if (model.type == InstructionModel::Type::Parameter) {
+        if (owner) {
+            owner = nullptr;
+            model.family.orphanParameter(this);
         }
-        gui.AddChild(curBro);
-        curBro->PutOnTop();
-        curBro = curBro->littleBro;
+    }
+    else {
+        if (bigBro) {
+            bigBro->littleBro = nullptr;
+            bigBro = nullptr;
+            model.family.promoteToBigBro(this);
+        }
+
+        Instruction* curBro = this->littleBro;
+        while (curBro) {
+            if (curBro->currentDropLocation) {
+                curBro->currentDropLocation->Reject(curBro);
+            }
+            gui.AddChild(curBro);
+            curBro->PutOnTop();
+            curBro = curBro->littleBro;
+        }
     }
 }
 
@@ -115,6 +140,15 @@ void Instruction::DroppedBis() {
             currentDropLocation->ForceAccept(curLilBro);
             curLilBro = curLilBro->littleBro;
         }
+
+        // as well as params
+        for (auto param : parameters) {
+            currentDropLocation->ForceAccept(param);
+        }
+
+        PutAtBottom();
+
+        if (model.type == InstructionModel::Type::Parameter) return;
 
         Instruction* lastBro = getLastBro();
         for (auto bro : model.family) {
@@ -144,8 +178,6 @@ void Instruction::DroppedBis() {
                 break;
             }
         }
-
-        PutAtBottom();
     }
 }
 
@@ -159,6 +191,15 @@ void Instruction::DroppedBack()
     }
 }
 
+void MoveParameters(std::vector<Instruction*>& params, const glm::ivec2& delta) {
+    for (auto p : params) {
+        if (p) {
+            p->pos += delta;
+            MoveParameters(p->parameters, delta);
+        }
+    }
+}
+
 void Instruction::Dragged(const glm::ivec2& delta) {
     // move the bloc of bros
     Instruction* curBro = this;
@@ -167,43 +208,51 @@ void Instruction::Dragged(const glm::ivec2& delta) {
         curBro = curBro->littleBro;
     } while (curBro);
 
-    InstructionFamily& family = model.family;
+    // the parameters too
+    MoveParameters(parameters, delta);
 
-    // displacement preview before dropping
-    if (family.displacedBro && family.displacedBro->bigBro && !isUnderBro(*family.displacedBro->bigBro, true)) {
-        family.displacedBro->placeUnderBigBroRecursive();
-        family.displacedBro = nullptr;
+    if (model.type == InstructionModel::Type::Parameter) {
+
     }
+    else {
+        InstructionFamily& family = model.family;
 
-    if (!family.displacedBro) {
-        for (auto bro : family) {
-            if (bro != this && bro->littleBro && isUnderBro(*bro, true)) {
-                family.displacedBro = bro->littleBro;
-                bro->littleBro->pos.y += model.br.y - model.tl.y;
-                if (bro->littleBro->littleBro) {
-                    bro->littleBro->littleBro->placeUnderBigBroRecursive();
+        // displacement preview before dropping
+        if (family.displacedBro && family.displacedBro->bigBro && !isUnderBro(*family.displacedBro->bigBro, true)) {
+            family.displacedBro->placeUnderBigBroRecursive();
+            family.displacedBro = nullptr;
+        }
+
+        if (!family.displacedBro) {
+            for (auto bro : family) {
+                if (bro != this && bro->littleBro && isUnderBro(*bro, true)) {
+                    family.displacedBro = bro->littleBro;
+                    bro->littleBro->pos.y += model.h();
+                    if (bro->littleBro->littleBro) {
+                        bro->littleBro->littleBro->placeUnderBigBroRecursive();
+                    }
                 }
             }
         }
-    }
 
-    // shadow position of the drop
-    family.shadowBro = false;
-    Instruction* lastBro = getLastBro();
-    for (auto bro : family) {
-        if (bro != this && isUnderBro(*bro, true)) {
-            family.shadowBro = true;
-            family.shadowBroPos = bro->GetAdjustedPos();
-            family.shadowBroPos.x += bro->model.tl.x - model.tl.x;
-            family.shadowBroPos.y += bro->model.br.y - model.tl.y;
-            break;
-        }
-        else if (bro != lastBro && !bro->bigBro && lastBro->isAboveBro(*bro, true)) {
-            family.shadowBro = true;
-            family.shadowBroPos = bro->GetAdjustedPos();
-            family.shadowBroPos.x += bro->model.tl.x - lastBro->model.tl.x;
-            family.shadowBroPos.y -= lastBro->model.h();
-            break;
+        // shadow position of the drop
+        family.shadowBro = false;
+        Instruction* lastBro = getLastBro();
+        for (auto bro : family) {
+            if (bro != this && isUnderBro(*bro, true)) {
+                family.shadowBro = true;
+                family.shadowBroPos = bro->GetAdjustedPos();
+                family.shadowBroPos.x += bro->model.tl.x - model.tl.x;
+                family.shadowBroPos.y += bro->model.br.y - model.tl.y;
+                break;
+            }
+            else if (bro != lastBro && !bro->bigBro && lastBro->isAboveBro(*bro, true)) {
+                family.shadowBro = true;
+                family.shadowBroPos = bro->GetAdjustedPos();
+                family.shadowBroPos.x += bro->model.tl.x - lastBro->model.tl.x;
+                family.shadowBroPos.y -= lastBro->model.h();
+                break;
+            }
         }
     }
 }

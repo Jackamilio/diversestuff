@@ -7,12 +7,14 @@
 
 class InstructionModel;
 
-class Instruction : /*public Rect,*/ public Droppable<Instruction> {
+class Instruction : public Droppable<Instruction> {
     friend class InstructionFamily;
 private:
-    //InstructionFamily& family;
-    InstructionModel& model;
-    Instruction* bigBro;
+    union {
+        Instruction* bigBro;
+        Instruction* owner;
+    };
+    
     Instruction* littleBro;
 
     bool isUnderBro(const Instruction& bro, bool checkAdjusted = false);
@@ -27,6 +29,8 @@ private:
     ~Instruction();
 public:
     glm::ivec2 pos;
+    InstructionModel& model;
+    std::vector<Instruction*> parameters;
 
     inline static Instruction* Create(InstructionModel& model) {
         return new Instruction(model);
