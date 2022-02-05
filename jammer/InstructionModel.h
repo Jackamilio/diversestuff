@@ -14,10 +14,12 @@ class InstructionFamily;
 typedef float Parameter;
 typedef std::vector<Parameter> ParameterList;
 
-class InstructionModel : public Rect, public GuiElement {
+class InstructionModel : public GuiElement {
 public:
     InstructionFamily& family;
     glm::ivec2 pos;
+    Rect defaultRect;
+    float paramsX;
     const char* text;
 
     enum class Type { Default, Parameter };
@@ -48,7 +50,7 @@ public:
     virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
     void Draw();
 
-    void Draw(const glm::ivec2& pos) const;
+    void Draw(const glm::ivec2& pos, const Rect& rect) const;
 };
 
 #endif //__INSTRUCTION_MODEL_H__

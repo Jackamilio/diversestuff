@@ -21,18 +21,19 @@ GuiElement::ReverseIterator GuiElement::rend()
 	return ReverseIterator(children.rend(), children.rend());
 }
 
-GuiElement::ConstIterator GuiElement::begin() const
+GuiElement::ConstIterator GuiElement::cbegin() const
 {
 	return ConstIterator(children.begin(), children.end());
 }
 
-GuiElement::ConstIterator GuiElement::end() const
+GuiElement::ConstIterator GuiElement::cend() const
 {
 	return ConstIterator(children.end(), children.end());
 }
 
 GuiElement::Iterator GuiElement::find(GuiElement* c)
 {
+	// WARNING : THIS IS COPIED BELOW!! UPDATE AS NEEDED!!!
 	for (auto mapIt = children.begin(); mapIt != children.end(); ++mapIt) {
 		std::vector<GuiElement*>& vec = mapIt->second;
 		for (int i = 0; i < (int)vec.size(); ++i) {
@@ -42,6 +43,20 @@ GuiElement::Iterator GuiElement::find(GuiElement* c)
 		}
 	}
 	return end();
+}
+
+GuiElement::ConstIterator GuiElement::find(const GuiElement* c) const
+{
+	// WARNING : COPY PASTE OF ABOVE!!! UPDATE AS NEEDED!!!
+	for (auto mapIt = children.begin(); mapIt != children.end(); ++mapIt) {
+		const std::vector<GuiElement*>& vec = mapIt->second;
+		for (int i = 0; i < (int)vec.size(); ++i) {
+			if (vec[i] == c) {
+				return ConstIterator(mapIt, children.end(), i);
+			}
+		}
+	}
+	return cend();
 }
 
 void GuiElement::AddChild(GuiElement* c, Priority p)
@@ -81,7 +96,18 @@ void GuiElement::RemoveChild(GuiElement* c)
 	}
 }
 
-GuiElement::GuiElement() : parent(nullptr), gui(GuiMaster::Get())
+GuiElement::Priority GuiElement::FindMyPriority(GuiElement::Priority valIfNotFound) const
+{
+	if (parent) {
+		ConstIterator it = parent->find(this);
+		if (it != parent->cend()) {
+			return it.mapIt->first;
+		}
+	}
+	return valIfNotFound;
+}
+
+GuiElement::GuiElement(bool ebc) : parent(nullptr), eventBeforeChildren(ebc), gui(GuiMaster::Get())
 {
 	children.clear();
 }
@@ -159,10 +185,10 @@ bool GuiElement::Lineage::operator<(const Lineage& rhs) const
 				// look for oursleves
 				for (auto curChild : *sameParent) {
 					if (curChild == *lcri) {
-						return true; // self found first, we are bigger!
+						return false; // self found first, we are smaller!
 					}
 					else if (curChild == *rcri) {
-						return false; // rhs found first, we are smaller!
+						return true; // rhs found first, we are bigger!
 					}
 				}
 				// same parent found but neither child was found? logically code should never reach here

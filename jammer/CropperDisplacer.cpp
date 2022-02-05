@@ -2,7 +2,7 @@
 #include "DefaultColors.h"
 #include "GuiMaster.h"
 
-CropperDisplacer::CropperDisplacer() : cropping(nullptr)
+CropperDisplacer::CropperDisplacer() : GuiElement(true), cropping(nullptr)
 {
 }
 

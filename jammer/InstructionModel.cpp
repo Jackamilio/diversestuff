@@ -5,13 +5,13 @@
 
 const int padding = 6;
 const int parampadding = 3;
-const int paramwidth = 20;
 const int paramoffset = 5;
 const float roundness = 2.0f;
 
 InstructionModel::InstructionModel(InstructionFamily& fam) :
     family(fam),
     pos{},
+    paramsX(0.0f),
     text(nullptr),
     type(InstructionModel::Type::Default),
     isTrigger(false),
@@ -25,16 +25,17 @@ InstructionModel::~InstructionModel()
 
 void InstructionModel::SetText(const char* t) {
     text = t;
-    al_get_text_dimensions(family.font, text, &tl.x, &tl.y, &br.x, &br.y);
+    al_get_text_dimensions(family.font, text, &defaultRect.tl.x, &defaultRect.tl.y, &defaultRect.br.x, &defaultRect.br.y);
 
-    expand(type == InstructionModel::Type::Parameter ? parampadding : padding);
-    //br.x += (paramwidth + paramoffset) * parametersTaken;
+    defaultRect.expand(type == InstructionModel::Type::Parameter ? parampadding : padding);
+    paramsX = defaultRect.br.x + paramoffset;
+    defaultRect.br.x += (family.emptyParameter->defaultRect.w() + paramoffset) * parametersTaken;
 }
 
 Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
 {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-        if (isInside(glm::ivec2(event.mouse.x, event.mouse.y) - pos)) {
+        if (defaultRect.isInside(glm::ivec2(event.mouse.x, event.mouse.y) - pos)) {
             // create an instruction and force grab it
             Instruction* newborn = Instruction::Create(*this);
             if (type == Type::Parameter) {
@@ -46,13 +47,13 @@ Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
             newborn->SetPos(pos);
 
             glm::ivec2 ppos = pos;
-            ppos.x += w() + paramoffset;
+            ppos.x += paramsX;
 
             for (int i = 0; i < parametersTaken; ++i) {
                 newborn->parameters[i] = Instruction::Create(*family.emptyParameter);
                 newborn->parameters[i]->SetPos(ppos);
                 newborn->parameters[i]->owner = newborn;
-                ppos.x += family.emptyParameter->w() + paramoffset;
+                ppos.x += family.emptyParameter->defaultRect.w() + paramoffset;
             }
 
             newborn->ForceGrab();
@@ -69,25 +70,25 @@ void InstructionModel::Draw()
     //defaultparams.resize((size_t)parametersTaken, nullptr);
     //Draw(pos, defaultparams);
 
-    Draw(pos);
+    Draw(pos, defaultRect);
 
     glm::ivec2 ppos = pos;
-    ppos.x += w() + paramoffset;
+    ppos.x += paramsX;
 
     for (int i = 0; i < parametersTaken; ++i) {
-        family.emptyParameter->Draw(ppos);
-        ppos.x += family.emptyParameter->w() + paramoffset;
+        family.emptyParameter->Draw(ppos, family.emptyParameter->defaultRect);
+        ppos.x += family.emptyParameter->defaultRect.w() + paramoffset;
     }
 }
 
-void InstructionModel::Draw(const glm::ivec2& pos) const
+void InstructionModel::Draw(const glm::ivec2& pos, const Rect& rect) const
 {
-    Rect rect = *this + pos;
+    Rect rectpos = rect + pos;
     if (type == InstructionModel::Type::Parameter) {
-        rect.draw_outlined_rounded(6, 6, black, grey, 1);
+        rectpos.draw_outlined_rounded(6, 6, black, grey, 1);
     }
     else {
-        rect.draw_outlined(black, grey, 1);
+        rectpos.draw_outlined(black, grey, 1);
     }
     al_draw_text(family.font, white, pos.x, pos.y, 0, text);
 

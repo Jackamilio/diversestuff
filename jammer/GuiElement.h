@@ -13,23 +13,22 @@ class GuiElement;
 class GuiElement {
 public:
 	enum class Priority : int {
-		Top = 1,
+		Unknown = 0,
+		Bottom,
 		Default,
-		Bottom
+		Top,
 	};
-
-private:
-	GuiElement* parent;
 
 	typedef std::vector<GuiElement*> GuiElementVector;
 	typedef std::map<Priority, GuiElementVector> ChildList;
+private:
+	GuiElement* parent;
 	ChildList children;
+protected:
+	bool eventBeforeChildren;
 
 public:
 	GuiMaster& gui;
-
-	template<class It, class T>
-	using beginorend = It(T::*)();
 
 	template<typename Elem, class Map, class MapIt>
 	class TemplateIterator {
@@ -55,9 +54,12 @@ public:
 	Iterator end();
 	ReverseIterator rbegin();
 	ReverseIterator rend();
-	ConstIterator begin() const;
-	ConstIterator end() const;
+	ConstIterator cbegin() const;
+	ConstIterator cend() const;
+	inline ConstIterator begin() const { return cbegin(); }
+	inline ConstIterator end() const { return cend(); }
 	Iterator find(GuiElement* c);
+	ConstIterator find(const GuiElement* c) const;
 
 	void AddChild(GuiElement* c, Priority p = Priority::Default);
 	void RemoveChild(GuiElement* c);
@@ -65,7 +67,10 @@ public:
 	inline GuiElement* Parent() { return parent; }
 	inline const GuiElement* Parent() const { return parent; }
 
-	GuiElement();
+	Priority FindMyPriority(Priority valIfNotFound = Priority::Unknown) const;
+	inline bool EventBeforeChildren() const { return eventBeforeChildren; }
+
+	GuiElement(bool eventBeforeChildren = false);
 	virtual ~GuiElement();
 
 	void PutOnTop();
@@ -112,6 +117,12 @@ template<class Elem, class Map, class MapIt>
 inline Elem GuiElement::TemplateIterator<Elem, Map, MapIt>::operator*()
 {
 	return mapIt->second[curElem];
+}
+
+template<>
+inline GuiElement* GuiElement::TemplateIterator<GuiElement*, GuiElement::ChildList, GuiElement::ChildList::reverse_iterator>::operator*()
+{
+	return mapIt->second[(int)mapIt->second.size() - curElem - 1];
 }
 
 #endif//__GUI_ELEMENT_H__

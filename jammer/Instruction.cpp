@@ -9,24 +9,24 @@ const int dropL = 20;
 const int dropR = 30;
 
 bool Instruction::isUnderBro(const Instruction& bro, bool checkAdjusted) {
-    const glm::ivec2 brobl = (checkAdjusted ? bro.GetAdjustedPos() : bro.pos) + bro.model.bl();
-    const glm::ivec2 mytl = pos + model.tl;
-    return valueInside(mytl.x, brobl.x - dropL, brobl.x + dropR) && valueInside(mytl.y, brobl.y, brobl.y + bro.model.h());
+    const glm::ivec2 brobl = (checkAdjusted ? bro.GetAdjustedPos() : bro.pos) + bro.bl();
+    const glm::ivec2 mytl = pos + tl;
+    return valueInside(mytl.x, brobl.x - dropL, brobl.x + dropR) && valueInside(mytl.y, brobl.y, brobl.y + bro.h());
 }
 
 bool Instruction::isAboveBro(const Instruction& bro, bool checkAdjusted) {
     glm::ivec2 bap = checkAdjusted ? bro.GetAdjustedPos() : bro.pos;
-    const int broleft = bap.x + bro.model.tl.x;
+    const int broleft = bap.x + bro.tl.x;
     const int broUp = bap.y;
-    const glm::ivec2 mybl = pos + model.bl();
-    return valueInside(mybl.x, broleft - dropL, broleft + dropR) && valueInside(mybl.y, broUp - bro.model.h(), broUp);
+    const glm::ivec2 mybl = pos + bl();
+    return valueInside(mybl.x, broleft - dropL, broleft + dropR) && valueInside(mybl.y, broUp - bro.h(), broUp);
 }
 
 void Instruction::placeUnderBigBroRecursive() {
     if (bigBro) {
         pos = bigBro->pos;
-        pos.x += bigBro->model.tl.x - model.tl.x;
-        pos.y += bigBro->model.h();
+        pos.x += bigBro->tl.x - tl.x;
+        pos.y += bigBro->h();
 
         if (littleBro) {
             littleBro->placeUnderBigBroRecursive();
@@ -37,8 +37,8 @@ void Instruction::placeUnderBigBroRecursive() {
 void Instruction::placeAboveLittleBroRecursive() {
     if (littleBro) {
         pos = littleBro->pos;
-        pos.x += littleBro->model.tl.x - model.tl.x;
-        pos.y -= littleBro->model.h();
+        pos.x += littleBro->tl.x - tl.x;
+        pos.y -= littleBro->h();
 
         if (bigBro) {
             bigBro->placeAboveLittleBroRecursive();
@@ -55,6 +55,7 @@ Instruction* Instruction::getLastBro() {
 }
 
 Instruction::Instruction(InstructionModel& model) :
+    Rect(model.defaultRect),
     model(model),
     bigBro(nullptr),
     littleBro(nullptr),
@@ -76,16 +77,24 @@ void Instruction::Draw() {
     // shadow
     if (model.family.shadowBro && gui.CurrentDraggable() == this)
     {
-        Rect shadowRect = model + model.family.shadowBroPos;
+        Rect shadowRect = *this + model.family.shadowBroPos;
         shadowRect.draw_filled(lightgrey);
     }
 
     // self
-    model.Draw(pos);
+    model.Draw(pos, *this);
 
     // highlighted param
     if (model.family.highlightedParam == this) {
-        (model + pos).draw_rounded(6, 6, white, 3);
+        (*this + pos).draw_rounded(6, 6, white, 3);
+    }
+}
+
+void ForceAcceptMeAndParams(Instruction* frominst, DropLocation<Instruction>* newdroploc, const glm::ivec2& delta) {
+    frominst->pos += delta;
+    newdroploc->ForceAccept(frominst);
+    for (auto p : frominst->parameters) {
+        ForceAcceptMeAndParams(p, newdroploc, delta);
     }
 }
 
@@ -95,9 +104,9 @@ bool Instruction::ReplaceParameter(Instruction* oldp, Instruction* newp)
         if (oldp == parameters[i]) {
             model.family.unorphanParameter(newp);
             newp->owner = this;
-            newp->pos = oldp->pos;
-            currentDropLocation->ForceAccept(newp, GuiElement::Priority::Top);
-            glm::ivec2 offset(newp->model.w() - oldp->model.w(), 0);
+            glm::ivec2 deltapos = oldp->pos - newp->pos;
+            ForceAcceptMeAndParams(newp, currentDropLocation, deltapos);
+            glm::ivec2 offset(newp->w() - oldp->w(), 0);
             parameters[i] = newp;
             for (++i; i < parameters.size(); ++i) {
                 parameters[i]->pos += offset;
@@ -108,19 +117,24 @@ bool Instruction::ReplaceParameter(Instruction* oldp, Instruction* newp)
     return false;
 }
 
+void RejectAllParams(Instruction* inst) {
+    for (auto param : inst->parameters) {
+        if (param->GetDropLocation()) {
+            param->GetDropLocation()->Reject(param);
+        }
+        inst->gui.AddChild(param);
+        param->PutOnTop();
+        RejectAllParams(param);
+    }
+}
+
 void Instruction::GrabbedBis() {
     if (model.type == InstructionModel::Type::Parameter && model.fixed) {
         CancelGrab();
         return;
     }
 
-    for (auto param : parameters) {
-        if (param->currentDropLocation) {
-            param->currentDropLocation->Reject(param);
-        }
-        gui.AddChild(param);
-        param->PutOnTop();
-    }
+    RejectAllParams(this);
 
     if (model.type == InstructionModel::Type::Parameter) {
         if (owner) {
@@ -147,8 +161,6 @@ void Instruction::GrabbedBis() {
             curBro = curBro->littleBro;
         }
     }
-
-    PutOnTop();
 }
 
 void Instruction::DroppedBis() {
@@ -160,16 +172,14 @@ void Instruction::DroppedBis() {
         // accept all little bros into the new drop location
         Instruction* curLilBro = this->littleBro;
         while (curLilBro) {
-            currentDropLocation->ForceAccept(curLilBro, curLilBro->model.type == InstructionModel::Type::Parameter ? GuiElement::Priority::Top : GuiElement::Priority::Default);
+            currentDropLocation->ForceAccept(curLilBro);
             curLilBro = curLilBro->littleBro;
         }
 
         // as well as params
         for (auto param : parameters) {
-            currentDropLocation->ForceAccept(param, GuiElement::Priority::Top);
+            currentDropLocation->ForceAccept(param);
         }
-
-        PutAtBottom();
 
         if (model.type == InstructionModel::Type::Parameter) {
             Instruction* inst = model.family.highlightedParam;
@@ -179,6 +189,7 @@ void Instruction::DroppedBis() {
             model.family.highlightedParam = nullptr;
         }
         else {
+            PutAtBottom();
             Instruction* lastBro = getLastBro();
             for (auto bro : model.family) {
                 if (bro != this && currentDropLocation == bro->currentDropLocation && isUnderBro(*bro)) {
@@ -248,9 +259,9 @@ void Instruction::Dragged(const glm::ivec2& delta) {
         model.family.BuildParameterStack(params);
         for (; !params.empty(); params.pop()) {
             if (params.top() != this) {
-                r = params.top()->model;
+                r = *params.top();
                 r += params.top()->GetAdjustedPos();
-                if (r.isInside(model.tl + pos) || r.isInside(model.bl() + pos)) {
+                if (r.isInside(tl + pos) || r.isInside(bl() + pos)) {
                     model.family.highlightedParam = params.top();
                     break;
                 }
@@ -268,7 +279,7 @@ void Instruction::Dragged(const glm::ivec2& delta) {
             for (auto bro : family) {
                 if (bro != this && bro->littleBro && isUnderBro(*bro, true)) {
                     family.displacedBro = bro->littleBro;
-                    bro->littleBro->pos.y += model.h();
+                    bro->littleBro->pos.y += h();
                     if (bro->littleBro->littleBro) {
                         bro->littleBro->littleBro->placeUnderBigBroRecursive();
                     }
@@ -283,15 +294,15 @@ void Instruction::Dragged(const glm::ivec2& delta) {
             if (bro != this && isUnderBro(*bro, true)) {
                 family.shadowBro = true;
                 family.shadowBroPos = bro->GetAdjustedPos();
-                family.shadowBroPos.x += bro->model.tl.x - model.tl.x;
-                family.shadowBroPos.y += bro->model.br.y - model.tl.y;
+                family.shadowBroPos.x += bro->tl.x - tl.x;
+                family.shadowBroPos.y += bro->br.y - tl.y;
                 break;
             }
             else if (bro != lastBro && !bro->bigBro && lastBro->isAboveBro(*bro, true)) {
                 family.shadowBro = true;
                 family.shadowBroPos = bro->GetAdjustedPos();
-                family.shadowBroPos.x += bro->model.tl.x - lastBro->model.tl.x;
-                family.shadowBroPos.y -= lastBro->model.h();
+                family.shadowBroPos.x += bro->tl.x - lastBro->tl.x;
+                family.shadowBroPos.y -= lastBro->h();
                 break;
             }
         }
@@ -300,7 +311,7 @@ void Instruction::Dragged(const glm::ivec2& delta) {
 
 bool Instruction::hitCheck(const glm::ivec2& opos) const
 {
-    return model.isInside(opos - pos);
+    return isInside(opos - pos);
 }
 
 void Instruction::SetPos(const glm::ivec2& tsl)

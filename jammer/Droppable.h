@@ -26,13 +26,14 @@ public:
 	Droppable();
 
 	void SetDropLocation(CropperDisplacer& cpdl);
+	DropLocation<T>* GetDropLocation();
 };
 
 template<class T>
 inline void Droppable<T>::Grabbed()
 {
 	if (currentDropLocation) {
-		gui.CurDraggableGrabbedLocation() = currentDropLocation;
+		gui.GrabbedElementProperties().location = currentDropLocation;
 		currentDropLocation->Reject(this);
 		gui.AddChild(this);
 		PutOnTop();
@@ -63,7 +64,7 @@ inline void Droppable<T>::Dropped()
 		std::pair<glm::ivec2, DropLocation<T>*>& firstfound = foundlocations.begin()->second;
 		if (currentDropLocation != firstfound.second) {
 			Move(-firstfound.first);
-			firstfound.second->location.AddChild(this);
+			firstfound.second->location.AddChild(this, gui.GrabbedElementProperties().priority);
 			currentDropLocation = firstfound.second;
 		}
 	}
@@ -80,10 +81,10 @@ template<class T>
 inline void Droppable<T>::CancelGrab()
 {
 	Draggable::CancelGrab();
-	DropLocationBase* loc = gui.CurDraggableGrabbedLocation();
+	DropLocationBase* loc = gui.GrabbedElementProperties().location;
 	loc = loc ? loc : (DropLocationBase*)gui.GetDropLocations<T>()[0];
 	loc->location.AddChild(this);
-	SetPos(gui.CurDraggableGrabbedPosition());
+	SetPos(gui.GrabbedElementProperties().position);
 	currentDropLocation = (DropLocation<T>*)(loc);
 }
 
@@ -108,6 +109,12 @@ inline void Droppable<T>::SetDropLocation(CropperDisplacer& cpdl)
 	}
 
 	assert(false && "This is not a valid drop location.");
+}
+
+template<class T>
+inline DropLocation<T>* Droppable<T>::GetDropLocation()
+{
+	return currentDropLocation;
 }
 
 #endif //__DROPPABLE_H__

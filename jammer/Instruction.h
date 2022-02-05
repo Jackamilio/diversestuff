@@ -7,7 +7,7 @@
 
 class InstructionModel;
 
-class Instruction : public Droppable<Instruction> {
+class Instruction : public Rect, public Droppable<Instruction> {
     friend class InstructionFamily;
     friend class InstructionModel;
 private:

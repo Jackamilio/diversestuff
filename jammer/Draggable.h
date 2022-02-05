@@ -5,8 +5,16 @@
 #include "Engine.h"
 #include "GuiElement.h"
 
+class DropLocationBase;
+
 class Draggable : virtual public GuiElement {
 public:
+	struct GrabProperties {
+		glm::ivec2 position;
+		DropLocationBase* location;
+		GuiElement::Priority priority;
+	};
+
 	virtual ~Draggable() {}
 
 	virtual void Grabbed() {}

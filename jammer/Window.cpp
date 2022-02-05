@@ -2,6 +2,7 @@
 #include "DefaultColors.h"
 
 Window::Window() :
+	GuiElement(true),
 	headBandHeight(20)
 {
 	cropping = this;

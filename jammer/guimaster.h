@@ -30,9 +30,8 @@ private:
 	void InitTransforms();
 
 	Draggable* trackedDraggable;
-	glm::ivec2 draggableGrabbedPosition;
 	std::unordered_map<std::type_index, std::vector<DropLocationBase*>> dropLocations;
-	DropLocationBase* draggableGrabbedLocation;
+	Draggable::GrabProperties grabbedElementProperties;
 
 public:
 	OTN(GuiMaster);
@@ -64,8 +63,7 @@ public:
 	bool IsTracked(Draggable* dgbl) const;
 	inline bool IsDragging() const { return trackedDraggable != nullptr; }
 	inline Draggable* CurrentDraggable() { return trackedDraggable; }
-	inline glm::ivec2& CurDraggableGrabbedPosition() { return draggableGrabbedPosition; }
-	DropLocationBase*& CurDraggableGrabbedLocation() { return draggableGrabbedLocation; }
+	inline Draggable::GrabProperties& GrabbedElementProperties() { return grabbedElementProperties; }
 
 	template<class T>
 	void AddDropLocation(CropperDisplacer& cpdl);

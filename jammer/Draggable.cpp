@@ -31,7 +31,10 @@ Engine::InputStatus Draggable::Event(ALLEGRO_EVENT& event) {
 
 void Draggable::ForceGrab()
 {
-    gui.CurDraggableGrabbedPosition() = GetPos();
+    GrabProperties& prop = gui.GrabbedElementProperties();
+    prop.location = nullptr;
+    prop.position = GetPos();
+    prop.priority = FindMyPriority(GuiElement::Priority::Default);
     gui.Track(this);
     Grabbed();
 }

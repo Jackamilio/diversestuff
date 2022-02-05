@@ -28,7 +28,7 @@ GuiMaster& GuiMaster::Get()
 	return *singleton;
 }
 
-GuiMaster::GuiMaster() : trackedDraggable(nullptr), draggableGrabbedPosition{}, draggableGrabbedLocation(nullptr)
+GuiMaster::GuiMaster() : trackedDraggable(nullptr)
 {
 	InitTransforms();
 }
@@ -60,17 +60,22 @@ glm::ivec2 GuiMaster::GetDisplaceOffset() const
 bool GuiMaster::RecursiveEvent(GuiElement* guielem, ALLEGRO_EVENT& event, bool doroot)
 {
 	Engine::InputStatus ret = Engine::InputStatus::ignored;
-	if (doroot) {
+	if (doroot && guielem->EventBeforeChildren()) {
 		ret = guielem->Event(event);
 	}
 
 	if (ret == Engine::InputStatus::ignored) {
-		for (auto child : *guielem) {
-			if (RecursiveEvent(child, event)) {
+		for (auto it = guielem->rbegin(); it != guielem->rend(); ++it) {
+			if (RecursiveEvent(*it, event)) {
 				return true;
 			}
 		}
 	}
+
+	if (doroot && !guielem->EventBeforeChildren()) {
+		ret = guielem->Event(event);
+	}
+
 	return ret == Engine::InputStatus::grabbed;
 }
 
@@ -80,7 +85,7 @@ void GuiMaster::RecursiveDraw(GuiElement* guielem, bool doroot)
 		guielem->Draw();
 	}
 
-	for (auto it = guielem->rbegin(); it != guielem->rend(); ++it) {
+	for (auto it = guielem->begin(); it != guielem->end(); ++it) {
 		RecursiveDraw(*it);
 	}
 

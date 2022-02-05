@@ -25,7 +25,7 @@ public:
 	DropLocation(CropperDisplacer& loc);
 
     inline void ForceAccept(Droppable<T>* element, GuiElement::Priority priority = GuiElement::Priority::Default);
-	inline bool Accept(Droppable<T>* element, const glm::ivec2& pos);
+	inline bool Accept(Droppable<T>* element, const glm::ivec2& pos, GuiElement::Priority priority = GuiElement::Priority::Default);
 	inline void Reject(Droppable<T>* element);
 };
 
@@ -45,13 +45,13 @@ inline void DropLocation<T>::ForceAccept(Droppable<T>* element, GuiElement::Prio
 }
 
 template<class T>
-inline bool DropLocation<T>::Accept(Droppable<T>* element, const glm::ivec2& pos)
+inline bool DropLocation<T>::Accept(Droppable<T>* element, const glm::ivec2& pos, GuiElement::Priority priority)
 {
     glm::ivec2 globaloffset(GetGlobalOffset());
     if (location.InsideCropping(pos - globaloffset + location.GetDisplaceOffset())) {
         if (element->currentDropLocation != this) {
             element->Move(-globaloffset);
-            location.AddChild(element);
+            location.AddChild(element, priority);
             element->currentDropLocation = this;
         }
         return true;
