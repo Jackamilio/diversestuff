@@ -120,30 +120,19 @@ void MoveParameters(std::vector<Instruction*>& params, const glm::ivec2& delta) 
     }
 }
 
-Instruction* RightestParameter(Instruction* from) {
-    if (from->parameters.empty()) {
-        return from;
+void RepositionAllParamsAndResizeOwners(Instruction* top, glm::ivec2& posinc) {
+    if (top->parameters.empty()) {
+        posinc.x += top->w() + paramoffset;
     }
     else {
-        return RightestParameter(from->parameters.back());
-    }
-}
-
-float RightestPosition(Instruction* from) {
-    Instruction* toppestowner = nullptr;
-    Instruction* nextowner = from;
-    while (nextowner) {
-        toppestowner = nextowner;
-        nextowner = toppestowner->GetOwner();
-    }
-    Instruction* rightestparam = RightestParameter(toppestowner);
-    return rightestparam->pos.x + rightestparam->w();
-}
-
-void ResizeOwners(Instruction* owner, float rightestpos) {
-    if (owner) {
-        owner->br.x = rightestpos - owner->tl.x - owner->pos.x;
-        ResizeOwners(owner->GetOwner(), rightestpos);
+        float prevx = posinc.x - top->tl.x;
+        posinc.x += top->model.paramsX;
+        for (auto param : top->parameters) {
+            param->pos = posinc;
+            RepositionAllParamsAndResizeOwners(param, posinc);
+        }
+        top->br.x = posinc.x - prevx;
+        posinc.x += paramoffset;
     }
 }
 
@@ -155,13 +144,25 @@ bool Instruction::ReplaceParameter(Instruction* oldp, Instruction* newp)
             newp->owner = this;
             glm::ivec2 deltapos = oldp->pos - newp->pos;
             ForceAcceptMeAndParams(newp, currentDropLocation, deltapos);
-            glm::ivec2 offset(newp->w() - oldp->w(), 0);
             parameters[i] = newp;
-            for (++i; i < parameters.size(); ++i) {
-                parameters[i]->pos += offset;
-                MoveParameters(parameters[i]->parameters, offset);
+
+            //glm::ivec2 offset(newp->w() - oldp->w(), 0);
+            //for (++i; i < parameters.size(); ++i) {
+            //    parameters[i]->pos += offset;
+            //    MoveParameters(parameters[i]->parameters, offset);
+            //}
+            //ResizeOwners(this, RightestPosition(this));
+
+            Instruction* toppestowner = nullptr;
+            Instruction* nextowner = this;
+            while (nextowner) {
+                toppestowner = nextowner;
+                nextowner = toppestowner->GetOwner();
             }
-            ResizeOwners(this, RightestPosition(this));
+
+            glm::ivec2 travpos = toppestowner->pos;
+            RepositionAllParamsAndResizeOwners(toppestowner, travpos);
+
             return true;
         }
     }
@@ -240,7 +241,7 @@ void Instruction::DroppedBis() {
 
         if (model.type == InstructionModel::Type::Parameter) {
             Instruction* inst = model.family.highlightedParam;
-            if (inst && inst->owner && inst->owner->ReplaceParameter(inst, this)) {
+            if (inst && inst!=this && inst->owner && inst->owner->ReplaceParameter(inst, this)) {
                 model.family.DestroyInstruction(inst);
             }
             model.family.highlightedParam = nullptr;
@@ -306,9 +307,10 @@ void Instruction::Dragged(const glm::ivec2& delta) {
         std::stack<Instruction*> params;
         model.family.BuildParameterStack(params);
         for (; !params.empty(); params.pop()) {
-            if (params.top() != this) {
-                r = *params.top();
-                r += params.top()->GetAdjustedPos();
+            Instruction* top = params.top();
+            if (top != this && top->GetOwner() != this) {
+                r = *top;
+                r += top->GetAdjustedPos();
                 if (r.isInside(tl + pos) || r.isInside(bl() + pos)) {
                     model.family.highlightedParam = params.top();
                     break;
