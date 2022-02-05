@@ -51,6 +51,8 @@ public:
     virtual glm::ivec2 GetPos() const;
 
     glm::ivec2 GetAdjustedPos() const;
+
+    Instruction* GetOwner() const;
 };
 
 #endif //__INSTRUCTION_H__

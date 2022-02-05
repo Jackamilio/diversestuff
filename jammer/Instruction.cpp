@@ -22,11 +22,21 @@ bool Instruction::isAboveBro(const Instruction& bro, bool checkAdjusted) {
     return valueInside(mybl.x, broleft - dropL, broleft + dropR) && valueInside(mybl.y, broUp - bro.h(), broUp);
 }
 
+void RepositionParameters(Instruction* inst, const glm::ivec2& delta) {
+    for (auto param : inst->parameters) {
+        param->pos += delta;
+        RepositionParameters(param, delta);
+    }
+}
+
 void Instruction::placeUnderBigBroRecursive() {
     if (bigBro) {
+        glm::ivec2 delta(pos);
         pos = bigBro->pos;
         pos.x += bigBro->tl.x - tl.x;
         pos.y += bigBro->h();
+        delta -= pos;
+        RepositionParameters(this, -delta);
 
         if (littleBro) {
             littleBro->placeUnderBigBroRecursive();
@@ -36,9 +46,12 @@ void Instruction::placeUnderBigBroRecursive() {
 
 void Instruction::placeAboveLittleBroRecursive() {
     if (littleBro) {
+        glm::ivec2 delta(pos);
         pos = littleBro->pos;
         pos.x += littleBro->tl.x - tl.x;
         pos.y -= littleBro->h();
+        delta -= pos;
+        RepositionParameters(this, -delta);
 
         if (bigBro) {
             bigBro->placeAboveLittleBroRecursive();
@@ -98,6 +111,42 @@ void ForceAcceptMeAndParams(Instruction* frominst, DropLocation<Instruction>* ne
     }
 }
 
+void MoveParameters(std::vector<Instruction*>& params, const glm::ivec2& delta) {
+    for (auto p : params) {
+        if (p) {
+            p->pos += delta;
+            MoveParameters(p->parameters, delta);
+        }
+    }
+}
+
+Instruction* RightestParameter(Instruction* from) {
+    if (from->parameters.empty()) {
+        return from;
+    }
+    else {
+        return RightestParameter(from->parameters.back());
+    }
+}
+
+float RightestPosition(Instruction* from) {
+    Instruction* toppestowner = nullptr;
+    Instruction* nextowner = from;
+    while (nextowner) {
+        toppestowner = nextowner;
+        nextowner = toppestowner->GetOwner();
+    }
+    Instruction* rightestparam = RightestParameter(toppestowner);
+    return rightestparam->pos.x + rightestparam->w();
+}
+
+void ResizeOwners(Instruction* owner, float rightestpos) {
+    if (owner) {
+        owner->br.x = rightestpos - owner->tl.x - owner->pos.x;
+        ResizeOwners(owner->GetOwner(), rightestpos);
+    }
+}
+
 bool Instruction::ReplaceParameter(Instruction* oldp, Instruction* newp)
 {
     for (int i = 0; i < parameters.size(); ++i) {
@@ -110,7 +159,9 @@ bool Instruction::ReplaceParameter(Instruction* oldp, Instruction* newp)
             parameters[i] = newp;
             for (++i; i < parameters.size(); ++i) {
                 parameters[i]->pos += offset;
+                MoveParameters(parameters[i]->parameters, offset);
             }
+            ResizeOwners(this, RightestPosition(this));
             return true;
         }
     }
@@ -158,8 +209,16 @@ void Instruction::GrabbedBis() {
             }
             gui.AddChild(curBro);
             curBro->PutOnTop();
+            RejectAllParams(curBro);
             curBro = curBro->littleBro;
         }
+    }
+}
+
+void ForceAcceptParams(Instruction* inst, DropLocation<Instruction>* newdroploc) {
+    for (auto param : inst->parameters) {
+        newdroploc->ForceAccept(param);
+        ForceAcceptParams(param, newdroploc);
     }
 }
 
@@ -177,9 +236,7 @@ void Instruction::DroppedBis() {
         }
 
         // as well as params
-        for (auto param : parameters) {
-            currentDropLocation->ForceAccept(param);
-        }
+        ForceAcceptParams(this, currentDropLocation);
 
         if (model.type == InstructionModel::Type::Parameter) {
             Instruction* inst = model.family.highlightedParam;
@@ -232,15 +289,6 @@ void Instruction::DroppedBack()
     }
 }
 
-void MoveParameters(std::vector<Instruction*>& params, const glm::ivec2& delta) {
-    for (auto p : params) {
-        if (p) {
-            p->pos += delta;
-            MoveParameters(p->parameters, delta);
-        }
-    }
-}
-
 void Instruction::Dragged(const glm::ivec2& delta) {
     // move the bloc of bros
     Instruction* curBro = this;
@@ -280,6 +328,7 @@ void Instruction::Dragged(const glm::ivec2& delta) {
                 if (bro != this && bro->littleBro && isUnderBro(*bro, true)) {
                     family.displacedBro = bro->littleBro;
                     bro->littleBro->pos.y += h();
+                    RepositionParameters(bro->littleBro, glm::ivec2(0, h()));
                     if (bro->littleBro->littleBro) {
                         bro->littleBro->littleBro->placeUnderBigBroRecursive();
                     }
@@ -332,4 +381,9 @@ glm::ivec2 Instruction::GetAdjustedPos() const
     else {
         return pos;
     }
+}
+
+Instruction* Instruction::GetOwner() const
+{
+    return model.type == InstructionModel::Type::Parameter ? owner : nullptr;
 }

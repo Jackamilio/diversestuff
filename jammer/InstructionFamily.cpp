@@ -67,6 +67,9 @@ InstructionFamily::~InstructionFamily()
     for (auto bro : bigBrothers) {
         delete bro;
     }
+    for (auto orphan : orphanedParameters) {
+        delete orphan;
+    }
 
     delete emptyParameter;
 }

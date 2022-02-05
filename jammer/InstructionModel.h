@@ -8,6 +8,8 @@
 #include "GuiElement.h"
 #include <vector>
 
+extern const int paramoffset;
+
 class Instruction;
 class InstructionFamily;
 
