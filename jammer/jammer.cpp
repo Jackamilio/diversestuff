@@ -78,11 +78,13 @@ class SpriteTest : public GuiElement {
 public:
     const Texture& texture;
     glm::vec2 position;
+    glm::vec2 scale;
     float direction;
 
     SpriteTest(const char* image_file) :
         texture(gui.engine.graphics.textures.Get(image_file)),
         position{},
+        scale(1,1),
         direction(0.0f)
     {
     }
@@ -90,14 +92,7 @@ public:
     virtual void Draw() {
         glm::vec2 center(texture.GetWidth(), texture.GetHeight());
         center *= 0.5f;
-        al_draw_rotated_bitmap(texture.GetAlValue(), center.x, center.y, position.x, position.y, direction, 0);
-
-        const int round = 5;
-        const int shrinkage = 1;
-        al_draw_filled_rounded_rectangle(20, 20, 200, 200, round, round, green);
-
-        if (al_key_down(&gui.engine.inputRoot.keyboardState, ALLEGRO_KEY_SPACE))
-        al_draw_filled_rounded_rectangle(20 + shrinkage, 20 + shrinkage, 200 - shrinkage, 200 - shrinkage, round, round, red);
+        al_draw_scaled_rotated_bitmap(texture.GetAlValue(), center.x, center.y, position.x, position.y, scale.x, scale.y, direction, 0);
     }
 };
 
@@ -159,46 +154,77 @@ int main()
         };
 
         newmodel("Avancer un peu");
-        curmodel->function = [&sprite](ParameterList&) {
+        curmodel->function = [&sprite](Parameter*) {
             sprite.position.x += 0.2f;
             return true;
         };
 
+        newmodel("Avancer de : ", InstructionModel::Type::Default, 1);
+        curmodel->function = [&sprite](Parameter* p) {
+            sprite.position.x += 0.2f * p[0];
+            return true;
+        };
+
         newmodel("Tourner à gauche");
-        curmodel->function = [&sprite](ParameterList&) {
+        curmodel->function = [&sprite](Parameter*) {
             sprite.direction -= 0.01f;
             return true;
         };
 
         newmodel("Tourner à droite");
-        curmodel->function = [&sprite](ParameterList&) {
+        curmodel->function = [&sprite](Parameter*) {
             sprite.direction += 0.01f;
             return true;
         };
 
-        newmodel("Je déclenche tout yo", InstructionModel::Type::Trigger);
-        curmodel->function = [](ParameterList&) {return true; };
+        newmodel("Je déclenche tout yo");
+        curmodel->isTrigger = true;
+        curmodel->function = [](Parameter*) {return true; };
 
         newmodel("Stop ce mf script");
-        curmodel->function = [](ParameterList&) {return false; };
+        curmodel->function = [](Parameter*) {return false; };
 
         newmodel("Reviens par là, le singe!");
-        curmodel->function = [&sprite](ParameterList&) {
+        curmodel->function = [&sprite](Parameter*) {
             sprite.position = glm::vec2(270, 210);
             sprite.direction = 0.0f;
             return true;
         };
 
-        newmodel("Nourris moi de params", InstructionModel::Type::Default, 2);
+        newmodel("Mirroir + Renversé", InstructionModel::Type::Default, 2);
+        curmodel->function = [&sprite](Parameter* pl) {
+            sprite.scale.x = pl[0] ? -1 : 1;
+            sprite.scale.y = pl[1] ? -1 : 1;
+            return true;
+        };
 
         newmodel("VRAI", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](ParameterList&) {
+        curmodel->evaluate = [](Parameter*) {
             return 1.0f;
         };
 
         newmodel("FAUX", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](ParameterList&) {
+        curmodel->evaluate = [](Parameter*) {
             return 0.0f;
+        };
+
+        newmodel("1", InstructionModel::Type::Parameter);
+        curmodel->evaluate = [](Parameter*) { return 1.0f; };
+
+        newmodel("2", InstructionModel::Type::Parameter);
+        curmodel->evaluate = [](Parameter*) { return 2.0f; };
+
+        newmodel("3", InstructionModel::Type::Parameter);
+        curmodel->evaluate = [](Parameter*) { return 3.0f; };
+
+        newmodel("Additionner", InstructionModel::Type::Parameter, 2);
+        curmodel->evaluate = [](Parameter* p) {
+            return p[0] + p[1];
+        };
+
+        newmodel("Multiplier par 10", InstructionModel::Type::Parameter, 1);
+        curmodel->evaluate = [](Parameter* p) {
+            return p[0] * 10.0f;
         };
 
         while (engine.OneLoop()) {}

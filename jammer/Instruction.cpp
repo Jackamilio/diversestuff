@@ -72,14 +72,6 @@ Instruction::~Instruction()
     }
 }
 
-inline void Instruction::Destroy()
-{
-    model.family.DestroyInstruction(this);
-    for (auto param : parameters) { // might want to recurse this
-        model.family.DestroyInstruction(param);
-    }
-}
-
 void Instruction::Draw() {
     // shadow
     if (model.family.shadowBro && gui.CurrentDraggable() == this)
@@ -90,10 +82,37 @@ void Instruction::Draw() {
 
     // self
     model.Draw(pos);
+
+    // highlighted param
+    if (model.family.highlightedParam == this) {
+        (model + pos).draw_rounded(6, 6, white, 3);
+    }
+}
+
+bool Instruction::ReplaceParameter(Instruction* oldp, Instruction* newp)
+{
+    for (int i = 0; i < parameters.size(); ++i) {
+        if (oldp == parameters[i]) {
+            model.family.unorphanParameter(newp);
+            newp->owner = this;
+            newp->pos = oldp->pos;
+            currentDropLocation->ForceAccept(newp, GuiElement::Priority::Top);
+            glm::ivec2 offset(newp->model.w() - oldp->model.w(), 0);
+            parameters[i] = newp;
+            for (++i; i < parameters.size(); ++i) {
+                parameters[i]->pos += offset;
+            }
+            return true;
+        }
+    }
+    return false;
 }
 
 void Instruction::GrabbedBis() {
-    PutOnTop();
+    if (model.type == InstructionModel::Type::Parameter && model.fixed) {
+        CancelGrab();
+        return;
+    }
 
     for (auto param : parameters) {
         if (param->currentDropLocation) {
@@ -105,6 +124,8 @@ void Instruction::GrabbedBis() {
 
     if (model.type == InstructionModel::Type::Parameter) {
         if (owner) {
+            Instruction* newp = Create(*model.family.emptyParameter);
+            owner->ReplaceParameter(this, newp);
             owner = nullptr;
             model.family.orphanParameter(this);
         }
@@ -126,56 +147,65 @@ void Instruction::GrabbedBis() {
             curBro = curBro->littleBro;
         }
     }
+
+    PutOnTop();
 }
 
 void Instruction::DroppedBis() {
     // dropped in the model's location means getting rid of self
     if ((GuiElement*)&currentDropLocation->location == model.Parent()) {
-        Destroy();
+        model.family.DestroyInstruction(this);
     }
     else {
         // accept all little bros into the new drop location
         Instruction* curLilBro = this->littleBro;
         while (curLilBro) {
-            currentDropLocation->ForceAccept(curLilBro);
+            currentDropLocation->ForceAccept(curLilBro, curLilBro->model.type == InstructionModel::Type::Parameter ? GuiElement::Priority::Top : GuiElement::Priority::Default);
             curLilBro = curLilBro->littleBro;
         }
 
         // as well as params
         for (auto param : parameters) {
-            currentDropLocation->ForceAccept(param);
+            currentDropLocation->ForceAccept(param, GuiElement::Priority::Top);
         }
 
         PutAtBottom();
 
-        if (model.type == InstructionModel::Type::Parameter) return;
-
-        Instruction* lastBro = getLastBro();
-        for (auto bro : model.family) {
-            if (bro != this && currentDropLocation == bro->currentDropLocation && isUnderBro(*bro)) {
-                bigBro = bro;
-                if (bro->littleBro) {
-                    lastBro->littleBro = bro->littleBro;
-                    bro->littleBro->bigBro = lastBro;
-                }
-                bro->littleBro = this;
-
-                model.family.displacedBro = nullptr;
-                placeUnderBigBroRecursive();
-                model.family.demoteFromBigBro(this);
-                break;
+        if (model.type == InstructionModel::Type::Parameter) {
+            Instruction* inst = model.family.highlightedParam;
+            if (inst && inst->owner && inst->owner->ReplaceParameter(inst, this)) {
+                model.family.DestroyInstruction(inst);
             }
-            else if (bro != lastBro && bro->currentDropLocation == lastBro->currentDropLocation && !bro->bigBro && lastBro->isAboveBro(*bro)) {
-                lastBro->littleBro = bro;
-                if (bro->bigBro) {
-                    bro->bigBro->littleBro = this;
-                    this->bigBro = bro->bigBro;
-                }
-                bro->bigBro = lastBro;
+            model.family.highlightedParam = nullptr;
+        }
+        else {
+            Instruction* lastBro = getLastBro();
+            for (auto bro : model.family) {
+                if (bro != this && currentDropLocation == bro->currentDropLocation && isUnderBro(*bro)) {
+                    bigBro = bro;
+                    if (bro->littleBro) {
+                        lastBro->littleBro = bro->littleBro;
+                        bro->littleBro->bigBro = lastBro;
+                    }
+                    bro->littleBro = this;
 
-                lastBro->placeAboveLittleBroRecursive();
-                model.family.demoteFromBigBro(bro);
-                break;
+                    model.family.displacedBro = nullptr;
+                    placeUnderBigBroRecursive();
+                    model.family.demoteFromBigBro(this);
+                    break;
+                }
+                else if (bro != lastBro && bro->currentDropLocation == lastBro->currentDropLocation && !bro->bigBro && lastBro->isAboveBro(*bro)) {
+                    lastBro->littleBro = bro;
+                    if (bro->bigBro) {
+                        bro->bigBro->littleBro = this;
+                        this->bigBro = bro->bigBro;
+                    }
+                    bro->bigBro = lastBro;
+
+                    lastBro->placeAboveLittleBroRecursive();
+                    model.family.demoteFromBigBro(bro);
+                    break;
+                }
             }
         }
     }
@@ -205,18 +235,29 @@ void Instruction::Dragged(const glm::ivec2& delta) {
     Instruction* curBro = this;
     do {
         curBro->pos += delta;
+        // the parameters too
+        MoveParameters(curBro->parameters, delta);
         curBro = curBro->littleBro;
     } while (curBro);
 
-    // the parameters too
-    MoveParameters(parameters, delta);
-
+    InstructionFamily& family = model.family;
     if (model.type == InstructionModel::Type::Parameter) {
-
+        Rect r;
+        model.family.highlightedParam = nullptr;
+        std::stack<Instruction*> params;
+        model.family.BuildParameterStack(params);
+        for (; !params.empty(); params.pop()) {
+            if (params.top() != this) {
+                r = params.top()->model;
+                r += params.top()->GetAdjustedPos();
+                if (r.isInside(model.tl + pos) || r.isInside(model.bl() + pos)) {
+                    model.family.highlightedParam = params.top();
+                    break;
+                }
+            }
+        }
     }
     else {
-        InstructionFamily& family = model.family;
-
         // displacement preview before dropping
         if (family.displacedBro && family.displacedBro->bigBro && !isUnderBro(*family.displacedBro->bigBro, true)) {
             family.displacedBro->placeUnderBigBroRecursive();

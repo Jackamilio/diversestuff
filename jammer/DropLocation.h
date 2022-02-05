@@ -24,7 +24,7 @@ class DropLocation : public DropLocationBase {
 public:
 	DropLocation(CropperDisplacer& loc);
 
-    inline void ForceAccept(Droppable<T>* element);
+    inline void ForceAccept(Droppable<T>* element, GuiElement::Priority priority = GuiElement::Priority::Default);
 	inline bool Accept(Droppable<T>* element, const glm::ivec2& pos);
 	inline void Reject(Droppable<T>* element);
 };
@@ -35,11 +35,11 @@ inline DropLocation<T>::DropLocation(CropperDisplacer& loc) : DropLocationBase(l
 }
 
 template<class T>
-inline void DropLocation<T>::ForceAccept(Droppable<T>* element)
+inline void DropLocation<T>::ForceAccept(Droppable<T>* element, GuiElement::Priority priority)
 {
     if (element->currentDropLocation != this) {
         element->Move(-GetGlobalOffset());
-        location.AddChild(element);
+        location.AddChild(element, priority);
         element->currentDropLocation = this;
     }
 }

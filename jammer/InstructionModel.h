@@ -20,14 +20,19 @@ public:
     glm::ivec2 pos;
     const char* text;
 
-    enum class Type { Default, Trigger, Parameter };
-
+    enum class Type { Default, Parameter };
     Type type;
+
+    union {
+        bool isTrigger;
+        bool fixed;
+    };
+
     int parametersTaken;
 
     union {
-        std::function<bool(ParameterList&)> function;
-        std::function<Parameter(ParameterList&)> evaluate;
+        std::function<bool(Parameter*)> function;
+        std::function<Parameter(Parameter*)> evaluate;
     };
 
     InstructionModel(InstructionFamily& fam);

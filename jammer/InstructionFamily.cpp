@@ -6,7 +6,7 @@
 InstructionFamily::Iterator::Iterator(vector<Instruction*>& vec) : bigBroIt(vec.begin()), endBroIt(vec.end()), curBro(*bigBroIt) {}
 InstructionFamily::Iterator::Iterator(vector<Instruction*>& vec, int dummy) : bigBroIt(vec.end()), endBroIt(vec.end()), curBro(nullptr) {}
 
-bool InstructionFamily::Iterator::operator !=(Iterator& r) const {
+bool InstructionFamily::Iterator::operator !=(const Iterator& r) const {
     return bigBroIt != r.bigBroIt || curBro != r.curBro;
 }
 
@@ -25,11 +25,29 @@ Instruction* InstructionFamily::Iterator::operator*() {
 }
 
 InstructionFamily::Iterator InstructionFamily::begin() {
-    return Iterator(bigBrothers);
+    return bigBrothers.empty() ? end() : Iterator(bigBrothers);
 }
 
 InstructionFamily::Iterator InstructionFamily::end() {
     return Iterator(bigBrothers, 0);
+}
+
+void BuildParameterStackRec(std::stack<Instruction*>& out, Instruction& inst) {
+    for (auto p : inst.parameters) {
+        out.push(p);
+        BuildParameterStackRec(out, *p);
+    }
+}
+
+void InstructionFamily::BuildParameterStack(std::stack<Instruction*>& out)
+{
+    for (auto bro : *this) {
+        BuildParameterStackRec(out, *bro);
+    }
+
+    for (auto orphan : orphanedParameters) {
+        BuildParameterStackRec(out, *orphan);
+    }
 }
 
 InstructionFamily::InstructionFamily(ALLEGRO_FONT* font) : font(font), shadowBroPos{}
@@ -38,7 +56,9 @@ InstructionFamily::InstructionFamily(ALLEGRO_FONT* font) : font(font), shadowBro
 
     emptyParameter = new InstructionModel(*this);
     emptyParameter->type = InstructionModel::Type::Parameter;
+    emptyParameter->fixed = true;
     emptyParameter->SetText("...");
+    emptyParameter->evaluate = [](Parameter*) { return 0.0f; };
 }
 
 InstructionFamily::~InstructionFamily()
@@ -49,6 +69,22 @@ InstructionFamily::~InstructionFamily()
     }
 
     delete emptyParameter;
+}
+
+std::vector<Parameter> paramMemory;
+
+Parameter* EvaluateParameters(Instruction& inst) {
+    if (!inst.parameters.empty()) {
+        size_t curmempos = paramMemory.size();
+        size_t nextmempos = curmempos + inst.parameters.size();
+        paramMemory.resize(nextmempos);
+        for (int i = 0; i < (int)inst.parameters.size(); ++i) {
+            paramMemory[curmempos+i] = inst.parameters[i]->model.evaluate(EvaluateParameters(*inst.parameters[i]));
+            paramMemory.resize(nextmempos);
+        }
+        return &paramMemory[curmempos];
+    }
+    return nullptr;
 }
 
 void InstructionFamily::Step()
@@ -62,12 +98,17 @@ void InstructionFamily::Step()
     waitingDestruction.clear();
 
     // execute code!
-    ParameterList dummylist;
     for (auto bro : bigBrothers) {
-        if (bro->model.type == InstructionModel::Type::Trigger) {
+        if (bro->model.isTrigger) {
             Instruction* curinst = bro;
-            while (curinst && curinst->model.function(dummylist)) {
-                curinst = curinst->littleBro;
+            while (curinst) {
+                if (curinst->model.function(EvaluateParameters(*curinst))) {
+                    curinst = curinst->littleBro;
+                }
+                else {
+                    curinst = nullptr;
+                }
+                paramMemory.clear();
             }
         }
     }

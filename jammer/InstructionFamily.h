@@ -26,15 +26,17 @@ public:
 
     public:
         Iterator(vector<Instruction*>& vec);
-        Iterator(vector<Instruction*>& vec, int dummy);
+        Iterator(vector<Instruction*>& vec, int);
 
-        bool operator !=(Iterator& r) const;
+        bool operator !=(const Iterator& r) const;
         void operator ++();
         Instruction* operator*();
     };
 
     Iterator begin();
     Iterator end();
+
+    void BuildParameterStack(std::stack<Instruction*>& out);
 
     InstructionFamily(ALLEGRO_FONT* font);
     ~InstructionFamily();
@@ -55,6 +57,7 @@ public:
 
     InstructionModel* emptyParameter = nullptr;
     Instruction* displacedBro = nullptr;
+    Instruction* highlightedParam = nullptr;
 
     bool shadowBro = false;
     glm::ivec2 shadowBroPos;

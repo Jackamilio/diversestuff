@@ -9,6 +9,7 @@ class InstructionModel;
 
 class Instruction : public Droppable<Instruction> {
     friend class InstructionFamily;
+    friend class InstructionModel;
 private:
     union {
         Instruction* bigBro;
@@ -35,9 +36,10 @@ public:
     inline static Instruction* Create(InstructionModel& model) {
         return new Instruction(model);
     }
-    inline void Destroy();
 
     void Draw();
+
+    bool ReplaceParameter(Instruction* oldp, Instruction* newp);
 
     virtual void GrabbedBis();
     virtual void DroppedBis();

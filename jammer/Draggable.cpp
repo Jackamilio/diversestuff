@@ -2,6 +2,11 @@
 #include "CropperDisplacer.h"
 #include "GuiMaster.h"
 
+void Draggable::CancelGrab()
+{
+    gui.UnTrack(this);
+}
+
 Engine::InputStatus Draggable::Event(ALLEGRO_EVENT& event) {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
         if (hitCheck(glm::ivec2(event.mouse.x, event.mouse.y))) {
@@ -27,6 +32,6 @@ Engine::InputStatus Draggable::Event(ALLEGRO_EVENT& event) {
 void Draggable::ForceGrab()
 {
     gui.CurDraggableGrabbedPosition() = GetPos();
-    Grabbed();
     gui.Track(this);
+    Grabbed();
 }

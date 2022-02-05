@@ -17,6 +17,8 @@ public:
 	virtual void Grabbed() final;
 	virtual void Dropped() final;
 
+	virtual void CancelGrab();
+
 	virtual void GrabbedBis() {};
 	virtual void DroppedBis() {};
 	virtual void DroppedBack() {};
@@ -67,16 +69,22 @@ inline void Droppable<T>::Dropped()
 	}
 	// if no valid drop location found, warp back to where it was
 	else {
-		DropLocationBase* loc = gui.CurDraggableGrabbedLocation();
-		loc = loc ? loc : (DropLocationBase*)dropLocations[0];
-		loc->location.AddChild(this);
-		SetPos(gui.CurDraggableGrabbedPosition());
-		currentDropLocation = (DropLocation<T>*)(loc);
-
+		CancelGrab();
 		DroppedBack();
 	}
 
 	DroppedBis();
+}
+
+template<class T>
+inline void Droppable<T>::CancelGrab()
+{
+	Draggable::CancelGrab();
+	DropLocationBase* loc = gui.CurDraggableGrabbedLocation();
+	loc = loc ? loc : (DropLocationBase*)gui.GetDropLocations<T>()[0];
+	loc->location.AddChild(this);
+	SetPos(gui.CurDraggableGrabbedPosition());
+	currentDropLocation = (DropLocation<T>*)(loc);
 }
 
 template<class T>

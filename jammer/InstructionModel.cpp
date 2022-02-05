@@ -14,6 +14,7 @@ InstructionModel::InstructionModel(InstructionFamily& fam) :
     pos{},
     text(nullptr),
     type(InstructionModel::Type::Default),
+    isTrigger(false),
     parametersTaken(0)
 {
 }
@@ -50,6 +51,7 @@ Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
             for (int i = 0; i < parametersTaken; ++i) {
                 newborn->parameters[i] = Instruction::Create(*family.emptyParameter);
                 newborn->parameters[i]->SetPos(ppos);
+                newborn->parameters[i]->owner = newborn;
                 ppos.x += family.emptyParameter->w() + paramoffset;
             }
 

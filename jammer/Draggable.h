@@ -13,6 +13,8 @@ public:
 	virtual void Dropped() {}
 	virtual void Dragged(const glm::ivec2& delta) {}
 
+	virtual void CancelGrab();
+
 	virtual void SetPos(const glm::ivec2& tsl) = 0;
 	virtual glm::ivec2 GetPos() const = 0;
 	inline void Move(const glm::ivec2& tsl) { SetPos(GetPos() + tsl); }
