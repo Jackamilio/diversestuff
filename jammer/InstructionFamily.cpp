@@ -103,19 +103,32 @@ void InstructionFamily::Step()
     // execute code!
     for (auto bro : bigBrothers) {
         if (bro->model.isTrigger) {
+            Instruction* previnst = nullptr;
             Instruction* curinst = bro;
             while (curinst) {
                 InstructionModel::FunctionResult ret = curinst->model.function(EvaluateParameters(*curinst));
                 paramMemory.clear();
                 if (ret == InstructionModel::FunctionResult::Continue) {
+                    previnst = curinst;
                     curinst = curinst->littleBro;
                 }
                 else if (ret == InstructionModel::FunctionResult::JumpToNext) {
+                    previnst = curinst;
                     curinst = curinst->jump;
+                }
+                else if (ret == InstructionModel::FunctionResult::ElseContinue) {
+                    if (previnst == curinst->bigBro) {
+                        previnst = curinst;
+                        curinst = curinst->jump;
+                    }
+                    else {
+                        previnst = curinst;
+                        curinst = curinst->littleBro;
+                    }
                 }
                 else {
                     curinst = nullptr;
-                }//Todo : Yield
+                }//Todo : Yield, ElseJump, Error
             }
         }
     }

@@ -7,6 +7,7 @@ const int padding = 6;
 const int parampadding = 3;
 const int paramoffset = 5;
 const float roundness = 2.0f;
+const int jumpShift = 16;
 
 InstructionModel::InstructionModel(InstructionFamily& fam) :
     family(fam),
@@ -78,6 +79,7 @@ Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
                 next->bigBro = prev;
                 prev->jump = next;
                 next->jumpAbove = prev;
+                prev = next;
                 nextJump = nextJump->jump;
             }
 
@@ -95,7 +97,7 @@ void InstructionModel::Draw()
     //defaultparams.resize((size_t)parametersTaken, nullptr);
     //Draw(pos, defaultparams);
 
-    Draw(pos, defaultRect);
+    Draw(pos, defaultRect, jumpAbove ? pos.y - jumpAbove->pos.y - defaultRect.h() + 1 : 0);
 
     glm::ivec2 ppos = pos;
     ppos.x += paramsX;
@@ -106,7 +108,7 @@ void InstructionModel::Draw()
     }
 }
 
-void InstructionModel::Draw(const glm::ivec2& pos, const Rect& rect) const
+void InstructionModel::Draw(const glm::ivec2& pos, const Rect& rect, int connexion) const
 {
     Rect rectpos = rect + pos;
     if (type == InstructionModel::Type::Parameter) {
@@ -117,7 +119,22 @@ void InstructionModel::Draw(const glm::ivec2& pos, const Rect& rect) const
     }
     al_draw_text(family.font, white, pos.x, pos.y, 0, text);
 
-    
+    if (connexion) {
+        Rect r;
+        
+        r.tl.x = rectpos.tl.x + 1;
+        r.tl.y = rectpos.tl.y - connexion;
+        r.br.x = rectpos.tl.x + jumpShift;
+        r.br.y = rectpos.tl.y + 1;
+        
+        r.draw_filled(black);
+
+        glm::ivec2 tr = r.tr();
+        glm::ivec2 bl = r.bl();
+
+        al_draw_line(r.tl.x, r.tl.y, bl.x, bl.y, grey, 1);
+        al_draw_line(tr.x, tr.y, r.br.x, r.br.y, grey, 1);
+    }
 
     /*
     assert(parametersTaken == params.size());

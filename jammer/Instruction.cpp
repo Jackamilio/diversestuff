@@ -33,6 +33,12 @@ void Instruction::placeUnderBigBroRecursive() {
     if (bigBro) {
         glm::ivec2 delta(pos);
         pos = bigBro->pos;
+        if (bigBro->jump) {
+            pos.x += jumpShift;
+        }
+        if (jumpAbove) {
+            pos.x -= jumpShift;
+        }
         pos.x += bigBro->tl.x - tl.x;
         pos.y += bigBro->h();
         delta -= pos;
@@ -48,6 +54,12 @@ void Instruction::placeAboveLittleBroRecursive() {
     if (littleBro) {
         glm::ivec2 delta(pos);
         pos = littleBro->pos;
+        if (littleBro->jumpAbove) {
+            pos.x += jumpShift;
+        }
+        if (jump) {
+            pos.x -= jumpShift;
+        }
         pos.x += littleBro->tl.x - tl.x;
         pos.y -= littleBro->h();
         delta -= pos;
@@ -98,12 +110,23 @@ void Instruction::Draw() {
     }
 
     // self
-    model.Draw(pos, *this);
+    model.Draw(pos, *this, jumpAbove ? pos.y - jumpAbove->pos.y - h() + 1 : 0);
 
     // highlighted param
     if (model.family.highlightedParam == this) {
         (*this + pos).draw_rounded(6, 6, white, 3);
     }
+
+    // debug
+    if (highlightmyself) {
+        (*this + pos).draw(green, 3);
+    }
+    //if (!currentDropLocation) {
+    //    Rect r;
+    //    r.tl = pos;
+    //    r.resize(6, 6);
+    //    r.draw_filled_rounded(2, 2, red);
+    //}
 }
 
 void ForceAcceptMeAndParams(Instruction* frominst, DropLocation<Instruction>* newdroploc, const glm::ivec2& delta) {
@@ -268,6 +291,7 @@ void Instruction::DroppedBis() {
         Instruction* curLilBro = this->littleBro;
         while (curLilBro) {
             currentDropLocation->ForceAccept(curLilBro);
+            ForceAcceptParams(curLilBro, currentDropLocation);
             curLilBro = curLilBro->littleBro;
         }
 
@@ -380,6 +404,9 @@ void Instruction::Dragged(const glm::ivec2& delta) {
             if (bro != this && isUnderBro(*bro, true)) {
                 family.shadowBro = true;
                 family.shadowBroPos = bro->GetAdjustedPos();
+                if (bro->jump) {
+                    family.shadowBroPos.x += jumpShift;
+                }
                 family.shadowBroPos.x += bro->tl.x - tl.x;
                 family.shadowBroPos.y += bro->br.y - tl.y;
                 break;
@@ -387,6 +414,9 @@ void Instruction::Dragged(const glm::ivec2& delta) {
             else if (bro != lastBro && !bro->bigBro && lastBro->isAboveBro(*bro, true)) {
                 family.shadowBro = true;
                 family.shadowBroPos = bro->GetAdjustedPos();
+                if (bro->jumpAbove) {
+                    family.shadowBroPos.x += jumpShift;
+                }
                 family.shadowBroPos.x += bro->tl.x - lastBro->tl.x;
                 family.shadowBroPos.y -= lastBro->h();
                 break;
@@ -397,6 +427,13 @@ void Instruction::Dragged(const glm::ivec2& delta) {
 
 bool Instruction::hitCheck(const glm::ivec2& opos) const
 {
+    if (jump) {
+        Rect r = *this;
+        r.resize(jumpShift, jump->pos.y - pos.y);
+        if (r.isInside(opos - pos)) {
+            return true;
+        }
+    }
     return isInside(opos - pos);
 }
 
@@ -418,5 +455,14 @@ glm::ivec2 Instruction::GetAdjustedPos() const
     else {
         return pos;
     }
+}
+
+Engine::InputStatus Instruction::Event(ALLEGRO_EVENT& ev)
+{
+    if (ev.type == ALLEGRO_EVENT_MOUSE_AXES) {
+        highlightmyself = hitCheck(glm::ivec2(ev.mouse.x, ev.mouse.y));
+    }
+    
+    return Draggable::Event(ev);
 }
 

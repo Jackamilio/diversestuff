@@ -1,6 +1,6 @@
 #include "PureDisplacer.h"
 
-PureDisplacer::PureDisplacer() : offset{}
+PureDisplacer::PureDisplacer() : GuiElement(true), offset{}
 {
 }
 

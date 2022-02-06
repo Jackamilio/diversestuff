@@ -54,6 +54,10 @@ public:
     glm::ivec2 GetAdjustedPos() const;
 
     inline Instruction* GetOwner() const { return owner; }
+
+    // for debug
+    bool highlightmyself = false;
+    virtual Engine::InputStatus Event(ALLEGRO_EVENT& ev);
 };
 
 #endif //__INSTRUCTION_H__

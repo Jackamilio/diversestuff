@@ -9,6 +9,7 @@
 #include <vector>
 
 extern const int paramoffset;
+extern const int jumpShift;
 
 class Instruction;
 class InstructionFamily;
@@ -38,7 +39,7 @@ public:
 
     int parametersTaken;
 
-    enum class FunctionResult { Continue, Stop, JumpToNext, Yield, Error };
+    enum class FunctionResult { Continue, Stop, JumpToNext, ElseJump, ElseContinue, Yield, Error };
     std::function<FunctionResult(Parameter*)> function;
     std::function<Parameter(Parameter*)> evaluate;
 
@@ -55,7 +56,7 @@ public:
     virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
     void Draw();
 
-    void Draw(const glm::ivec2& pos, const Rect& rect) const;
+    void Draw(const glm::ivec2& pos, const Rect& rect, int connexion = 0) const;
 
     // assumes both links as Jump type, returns "to" for convenience
     InstructionModel* Link(InstructionModel* to);

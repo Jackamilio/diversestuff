@@ -140,9 +140,11 @@ int main()
         InstructionFamily family(fetchDefaultFont());
 
         int yoffset = 20;
-        InstructionModel* curmodel;
+        InstructionModel* curmodel = nullptr;
+        InstructionModel* previousmodel = nullptr;
         std::vector<InstructionModel*> deletelater;
         auto newmodel = [&](const char* name, InstructionModel::Type type = InstructionModel::Type::Default, int nbparams = 0) {
+            previousmodel = curmodel;
             curmodel = new InstructionModel(family);
             curmodel->type = type;
             curmodel->parametersTaken = nbparams;
@@ -208,6 +210,11 @@ int main()
             return 0.0f;
         };
 
+        newmodel("NON", InstructionModel::Type::Parameter, 1);
+        curmodel->evaluate = [](Parameter* p) {
+            return *p != 0.0f ? 0.0f : 1.0f;
+        };
+
         newmodel("1", InstructionModel::Type::Parameter);
         curmodel->evaluate = [](Parameter*) { return 1.0f; };
 
@@ -216,6 +223,14 @@ int main()
 
         newmodel("3", InstructionModel::Type::Parameter);
         curmodel->evaluate = [](Parameter*) { return 3.0f; };
+
+        newmodel("10", InstructionModel::Type::Parameter);
+        curmodel->evaluate = [](Parameter*) { return 10.0f; };
+
+        newmodel("Espace est appuyé", InstructionModel::Type::Parameter);
+        curmodel->evaluate = [&engine](Parameter*) {
+            return al_key_down(&engine.inputRoot.keyboardState, ALLEGRO_KEY_SPACE) ? 1 : 0;
+        };
 
         newmodel("Additionner", InstructionModel::Type::Parameter, 2);
         curmodel->evaluate = [](Parameter* p) {
@@ -231,13 +246,29 @@ int main()
         curmodel->function = [](Parameter* p) {
             return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::JumpToNext;
         };
-        InstructionModel* inst_si = curmodel;
 
         newmodel("   ", InstructionModel::Type::Jump);
         curmodel->function = [](Parameter*) {
             return InstructionModel::FunctionResult::Continue;
         };
-        inst_si->Link(curmodel);
+        previousmodel->Link(curmodel);
+
+        newmodel("Si", InstructionModel::Type::Jump, 1);
+        curmodel->function = [](Parameter* p) {
+            return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::JumpToNext;
+        };
+
+        newmodel("sinon", InstructionModel::Type::Jump);
+        curmodel->function = [](Parameter*) {
+            return InstructionModel::FunctionResult::ElseContinue;
+        };
+        previousmodel->Link(curmodel);
+
+        newmodel("   ", InstructionModel::Type::Jump);
+        curmodel->function = [](Parameter*) {
+            return InstructionModel::FunctionResult::Continue;
+        };
+        previousmodel->Link(curmodel);
 
         while (engine.OneLoop()) {}
 
