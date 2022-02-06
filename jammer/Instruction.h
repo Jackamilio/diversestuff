@@ -11,12 +11,13 @@ class Instruction : public Rect, public Droppable<Instruction> {
     friend class InstructionFamily;
     friend class InstructionModel;
 private:
-    union {
-        Instruction* bigBro;
-        Instruction* owner;
-    };
-    
+    Instruction* bigBro;
     Instruction* littleBro;
+
+    Instruction* owner; // for parameter
+
+    Instruction* jumpAbove;
+    Instruction* jump;
 
     bool isUnderBro(const Instruction& bro, bool checkAdjusted = false);
     bool isAboveBro(const Instruction& bro, bool checkAdjusted = false);
@@ -52,7 +53,7 @@ public:
 
     glm::ivec2 GetAdjustedPos() const;
 
-    Instruction* GetOwner() const;
+    inline Instruction* GetOwner() const { return owner; }
 };
 
 #endif //__INSTRUCTION_H__

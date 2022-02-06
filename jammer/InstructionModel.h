@@ -17,6 +17,9 @@ typedef float Parameter;
 typedef std::vector<Parameter> ParameterList;
 
 class InstructionModel : public GuiElement {
+private:
+    Instruction* CreateInstruction();
+
 public:
     InstructionFamily& family;
     glm::ivec2 pos;
@@ -24,20 +27,20 @@ public:
     float paramsX;
     const char* text;
 
-    enum class Type { Default, Parameter };
+    enum class Type { Default, Parameter, Jump };
     Type type;
 
-    union {
-        bool isTrigger;
-        bool fixed;
-    };
+    bool isTrigger; // for Default
+    bool fixed; // for Parameter
+
+    InstructionModel* jumpAbove;
+    InstructionModel* jump;
 
     int parametersTaken;
 
-    union {
-        std::function<bool(Parameter*)> function;
-        std::function<Parameter(Parameter*)> evaluate;
-    };
+    enum class FunctionResult { Continue, Stop, JumpToNext, Yield, Error };
+    std::function<FunctionResult(Parameter*)> function;
+    std::function<Parameter(Parameter*)> evaluate;
 
     InstructionModel(InstructionFamily& fam);
     ~InstructionModel();
@@ -53,6 +56,9 @@ public:
     void Draw();
 
     void Draw(const glm::ivec2& pos, const Rect& rect) const;
+
+    // assumes both links as Jump type, returns "to" for convenience
+    InstructionModel* Link(InstructionModel* to);
 };
 
 #endif //__INSTRUCTION_MODEL_H__

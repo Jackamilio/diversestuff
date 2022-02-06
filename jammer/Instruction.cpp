@@ -72,6 +72,9 @@ Instruction::Instruction(InstructionModel& model) :
     model(model),
     bigBro(nullptr),
     littleBro(nullptr),
+    owner(nullptr),
+    jumpAbove(nullptr),
+    jump(nullptr),
     pos{}
 {
     parameters.reserve((size_t)model.parametersTaken);
@@ -181,7 +184,12 @@ void RejectAllParams(Instruction* inst) {
 }
 
 void Instruction::GrabbedBis() {
-    if (model.type == InstructionModel::Type::Parameter && model.fixed) {
+    if (jumpAbove) {
+        CancelGrab();
+        jumpAbove->ForceGrab();
+        return;
+    }
+    if (model.fixed) {
         CancelGrab();
         return;
     }
@@ -197,6 +205,7 @@ void Instruction::GrabbedBis() {
         }
     }
     else {
+        Instruction* rememberBigBro = bigBro;
         if (bigBro) {
             bigBro->littleBro = nullptr;
             bigBro = nullptr;
@@ -204,14 +213,40 @@ void Instruction::GrabbedBis() {
         }
 
         Instruction* curBro = this->littleBro;
+        std::stack<Instruction*> expectedJumps;
+        if (model.type == InstructionModel::Type::Jump) {
+            expectedJumps.push(jump);
+        }
         while (curBro) {
-            if (curBro->currentDropLocation) {
-                curBro->currentDropLocation->Reject(curBro);
+            if (curBro->model.type == InstructionModel::Type::Jump && curBro->jumpAbove && expectedJumps.empty())
+            {
+                // break caught bros
+                assert(rememberBigBro && "Something went wrong, in this situation at leat one bigbro exist and it is the top jump");
+                rememberBigBro->littleBro = curBro;
+                curBro->bigBro->littleBro = nullptr;
+                curBro->bigBro = rememberBigBro;
+                curBro = nullptr;
             }
-            gui.AddChild(curBro);
-            curBro->PutOnTop();
-            RejectAllParams(curBro);
-            curBro = curBro->littleBro;
+            else {
+                if (curBro->model.type == InstructionModel::Type::Jump) {
+                    if (!curBro->jumpAbove) {
+                        expectedJumps.push(curBro->jump);
+                    }
+                    else if (curBro->jump) {
+                        expectedJumps.top() = curBro->jump;
+                    }
+                    else {
+                        expectedJumps.pop();
+                    }
+                }
+                if (curBro->currentDropLocation) {
+                    curBro->currentDropLocation->Reject(curBro);
+                }
+                gui.AddChild(curBro);
+                curBro->PutOnTop();
+                RejectAllParams(curBro);
+                curBro = curBro->littleBro;
+            }
         }
     }
 }
@@ -385,7 +420,3 @@ glm::ivec2 Instruction::GetAdjustedPos() const
     }
 }
 
-Instruction* Instruction::GetOwner() const
-{
-    return model.type == InstructionModel::Type::Parameter ? owner : nullptr;
-}

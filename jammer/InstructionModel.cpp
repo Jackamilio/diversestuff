@@ -15,7 +15,12 @@ InstructionModel::InstructionModel(InstructionFamily& fam) :
     text(nullptr),
     type(InstructionModel::Type::Default),
     isTrigger(false),
-    parametersTaken(0)
+    fixed(false),
+    jumpAbove(nullptr),
+    jump(nullptr),
+    parametersTaken(0),
+    function([](Parameter*) {return FunctionResult::Error; }),
+    evaluate([](Parameter*) {return 0.0f; })
 {
 }
 
@@ -32,31 +37,51 @@ void InstructionModel::SetText(const char* t) {
     defaultRect.br.x += (family.emptyParameter->defaultRect.w() + paramoffset) * parametersTaken;
 }
 
+Instruction* InstructionModel::CreateInstruction() {
+    Instruction* newborn = Instruction::Create(*this);
+    newborn->SetPos(pos);
+
+    glm::ivec2 ppos = pos;
+    ppos.x += paramsX;
+
+    for (int i = 0; i < parametersTaken; ++i) {
+        newborn->parameters[i] = Instruction::Create(*family.emptyParameter);
+        newborn->parameters[i]->SetPos(ppos);
+        newborn->parameters[i]->owner = newborn;
+        ppos.x += family.emptyParameter->defaultRect.w() + paramoffset;
+    }
+
+    return newborn;
+}
+
 Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
 {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
         if (defaultRect.isInside(glm::ivec2(event.mouse.x, event.mouse.y) - pos)) {
-            // create an instruction and force grab it
-            Instruction* newborn = Instruction::Create(*this);
-            if (type == Type::Parameter) {
-                family.orphanParameter(newborn);
+            InstructionModel* topModel = this;
+            while (topModel->jumpAbove) {
+                topModel = topModel->jumpAbove;
+            }
+            Instruction* topInst = topModel->CreateInstruction();
+            if (topModel->type == Type::Parameter) {
+                family.orphanParameter(topInst);
             }
             else {
-                family.promoteToBigBro(newborn);
-            }
-            newborn->SetPos(pos);
-
-            glm::ivec2 ppos = pos;
-            ppos.x += paramsX;
-
-            for (int i = 0; i < parametersTaken; ++i) {
-                newborn->parameters[i] = Instruction::Create(*family.emptyParameter);
-                newborn->parameters[i]->SetPos(ppos);
-                newborn->parameters[i]->owner = newborn;
-                ppos.x += family.emptyParameter->defaultRect.w() + paramoffset;
+                family.promoteToBigBro(topInst);
             }
 
-            newborn->ForceGrab();
+            Instruction* prev = topInst;
+            InstructionModel* nextJump = topModel->type == Type::Jump ? topModel->jump : nullptr;
+            while (nextJump) {
+                Instruction* next = nextJump->CreateInstruction();
+                prev->littleBro = next;
+                next->bigBro = prev;
+                prev->jump = next;
+                next->jumpAbove = prev;
+                nextJump = nextJump->jump;
+            }
+
+            topInst->ForceGrab();
             return Engine::InputStatus::grabbed;
         }
     }
@@ -110,4 +135,12 @@ void InstructionModel::Draw(const glm::ivec2& pos, const Rect& rect) const
             rect += shift;
         }
     }*/
+}
+
+InstructionModel* InstructionModel::Link(InstructionModel* to)
+{
+    assert(type == InstructionModel::Type::Jump && to->type == InstructionModel::Type::Jump && "Only jump types can be linked");
+    jump = to;
+    to->jumpAbove = this;
+    return to;
 }
