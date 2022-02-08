@@ -33,15 +33,21 @@ public:
 
     bool isTrigger; // for Default
     bool fixed; // for Parameter
+    bool visible; // for jumps
 
-    InstructionModel* jumpAbove;
+    InstructionModel* prevLink;
+    InstructionModel* nextLink;
+
     InstructionModel* jump;
 
     int parametersTaken;
 
-    enum class FunctionResult { Continue, Stop, JumpToNext, ElseJump, ElseContinue, Yield, Error };
+    enum class FunctionResult { Continue, Stop, Jump, Yield, Error };
     std::function<FunctionResult(Parameter*)> function;
     std::function<Parameter(Parameter*)> evaluate;
+
+    InstructionModel* GetPrevVisibleLink();
+    InstructionModel* GetNextVisibleLink();
 
     InstructionModel(InstructionFamily& fam);
     ~InstructionModel();
@@ -60,6 +66,7 @@ public:
 
     // assumes both links as Jump type, returns "to" for convenience
     InstructionModel* Link(InstructionModel* to);
+    inline void JumpsTo(InstructionModel* to) { jump = to; }
 };
 
 #endif //__INSTRUCTION_MODEL_H__

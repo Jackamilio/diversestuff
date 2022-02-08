@@ -16,16 +16,21 @@ private:
 
     Instruction* owner; // for parameter
 
-    Instruction* jumpAbove;
+    Instruction* prevLink;
+    Instruction* nextLink;
+
     Instruction* jump;
 
-    bool isUnderBro(const Instruction& bro, bool checkAdjusted = false);
-    bool isAboveBro(const Instruction& bro, bool checkAdjusted = false);
+    Instruction* GetPrevVisibleLink();
+    Instruction* GetNextVisibleLink();
 
-    void placeUnderBigBroRecursive();
-    void placeAboveLittleBroRecursive();
+    bool IsUnderBro(const Instruction& bro, bool checkAdjusted = false);
+    bool IsAboveBro(const Instruction& bro, bool checkAdjusted = false);
 
-    Instruction* getLastBro();
+    void PlaceUnderBigBroRecursive();
+    void PlaceAboveLittleBroRecursive();
+
+    Instruction* GetLastBro();
 
     Instruction(InstructionModel& model);
     ~Instruction();

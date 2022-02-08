@@ -9,6 +9,24 @@ const int paramoffset = 5;
 const float roundness = 2.0f;
 const int jumpShift = 16;
 
+InstructionModel* InstructionModel::GetPrevVisibleLink()
+{
+    InstructionModel* ret = prevLink;
+    while (ret && !ret->visible) {
+        ret = ret->prevLink;
+    }
+    return ret;
+}
+
+InstructionModel* InstructionModel::GetNextVisibleLink()
+{
+    InstructionModel* ret = nextLink;
+    while (ret && !ret->visible) {
+        ret = ret->nextLink;
+    }
+    return ret;
+}
+
 InstructionModel::InstructionModel(InstructionFamily& fam) :
     family(fam),
     pos{},
@@ -17,7 +35,9 @@ InstructionModel::InstructionModel(InstructionFamily& fam) :
     type(InstructionModel::Type::Default),
     isTrigger(false),
     fixed(false),
-    jumpAbove(nullptr),
+    visible(true),
+    prevLink(nullptr),
+    nextLink(nullptr),
     jump(nullptr),
     parametersTaken(0),
     function([](Parameter*) {return FunctionResult::Error; }),
@@ -58,10 +78,11 @@ Instruction* InstructionModel::CreateInstruction() {
 Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
 {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-        if (defaultRect.isInside(glm::ivec2(event.mouse.x, event.mouse.y) - pos)) {
+        if (visible && defaultRect.isInside(glm::ivec2(event.mouse.x, event.mouse.y) - pos)) {
+            // create the first instruction that's on top
             InstructionModel* topModel = this;
-            while (topModel->jumpAbove) {
-                topModel = topModel->jumpAbove;
+            while (topModel->prevLink) {
+                topModel = topModel->prevLink;
             }
             Instruction* topInst = topModel->CreateInstruction();
             if (topModel->type == Type::Parameter) {
@@ -71,18 +92,31 @@ Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
                 family.promoteToBigBro(topInst);
             }
 
+            // create subsquent instructions that are linked to the first
+            std::map<InstructionModel*, Instruction*> couples;
+            couples[topModel] = topInst;
+
             Instruction* prev = topInst;
-            InstructionModel* nextJump = topModel->type == Type::Jump ? topModel->jump : nullptr;
-            while (nextJump) {
-                Instruction* next = nextJump->CreateInstruction();
+            InstructionModel* nextLink = topModel->nextLink;
+            while (nextLink) {
+                Instruction* next = nextLink->CreateInstruction();
                 prev->littleBro = next;
                 next->bigBro = prev;
-                prev->jump = next;
-                next->jumpAbove = prev;
+                prev->nextLink = next;
+                next->prevLink = prev;
                 prev = next;
-                nextJump = nextJump->jump;
+                couples[nextLink] = next;
+                nextLink = nextLink->nextLink;
             }
 
+            // resolve jumps
+            for (auto couple : couples) {
+                if (couple.first->jump) {
+                    couple.second->jump = couples[couple.first->jump];
+                }
+            }
+
+            // grab the first new instance that should repercutate on all next
             topInst->ForceGrab();
             return Engine::InputStatus::grabbed;
         }
@@ -92,19 +126,17 @@ Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
 
 void InstructionModel::Draw()
 {
-    // faster/cleaner way to do this?
-    //static std::vector<Instruction*> defaultparams;
-    //defaultparams.resize((size_t)parametersTaken, nullptr);
-    //Draw(pos, defaultparams);
+    if (visible) {
+        InstructionModel* validPrev = GetPrevVisibleLink();
+        Draw(pos, defaultRect, validPrev ? pos.y - validPrev->pos.y - defaultRect.h() + 1 : 0);
 
-    Draw(pos, defaultRect, jumpAbove ? pos.y - jumpAbove->pos.y - defaultRect.h() + 1 : 0);
+        glm::ivec2 ppos = pos;
+        ppos.x += paramsX;
 
-    glm::ivec2 ppos = pos;
-    ppos.x += paramsX;
-
-    for (int i = 0; i < parametersTaken; ++i) {
-        family.emptyParameter->Draw(ppos, family.emptyParameter->defaultRect);
-        ppos.x += family.emptyParameter->defaultRect.w() + paramoffset;
+        for (int i = 0; i < parametersTaken; ++i) {
+            family.emptyParameter->Draw(ppos, family.emptyParameter->defaultRect);
+            ppos.x += family.emptyParameter->defaultRect.w() + paramoffset;
+        }
     }
 }
 
@@ -157,7 +189,7 @@ void InstructionModel::Draw(const glm::ivec2& pos, const Rect& rect, int connexi
 InstructionModel* InstructionModel::Link(InstructionModel* to)
 {
     assert(type == InstructionModel::Type::Jump && to->type == InstructionModel::Type::Jump && "Only jump types can be linked");
-    jump = to;
-    to->jumpAbove = this;
+    nextLink = to;
+    to->prevLink = this;
     return to;
 }

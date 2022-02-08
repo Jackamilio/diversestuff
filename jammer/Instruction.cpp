@@ -8,18 +8,36 @@
 const int dropL = 20;
 const int dropR = 30;
 
-bool Instruction::isUnderBro(const Instruction& bro, bool checkAdjusted) {
-    const glm::ivec2 brobl = (checkAdjusted ? bro.GetAdjustedPos() : bro.pos) + bro.bl();
-    const glm::ivec2 mytl = pos + tl;
-    return valueInside(mytl.x, brobl.x - dropL, brobl.x + dropR) && valueInside(mytl.y, brobl.y, brobl.y + bro.h());
+Instruction* Instruction::GetPrevVisibleLink()
+{
+    Instruction* ret = prevLink;
+    while (ret && !ret->model.visible) {
+        ret = ret->prevLink;
+    }
+    return ret;
 }
 
-bool Instruction::isAboveBro(const Instruction& bro, bool checkAdjusted) {
+Instruction* Instruction::GetNextVisibleLink()
+{
+    Instruction* ret = nextLink;
+    while (ret && !ret->model.visible) {
+        ret = ret->nextLink;
+    }
+    return ret;
+}
+
+bool Instruction::IsUnderBro(const Instruction& bro, bool checkAdjusted) {
+    const glm::ivec2 brobl = (checkAdjusted ? bro.GetAdjustedPos() : bro.pos) + bro.bl();
+    const glm::ivec2 mytl = pos + tl;
+    return bro.model.visible && valueInside(mytl.x, brobl.x - dropL, brobl.x + dropR) && valueInside(mytl.y, brobl.y, brobl.y + bro.h());
+}
+
+bool Instruction::IsAboveBro(const Instruction& bro, bool checkAdjusted) {
     glm::ivec2 bap = checkAdjusted ? bro.GetAdjustedPos() : bro.pos;
     const int broleft = bap.x + bro.tl.x;
     const int broUp = bap.y;
     const glm::ivec2 mybl = pos + bl();
-    return valueInside(mybl.x, broleft - dropL, broleft + dropR) && valueInside(mybl.y, broUp - bro.h(), broUp);
+    return bro.model.visible && valueInside(mybl.x, broleft - dropL, broleft + dropR) && valueInside(mybl.y, broUp - bro.h(), broUp);
 }
 
 void RepositionParameters(Instruction* inst, const glm::ivec2& delta) {
@@ -29,49 +47,49 @@ void RepositionParameters(Instruction* inst, const glm::ivec2& delta) {
     }
 }
 
-void Instruction::placeUnderBigBroRecursive() {
+void Instruction::PlaceUnderBigBroRecursive() {
     if (bigBro) {
         glm::ivec2 delta(pos);
         pos = bigBro->pos;
-        if (bigBro->jump) {
+        if (bigBro->nextLink) {
             pos.x += jumpShift;
         }
-        if (jumpAbove) {
+        if (prevLink) {
             pos.x -= jumpShift;
         }
         pos.x += bigBro->tl.x - tl.x;
-        pos.y += bigBro->h();
+        if (bigBro->model.visible) { pos.y += bigBro->h(); }
         delta -= pos;
         RepositionParameters(this, -delta);
 
         if (littleBro) {
-            littleBro->placeUnderBigBroRecursive();
+            littleBro->PlaceUnderBigBroRecursive();
         }
     }
 }
 
-void Instruction::placeAboveLittleBroRecursive() {
+void Instruction::PlaceAboveLittleBroRecursive() {
     if (littleBro) {
         glm::ivec2 delta(pos);
         pos = littleBro->pos;
-        if (littleBro->jumpAbove) {
+        if (littleBro->prevLink) {
             pos.x += jumpShift;
         }
-        if (jump) {
+        if (nextLink) {
             pos.x -= jumpShift;
         }
         pos.x += littleBro->tl.x - tl.x;
-        pos.y -= littleBro->h();
+        if (littleBro->model.visible) { pos.y -= littleBro->h(); }
         delta -= pos;
         RepositionParameters(this, -delta);
 
         if (bigBro) {
-            bigBro->placeAboveLittleBroRecursive();
+            bigBro->PlaceAboveLittleBroRecursive();
         }
     }
 }
 
-Instruction* Instruction::getLastBro() {
+Instruction* Instruction::GetLastBro() {
     Instruction* ret = this;
     while (ret->littleBro) {
         ret = ret->littleBro;
@@ -85,7 +103,8 @@ Instruction::Instruction(InstructionModel& model) :
     bigBro(nullptr),
     littleBro(nullptr),
     owner(nullptr),
-    jumpAbove(nullptr),
+    prevLink(nullptr),
+    nextLink(nullptr),
     jump(nullptr),
     pos{}
 {
@@ -102,31 +121,34 @@ Instruction::~Instruction()
 }
 
 void Instruction::Draw() {
-    // shadow
-    if (model.family.shadowBro && gui.CurrentDraggable() == this)
-    {
-        Rect shadowRect = *this + model.family.shadowBroPos;
-        shadowRect.draw_filled(lightgrey);
-    }
+    if (model.visible) {
+        // shadow
+        if (model.family.shadowBro && gui.CurrentDraggable() == this)
+        {
+            Rect shadowRect = *this + model.family.shadowBroPos;
+            shadowRect.draw_filled(lightgrey);
+        }
 
-    // self
-    model.Draw(pos, *this, jumpAbove ? pos.y - jumpAbove->pos.y - h() + 1 : 0);
+        // self
+        Instruction* validPrev = GetPrevVisibleLink();
+        model.Draw(pos, *this, validPrev ? pos.y - validPrev->pos.y - h() + 1 : 0);
 
-    // highlighted param
-    if (model.family.highlightedParam == this) {
-        (*this + pos).draw_rounded(6, 6, white, 3);
-    }
+        // highlighted param
+        if (model.family.highlightedParam == this) {
+            (*this + pos).draw_rounded(6, 6, white, 3);
+        }
 
-    // debug
-    if (highlightmyself) {
-        (*this + pos).draw(green, 3);
+        // debug
+        //if (highlightmyself) {
+        //    (*this + pos).draw(green, 3);
+        //}
+        //if (!currentDropLocation) {
+        //    Rect r;
+        //    r.tl = pos;
+        //    r.resize(6, 6);
+        //    r.draw_filled_rounded(2, 2, red);
+        //}
     }
-    //if (!currentDropLocation) {
-    //    Rect r;
-    //    r.tl = pos;
-    //    r.resize(6, 6);
-    //    r.draw_filled_rounded(2, 2, red);
-    //}
 }
 
 void ForceAcceptMeAndParams(Instruction* frominst, DropLocation<Instruction>* newdroploc, const glm::ivec2& delta) {
@@ -207,9 +229,9 @@ void RejectAllParams(Instruction* inst) {
 }
 
 void Instruction::GrabbedBis() {
-    if (jumpAbove) {
+    if (prevLink) {
         CancelGrab();
-        jumpAbove->ForceGrab();
+        prevLink->ForceGrab();
         return;
     }
     if (model.fixed) {
@@ -238,10 +260,10 @@ void Instruction::GrabbedBis() {
         Instruction* curBro = this->littleBro;
         std::stack<Instruction*> expectedJumps;
         if (model.type == InstructionModel::Type::Jump) {
-            expectedJumps.push(jump);
+            expectedJumps.push(nextLink);
         }
         while (curBro) {
-            if (curBro->model.type == InstructionModel::Type::Jump && curBro->jumpAbove && expectedJumps.empty())
+            if (curBro->model.type == InstructionModel::Type::Jump && curBro->prevLink && expectedJumps.empty())
             {
                 // break caught bros
                 assert(rememberBigBro && "Something went wrong, in this situation at leat one bigbro exist and it is the top jump");
@@ -252,11 +274,11 @@ void Instruction::GrabbedBis() {
             }
             else {
                 if (curBro->model.type == InstructionModel::Type::Jump) {
-                    if (!curBro->jumpAbove) {
-                        expectedJumps.push(curBro->jump);
+                    if (!curBro->prevLink) {
+                        expectedJumps.push(curBro->nextLink);
                     }
-                    else if (curBro->jump) {
-                        expectedJumps.top() = curBro->jump;
+                    else if (curBro->nextLink) {
+                        expectedJumps.top() = curBro->nextLink;
                     }
                     else {
                         expectedJumps.pop();
@@ -307,9 +329,9 @@ void Instruction::DroppedBis() {
         }
         else {
             PutAtBottom();
-            Instruction* lastBro = getLastBro();
+            Instruction* lastBro = GetLastBro();
             for (auto bro : model.family) {
-                if (bro != this && currentDropLocation == bro->currentDropLocation && isUnderBro(*bro)) {
+                if (bro != this && currentDropLocation == bro->currentDropLocation && IsUnderBro(*bro)) {
                     bigBro = bro;
                     if (bro->littleBro) {
                         lastBro->littleBro = bro->littleBro;
@@ -318,11 +340,11 @@ void Instruction::DroppedBis() {
                     bro->littleBro = this;
 
                     model.family.displacedBro = nullptr;
-                    placeUnderBigBroRecursive();
+                    PlaceUnderBigBroRecursive();
                     model.family.demoteFromBigBro(this);
                     break;
                 }
-                else if (bro != lastBro && bro->currentDropLocation == lastBro->currentDropLocation && !bro->bigBro && lastBro->isAboveBro(*bro)) {
+                else if (bro != lastBro && bro->currentDropLocation == lastBro->currentDropLocation && !bro->bigBro && lastBro->IsAboveBro(*bro)) {
                     lastBro->littleBro = bro;
                     if (bro->bigBro) {
                         bro->bigBro->littleBro = this;
@@ -330,7 +352,7 @@ void Instruction::DroppedBis() {
                     }
                     bro->bigBro = lastBro;
 
-                    lastBro->placeAboveLittleBroRecursive();
+                    lastBro->PlaceAboveLittleBroRecursive();
                     model.family.demoteFromBigBro(bro);
                     break;
                 }
@@ -344,7 +366,7 @@ void Instruction::DroppedBack()
     if (littleBro) {
         glm::ivec2 savepos = pos;
         pos += currentDropLocation->GetGlobalOffset();
-        littleBro->placeUnderBigBroRecursive();
+        littleBro->PlaceUnderBigBroRecursive();
         pos = savepos;
     }
 }
@@ -379,19 +401,19 @@ void Instruction::Dragged(const glm::ivec2& delta) {
     }
     else {
         // displacement preview before dropping
-        if (family.displacedBro && family.displacedBro->bigBro && !isUnderBro(*family.displacedBro->bigBro, true)) {
-            family.displacedBro->placeUnderBigBroRecursive();
+        if (family.displacedBro && family.displacedBro->bigBro && !IsUnderBro(*family.displacedBro->bigBro, true)) {
+            family.displacedBro->PlaceUnderBigBroRecursive();
             family.displacedBro = nullptr;
         }
 
         if (!family.displacedBro) {
             for (auto bro : family) {
-                if (bro != this && bro->littleBro && isUnderBro(*bro, true)) {
+                if (bro != this && bro->littleBro && IsUnderBro(*bro, true)) {
                     family.displacedBro = bro->littleBro;
                     bro->littleBro->pos.y += h();
                     RepositionParameters(bro->littleBro, glm::ivec2(0, h()));
                     if (bro->littleBro->littleBro) {
-                        bro->littleBro->littleBro->placeUnderBigBroRecursive();
+                        bro->littleBro->littleBro->PlaceUnderBigBroRecursive();
                     }
                 }
             }
@@ -399,22 +421,22 @@ void Instruction::Dragged(const glm::ivec2& delta) {
 
         // shadow position of the drop
         family.shadowBro = false;
-        Instruction* lastBro = getLastBro();
+        Instruction* lastBro = GetLastBro();
         for (auto bro : family) {
-            if (bro != this && isUnderBro(*bro, true)) {
+            if (bro != this && IsUnderBro(*bro, true)) {
                 family.shadowBro = true;
                 family.shadowBroPos = bro->GetAdjustedPos();
-                if (bro->jump) {
+                if (bro->nextLink) {
                     family.shadowBroPos.x += jumpShift;
                 }
                 family.shadowBroPos.x += bro->tl.x - tl.x;
                 family.shadowBroPos.y += bro->br.y - tl.y;
                 break;
             }
-            else if (bro != lastBro && !bro->bigBro && lastBro->isAboveBro(*bro, true)) {
+            else if (bro != lastBro && !bro->bigBro && lastBro->IsAboveBro(*bro, true)) {
                 family.shadowBro = true;
                 family.shadowBroPos = bro->GetAdjustedPos();
-                if (bro->jumpAbove) {
+                if (bro->prevLink) {
                     family.shadowBroPos.x += jumpShift;
                 }
                 family.shadowBroPos.x += bro->tl.x - lastBro->tl.x;
@@ -427,9 +449,10 @@ void Instruction::Dragged(const glm::ivec2& delta) {
 
 bool Instruction::hitCheck(const glm::ivec2& opos) const
 {
-    if (jump) {
+    if (!model.visible) return false;
+    if (nextLink) {
         Rect r = *this;
-        r.resize(jumpShift, jump->pos.y - pos.y);
+        r.resize(jumpShift, nextLink->pos.y - pos.y);
         if (r.isInside(opos - pos)) {
             return true;
         }

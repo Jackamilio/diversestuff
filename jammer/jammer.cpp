@@ -147,10 +147,13 @@ int main()
             previousmodel = curmodel;
             curmodel = new InstructionModel(family);
             curmodel->type = type;
-            curmodel->parametersTaken = nbparams;
+            if (nbparams >= 0)
+                curmodel->parametersTaken = nbparams;
+            else
+                curmodel->visible = false;
             curmodel->SetText(name);
             curmodel->Place(20, yoffset);
-            yoffset += 25;
+            if (curmodel->visible) yoffset += 25;
             instructionsList.AddChild(curmodel);
             deletelater.push_back(curmodel);
         };
@@ -244,7 +247,7 @@ int main()
 
         newmodel("Si", InstructionModel::Type::Jump, 1);
         curmodel->function = [](Parameter* p) {
-            return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::JumpToNext;
+            return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
         };
 
         newmodel("   ", InstructionModel::Type::Jump);
@@ -252,23 +255,34 @@ int main()
             return InstructionModel::FunctionResult::Continue;
         };
         previousmodel->Link(curmodel);
+        previousmodel->JumpsTo(curmodel);
 
         newmodel("Si", InstructionModel::Type::Jump, 1);
         curmodel->function = [](Parameter* p) {
-            return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::JumpToNext;
+            return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
         };
+        InstructionModel* premiersi = curmodel;
+
+        newmodel("CACHEZ MOOIIII", InstructionModel::Type::Jump, -1);
+        curmodel->function = [](Parameter* p) {
+            return InstructionModel::FunctionResult::Jump;
+        };
+        previousmodel->Link(curmodel);
+        InstructionModel* pasvupaspris = curmodel;
 
         newmodel("sinon", InstructionModel::Type::Jump);
         curmodel->function = [](Parameter*) {
-            return InstructionModel::FunctionResult::ElseContinue;
+            return InstructionModel::FunctionResult::Continue;
         };
         previousmodel->Link(curmodel);
+        premiersi->JumpsTo(curmodel);
 
         newmodel("   ", InstructionModel::Type::Jump);
         curmodel->function = [](Parameter*) {
             return InstructionModel::FunctionResult::Continue;
         };
         previousmodel->Link(curmodel);
+        pasvupaspris->JumpsTo(curmodel);
 
         while (engine.OneLoop()) {}
 
