@@ -27,17 +27,19 @@ Instruction* Instruction::GetNextVisibleLink()
 }
 
 bool Instruction::IsUnderBro(const Instruction& bro, bool checkAdjusted) {
+    if (!bro.model.visible) return false;
     const glm::ivec2 brobl = (checkAdjusted ? bro.GetAdjustedPos() : bro.pos) + bro.bl();
     const glm::ivec2 mytl = pos + tl;
-    return bro.model.visible && valueInside(mytl.x, brobl.x - dropL, brobl.x + dropR) && valueInside(mytl.y, brobl.y, brobl.y + bro.h());
+    return valueInside(mytl.x, brobl.x - dropL, brobl.x + dropR) && valueInside(mytl.y, brobl.y, brobl.y + bro.h());
 }
 
 bool Instruction::IsAboveBro(const Instruction& bro, bool checkAdjusted) {
+    if (!bro.model.visible || bro.model.isTrigger) return false;
     glm::ivec2 bap = checkAdjusted ? bro.GetAdjustedPos() : bro.pos;
     const int broleft = bap.x + bro.tl.x;
     const int broUp = bap.y;
     const glm::ivec2 mybl = pos + bl();
-    return bro.model.visible && valueInside(mybl.x, broleft - dropL, broleft + dropR) && valueInside(mybl.y, broUp - bro.h(), broUp);
+    return valueInside(mybl.x, broleft - dropL, broleft + dropR) && valueInside(mybl.y, broUp - bro.h(), broUp);
 }
 
 void RepositionParameters(Instruction* inst, const glm::ivec2& delta) {
@@ -314,6 +316,7 @@ void ForceAcceptParams(Instruction* inst, DropLocation<Instruction>* newdroploc)
 }
 
 void Instruction::DroppedBis() {
+    model.family.shadowBro = false;
     // dropped in the model's location means getting rid of self
     if ((GuiElement*)&currentDropLocation->location == model.Parent()) {
         model.family.DestroyInstruction(this);
