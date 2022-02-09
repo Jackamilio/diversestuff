@@ -7,6 +7,7 @@
 #include "Instruction.h"
 #include "CropperDisplacer.h"
 #include "Engine.h"
+#include "InstructionContext.h"
 
 using std::vector;
 
@@ -17,6 +18,12 @@ private:
     vector<Instruction*> bigBrothers;
     vector<Instruction*> orphanedParameters;
     vector<Instruction*> waitingDestruction;
+
+    InstructionContext context;
+
+    std::unordered_map<Instruction*, InstructionContext> awaitingInstructions;
+
+    void ExecuteFrom(Instruction* inst);
 
 public:
     class Iterator {

@@ -36,12 +36,13 @@ InstructionModel::InstructionModel(InstructionFamily& fam) :
     isTrigger(false),
     fixed(false),
     visible(true),
+    stickToPrev(false),
     prevLink(nullptr),
     nextLink(nullptr),
     jump(nullptr),
     parametersTaken(0),
-    function([](Parameter*) {return FunctionResult::Error; }),
-    evaluate([](Parameter*) {return 0.0f; })
+    function([](Parameter*, InstructionContext&) {return FunctionResult::Error; }),
+    evaluate([](Parameter*, InstructionContext&) {return 0.0f; })
 {
 }
 

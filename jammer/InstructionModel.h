@@ -6,16 +6,13 @@
 #include <functional>
 #include "Rect.h"
 #include "GuiElement.h"
-#include <vector>
+#include "InstructionContext.h"
 
 extern const int paramoffset;
 extern const int jumpShift;
 
 class Instruction;
 class InstructionFamily;
-
-typedef float Parameter;
-typedef std::vector<Parameter> ParameterList;
 
 class InstructionModel : public GuiElement {
 private:
@@ -34,6 +31,7 @@ public:
     bool isTrigger; // for Default
     bool fixed; // for Parameter
     bool visible; // for jumps
+    bool stickToPrev; // for jumps
 
     InstructionModel* prevLink;
     InstructionModel* nextLink;
@@ -42,9 +40,15 @@ public:
 
     int parametersTaken;
 
-    enum class FunctionResult { Continue, Stop, Jump, Yield, Error };
-    std::function<FunctionResult(Parameter*)> function;
-    std::function<Parameter(Parameter*)> evaluate;
+    enum class FunctionResult {
+        Continue    = 0x00,
+        Stop        = 0x01, // ignores all other flags if set
+        Jump        = 0x02,
+        Await       = 0x04,
+        Error       = 0x08,
+    };
+    std::function<FunctionResult(Parameter*, InstructionContext& context)> function;
+    std::function<Parameter(Parameter*, InstructionContext& context)> evaluate;
 
     InstructionModel* GetPrevVisibleLink();
     InstructionModel* GetNextVisibleLink();
@@ -68,5 +72,16 @@ public:
     InstructionModel* Link(InstructionModel* to);
     inline void JumpsTo(InstructionModel* to) { jump = to; }
 };
+
+// I hate this
+inline InstructionModel::FunctionResult operator|(InstructionModel::FunctionResult a, InstructionModel::FunctionResult b)
+{
+    return static_cast<InstructionModel::FunctionResult>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+inline InstructionModel::FunctionResult operator&(InstructionModel::FunctionResult a, InstructionModel::FunctionResult b)
+{
+    return static_cast<InstructionModel::FunctionResult>(static_cast<int>(a) & static_cast<int>(b));
+}
 
 #endif //__INSTRUCTION_MODEL_H__

@@ -89,6 +89,15 @@ void Instruction::PlaceAboveLittleBroRecursive() {
     }
 }
 
+Instruction* Instruction::GetFirstBro()
+{
+    Instruction* ret = this;
+    while (ret->bigBro) {
+        ret = ret->bigBro;
+    }
+    return ret;
+}
+
 Instruction* Instruction::GetLastBro() {
     Instruction* ret = this;
     while (ret->littleBro) {
@@ -121,7 +130,8 @@ Instruction::~Instruction()
 }
 
 void Instruction::Draw() {
-    if (model.visible) {
+    if (model.visible)
+    {
         // shadow
         if (model.family.shadowBro && gui.CurrentDraggable() == this)
         {
@@ -332,6 +342,11 @@ void Instruction::DroppedBis() {
             Instruction* lastBro = GetLastBro();
             for (auto bro : model.family) {
                 if (bro != this && currentDropLocation == bro->currentDropLocation && IsUnderBro(*bro)) {
+                    if (bro->littleBro && bro->littleBro->model.stickToPrev) {
+                        bro->littleBro->pos = bro->pos;
+                        bro->littleBro->pos.y += bro->h();
+                        bro = bro->littleBro;
+                    }
                     bigBro = bro;
                     if (bro->littleBro) {
                         lastBro->littleBro = bro->littleBro;

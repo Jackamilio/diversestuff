@@ -30,6 +30,7 @@ private:
     void PlaceUnderBigBroRecursive();
     void PlaceAboveLittleBroRecursive();
 
+    Instruction* GetFirstBro();
     Instruction* GetLastBro();
 
     Instruction(InstructionModel& model);

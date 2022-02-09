@@ -2,6 +2,7 @@
 #include <allegro5/allegro_primitives.h>
 #include "DefaultColors.h"
 #include "InstructionModel.h"
+#include <unordered_set>
 
 InstructionFamily::Iterator::Iterator(vector<Instruction*>& vec) : bigBroIt(vec.begin()), endBroIt(vec.end()), curBro(*bigBroIt) {}
 InstructionFamily::Iterator::Iterator(vector<Instruction*>& vec, int dummy) : bigBroIt(vec.end()), endBroIt(vec.end()), curBro(nullptr) {}
@@ -58,7 +59,7 @@ InstructionFamily::InstructionFamily(ALLEGRO_FONT* font) : font(font), shadowBro
     emptyParameter->type = InstructionModel::Type::Parameter;
     emptyParameter->fixed = true;
     emptyParameter->SetText("...");
-    emptyParameter->evaluate = [](Parameter*) { return 0.0f; };
+    emptyParameter->evaluate = [](Parameter*, InstructionContext&) { return 0.0f; };
 }
 
 InstructionFamily::~InstructionFamily()
@@ -72,17 +73,18 @@ InstructionFamily::~InstructionFamily()
     }
 
     delete emptyParameter;
+    context.Clear();
 }
 
 std::vector<Parameter> paramMemory;
 
-Parameter* EvaluateParameters(Instruction& inst) {
+Parameter* EvaluateParameters(Instruction& inst, InstructionContext& context) {
     if (!inst.parameters.empty()) {
         size_t curmempos = paramMemory.size();
         size_t nextmempos = curmempos + inst.parameters.size();
         paramMemory.resize(nextmempos);
         for (int i = 0; i < (int)inst.parameters.size(); ++i) {
-            paramMemory[curmempos+i] = inst.parameters[i]->model.evaluate(EvaluateParameters(*inst.parameters[i]));
+            paramMemory[curmempos+i] = inst.parameters[i]->model.evaluate(EvaluateParameters(*inst.parameters[i], context), context);
             paramMemory.resize(nextmempos);
         }
         return &paramMemory[curmempos];
@@ -90,10 +92,33 @@ Parameter* EvaluateParameters(Instruction& inst) {
     return nullptr;
 }
 
+void InstructionFamily::ExecuteFrom(Instruction* inst)
+{
+    while (inst) {
+        InstructionModel::FunctionResult ret = inst->model.function(EvaluateParameters(*inst, context), context);
+        paramMemory.clear();
+        if (int(ret & InstructionModel::FunctionResult::Stop)) {
+            inst = nullptr;
+        }
+        else {
+            inst = int(ret & InstructionModel::FunctionResult::Jump) ? inst->jump : inst->littleBro;
+            if (int(ret & InstructionModel::FunctionResult::Await)) {
+                awaitingInstructions[inst] = context.CutContextAtFlaggedDepth();
+                inst = nullptr;
+            }
+        }//Todo : Error
+    }
+}
+
 void InstructionFamily::Step()
 {
     // delayed instruction deletion
     for (auto inst : waitingDestruction) {
+        auto it = awaitingInstructions.find(inst);
+        if (it != awaitingInstructions.end()) {
+            it->second.Clear();
+            awaitingInstructions.erase(it);
+        }
         demoteFromBigBro(inst);
         unorphanParameter(inst);
         delete inst;
@@ -101,24 +126,28 @@ void InstructionFamily::Step()
     waitingDestruction.clear();
 
     // execute code!
+    context.PushContext(); // first layer of context
+    context.FlagCurrentDepth();
+
+    // process awaiting instructions
+    std::unordered_set<Instruction*> topbrosfromwait;
+    topbrosfromwait.reserve(awaitingInstructions.size()); // little optimisation
+    for (auto it = awaitingInstructions.begin(); it != awaitingInstructions.end();) {
+        topbrosfromwait.insert(it->first->GetFirstBro());
+        context.PushContext(it->second);
+        Instruction* from = it->first;
+        it = awaitingInstructions.erase(it);
+        ExecuteFrom(from);
+    }
+
     for (auto bro : bigBrothers) {
-        if (bro->model.isTrigger) {
-            Instruction* curinst = bro;
-            while (curinst) {
-                InstructionModel::FunctionResult ret = curinst->model.function(EvaluateParameters(*curinst));
-                paramMemory.clear();
-                if (ret == InstructionModel::FunctionResult::Continue) {
-                    curinst = curinst->littleBro;
-                }
-                else if (ret == InstructionModel::FunctionResult::Jump) {
-                    curinst = curinst->jump;
-                }
-                else {
-                    curinst = nullptr;
-                }//Todo : Yield, Error
-            }
+        // don't execute if one of our instruction were actually waiting
+        if (bro->model.isTrigger && topbrosfromwait.find(bro) == topbrosfromwait.end()) {
+            ExecuteFrom(bro);
         }
     }
+    context.PopContext();
+    assert(context.IsEmpty() && "Something went wrong, some instruction forgot to pop the context maybe.");
 }
 
 void InstructionFamily::promoteToBigBro(Instruction* tr) {

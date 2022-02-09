@@ -159,130 +159,199 @@ int main()
         };
 
         newmodel("Avancer un peu");
-        curmodel->function = [&sprite](Parameter*) {
+        curmodel->function = [&sprite](Parameter*, InstructionContext&) {
             sprite.position.x += 0.2f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Avancer de : ", InstructionModel::Type::Default, 1);
-        curmodel->function = [&sprite](Parameter* p) {
+        curmodel->function = [&sprite](Parameter* p, InstructionContext&) {
             sprite.position.x += 0.2f * p[0];
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Tourner à gauche");
-        curmodel->function = [&sprite](Parameter*) {
+        curmodel->function = [&sprite](Parameter*, InstructionContext&) {
             sprite.direction -= 0.01f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Tourner à droite");
-        curmodel->function = [&sprite](Parameter*) {
+        curmodel->function = [&sprite](Parameter*, InstructionContext&) {
             sprite.direction += 0.01f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Je déclenche tout yo");
         curmodel->isTrigger = true;
-        curmodel->function = [](Parameter*) {return InstructionModel::FunctionResult::Continue; };
+        curmodel->function = [](Parameter*, InstructionContext&) {return InstructionModel::FunctionResult::Continue; };
 
         newmodel("Stop ce mf script");
-        curmodel->function = [](Parameter*) {return InstructionModel::FunctionResult::Stop; };
+        curmodel->function = [](Parameter*, InstructionContext&) {return InstructionModel::FunctionResult::Stop; };
 
         newmodel("Reviens par là, le singe!");
-        curmodel->function = [&sprite](Parameter*) {
+        curmodel->function = [&sprite](Parameter*, InstructionContext&) {
             sprite.position = glm::vec2(270, 210);
             sprite.direction = 0.0f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Mirroir + Renversé", InstructionModel::Type::Default, 2);
-        curmodel->function = [&sprite](Parameter* pl) {
+        curmodel->function = [&sprite](Parameter* pl, InstructionContext&) {
             sprite.scale.x = pl[0] ? -1 : 1;
             sprite.scale.y = pl[1] ? -1 : 1;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("VRAI", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](Parameter*) {
+        curmodel->evaluate = [](Parameter*, InstructionContext&) {
             return 1.0f;
         };
 
         newmodel("FAUX", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](Parameter*) {
+        curmodel->evaluate = [](Parameter*, InstructionContext&) {
             return 0.0f;
         };
 
         newmodel("NON", InstructionModel::Type::Parameter, 1);
-        curmodel->evaluate = [](Parameter* p) {
+        curmodel->evaluate = [](Parameter* p, InstructionContext&) {
             return *p != 0.0f ? 0.0f : 1.0f;
         };
 
         newmodel("1", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](Parameter*) { return 1.0f; };
-
-        newmodel("2", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](Parameter*) { return 2.0f; };
-
-        newmodel("3", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](Parameter*) { return 3.0f; };
+        curmodel->evaluate = [](Parameter*, InstructionContext&) { return 1.0f; };
 
         newmodel("10", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](Parameter*) { return 10.0f; };
+        curmodel->evaluate = [](Parameter*, InstructionContext&) { return 10.0f; };
 
         newmodel("Espace est appuyé", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [&engine](Parameter*) {
+        curmodel->evaluate = [&engine](Parameter*, InstructionContext&) {
             return al_key_down(&engine.inputRoot.keyboardState, ALLEGRO_KEY_SPACE) ? 1 : 0;
         };
 
         newmodel("Additionner", InstructionModel::Type::Parameter, 2);
-        curmodel->evaluate = [](Parameter* p) {
+        curmodel->evaluate = [](Parameter* p, InstructionContext&) {
             return p[0] + p[1];
         };
 
         newmodel("Multiplier par 10", InstructionModel::Type::Parameter, 1);
-        curmodel->evaluate = [](Parameter* p) {
+        curmodel->evaluate = [](Parameter* p, InstructionContext&) {
             return p[0] * 10.0f;
         };
 
         newmodel("Si", InstructionModel::Type::Jump, 1);
-        curmodel->function = [](Parameter* p) {
+        curmodel->function = [](Parameter* p, InstructionContext&) {
             return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
         };
 
         newmodel("   ", InstructionModel::Type::Jump);
-        curmodel->function = [](Parameter*) {
+        curmodel->function = [](Parameter*, InstructionContext&) {
             return InstructionModel::FunctionResult::Continue;
         };
         previousmodel->Link(curmodel);
         previousmodel->JumpsTo(curmodel);
 
         newmodel("Si", InstructionModel::Type::Jump, 1);
-        curmodel->function = [](Parameter* p) {
+        curmodel->function = [](Parameter* p, InstructionContext&) {
             return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
         };
         InstructionModel* premiersi = curmodel;
 
-        newmodel("CACHEZ MOOIIII", InstructionModel::Type::Jump, -1);
-        curmodel->function = [](Parameter* p) {
+        newmodel("[Caché] Skip le sinon", InstructionModel::Type::Jump, -1);
+        curmodel->function = [](Parameter* p, InstructionContext&) {
             return InstructionModel::FunctionResult::Jump;
         };
         previousmodel->Link(curmodel);
         InstructionModel* pasvupaspris = curmodel;
 
         newmodel("sinon", InstructionModel::Type::Jump);
-        curmodel->function = [](Parameter*) {
+        curmodel->function = [](Parameter*, InstructionContext&) {
             return InstructionModel::FunctionResult::Continue;
         };
         previousmodel->Link(curmodel);
         premiersi->JumpsTo(curmodel);
 
         newmodel("   ", InstructionModel::Type::Jump);
-        curmodel->function = [](Parameter*) {
+        curmodel->function = [](Parameter*, InstructionContext&) {
             return InstructionModel::FunctionResult::Continue;
         };
         previousmodel->Link(curmodel);
         pasvupaspris->JumpsTo(curmodel);
+
+        newmodel("Tant que", InstructionModel::Type::Jump, 1);
+        curmodel->function = [](Parameter* p, InstructionContext&) {
+            return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
+        };
+        InstructionModel* tantque = curmodel;
+
+        newmodel("[Caché] Reboucle sur tant que", InstructionModel::Type::Jump, -1);
+        curmodel->function = [](Parameter* p, InstructionContext&) {
+            return InstructionModel::FunctionResult::Jump | InstructionModel::FunctionResult::Await;
+        };
+        previousmodel->Link(curmodel);
+        curmodel->JumpsTo(tantque);
+
+        newmodel("   ", InstructionModel::Type::Jump);
+        curmodel->function = [](Parameter*, InstructionContext&) {
+            return InstructionModel::FunctionResult::Continue;
+        };
+        previousmodel->Link(curmodel);
+        tantque->JumpsTo(curmodel);
+
+        newmodel("Répéter", InstructionModel::Type::Jump, 1);
+        curmodel->function = [](Parameter* p, InstructionContext& c) {
+            c.PushContext();
+            Parameter& counter = c.DeclareVariable("___repeat_counter___");
+            counter = p[0];
+            if (p[0] > 0) {
+                return InstructionModel::FunctionResult::Continue;
+            }
+            return InstructionModel::FunctionResult::Jump;
+        };
+        InstructionModel* repeter = curmodel;
+
+        newmodel("[Caché] jump target pour la boucle répéter", InstructionModel::Type::Jump, -1);
+        curmodel->function = [](Parameter* p, InstructionContext&) {
+            return InstructionModel::FunctionResult::Continue;
+        };
+        curmodel->stickToPrev = true;
+        previousmodel->Link(curmodel);
+
+        newmodel("   ", InstructionModel::Type::Jump);
+        curmodel->function = [](Parameter*, InstructionContext& c) {
+            Parameter& counter = c.GetVariable("___repeat_counter___");
+            --counter;
+            if (counter >= 1.0f) {
+                return InstructionModel::FunctionResult::Jump | InstructionModel::FunctionResult::Await;
+            }
+            c.PopContext();
+            return InstructionModel::FunctionResult::Continue;
+        };
+        previousmodel->Link(curmodel);
+        repeter->JumpsTo(curmodel);
+        curmodel->JumpsTo(previousmodel);
+
+        newmodel("Attendre", InstructionModel::Type::Jump, 1);
+        curmodel->function = [](Parameter* p, InstructionContext& c) {
+            c.PushContext();
+            Parameter& tt = c.DeclareVariable("___target_time___");
+            tt = (float)al_get_time() + p[0];
+            return InstructionModel::FunctionResult::Continue;
+        };
+
+        newmodel("[caché] attendre le temps", InstructionModel::Type::Jump, -1);
+        curmodel->function = [](Parameter* p, InstructionContext& c) {
+            Parameter& tt = c.GetVariable("___target_time___");
+            float curtime = (float)al_get_time();
+            if (curtime < tt) {
+                return InstructionModel::FunctionResult::Jump | InstructionModel::FunctionResult::Await;
+            }
+            c.PopContext();
+            return InstructionModel::FunctionResult::Continue;
+        };
+        previousmodel->Link(curmodel);
+        curmodel->JumpsTo(curmodel); // jumps to itself, that's the trick!
+        curmodel->stickToPrev = true;
 
         while (engine.OneLoop()) {}
 
