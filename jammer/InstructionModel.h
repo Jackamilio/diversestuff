@@ -7,9 +7,11 @@
 #include "Rect.h"
 #include "GuiElement.h"
 #include "InstructionContext.h"
+#include "bitflag.h"
 
 extern const int paramoffset;
 extern const int jumpShift;
+extern const int parampadding;
 
 class Instruction;
 class InstructionFamily;
@@ -28,10 +30,8 @@ public:
     enum class Type { Default, Parameter, Jump };
     Type type;
 
-    bool isTrigger; // for Default
-    bool fixed; // for Parameter
-    bool visible; // for jumps
-    bool stickToPrev; // for jumps
+    enum class Flags { Trigger, Fixed, Visible, StickToPrev, Editable };
+    bitflag<Flags> flags;
 
     InstructionModel* prevLink;
     InstructionModel* nextLink;
@@ -47,8 +47,8 @@ public:
         Await       = 0x04,
         Error       = 0x08,
     };
-    std::function<FunctionResult(Parameter*, InstructionContext& context)> function;
-    std::function<Parameter(Parameter*, InstructionContext& context)> evaluate;
+    std::function<FunctionResult(Parameter*, const Instruction& callinginst, InstructionContext& context)> function;
+    std::function<Parameter(Parameter*, const Instruction& callinginst, InstructionContext& context)> evaluate;
 
     InstructionModel* GetPrevVisibleLink();
     InstructionModel* GetNextVisibleLink();
@@ -65,8 +65,10 @@ public:
 
     virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
     void Draw();
-
-    void Draw(const glm::ivec2& pos, const Rect& rect, int connexion = 0) const;
+    void DrawBack(const glm::ivec2 pos, const Rect& rect) const;
+    void DrawText(const glm::ivec2 pos) const;
+    void DrawConnexion(const glm::ivec2 pos, const Rect& rect, int connexion = 0) const;
+    void DrawAll(const glm::ivec2& pos, const Rect& rect, int connexion = 0) const;
 
     // assumes both links as Jump type, returns "to" for convenience
     InstructionModel* Link(InstructionModel* to);

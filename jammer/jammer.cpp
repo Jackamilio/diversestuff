@@ -18,6 +18,7 @@
 #include "PureDisplacer.h"
 
 #include "DefaultColors.h"
+#include "EditableText.h"
 
 ALLEGRO_FONT* fetchDefaultFont()
 {
@@ -54,255 +55,6 @@ public:
     }
 };
 
-class EditableText : public Rect, public GuiElement {
-public:
-    ALLEGRO_USTR* text;
-    ALLEGRO_FONT* font;
-    glm::ivec2 pos;
-    int cursorPos;
-    Rect cursorDraw;
-    int udx; // remembered x position when navigating up and down
-
-    inline bool IncrementCursor() {
-        return al_ustr_next(text, &cursorPos);
-    }
-
-    inline bool DecrementCursor() {
-        return al_ustr_prev(text, &cursorPos);
-    }
-
-    inline void MarkUDX() {
-        udx = cursorDraw.right;
-    }
-
-    EditableText(const char* starttext, ALLEGRO_FONT* font) :
-        text(al_ustr_new(starttext)),
-        font(font),
-        pos{},
-        cursorPos(0)
-    {
-        ReFrame();
-        CalculateCursorDraw();
-    }
-    ~EditableText() {
-        al_ustr_free(text);
-    }
-
-    void ReFrame() {
-        ltrb = glm::ivec4();
-        al_do_multiline_ustr(font, 99999, text,
-            [](int line_num, const ALLEGRO_USTR* line, void* caller) {
-                EditableText& me = *(EditableText*)caller;
-                Rect r;
-                al_get_ustr_dimensions(me.font, line, &r.left, &r.top, &r.right, &r.bottom);
-                me.bottom += al_get_font_line_height(me.font);
-                me.mergeWith(r);
-                return true;
-            }
-        , (void*)this);
-        bottom += top;
-        expand(4);
-    }
-
-    void CalculateCursorDraw() {
-        struct S {
-            int cp;
-            int cpt;
-            glm::ivec2 p;
-            ALLEGRO_FONT* font;
-        };
-
-        S s;
-        s.cp = 0;
-        s.cpt = cursorPos;
-        s.p = glm::ivec2();
-        s.font = font;
-
-        al_do_multiline_ustr(font, 99999, text,
-            [](int line_num, const ALLEGRO_USTR* line, void* _s) {
-                S& s = *(S*)_s;
-                int l = (int)al_ustr_size(line) + 1;
-                if (s.cp + l > s.cpt) {
-                    int ustrpos = al_ustr_offset(line, 0);
-                    int cp1 = ALLEGRO_NO_KERNING;
-                    int cp2 = ALLEGRO_NO_KERNING;
-                    bool cont = (ustrpos >= 0);
-                    while (cont) {
-                        cp1 = cp2;
-                        cp2 = al_ustr_get(line, ustrpos);
-                        cont = al_ustr_next(line, &ustrpos);
-                        s.p.x += al_get_glyph_advance(s.font, cp1, cp2);
-                        if (s.cp + ustrpos > s.cpt) {
-                            return false;
-                        }
-                    }
-                    return false;
-                }
-                s.cp += l;
-                s.p.y += al_get_font_line_height(s.font);
-                return true;
-            }
-        , (void*)&s);
-
-        cursorDraw.topleft = s.p;
-        cursorDraw.resize(1, al_get_font_ascent(font));
-    }
-    void CalculateCursorPos(const glm::ivec2 fromlocalpos) {
-        struct S {
-            int cp;
-            glm::ivec2 p;
-            ALLEGRO_FONT* font;
-            int prev_l;
-            const ALLEGRO_USTR* lastline;
-
-            bool CalcLine(const ALLEGRO_USTR* line) {
-                lastline = nullptr;
-                int ustrpos = al_ustr_offset(line, 0);
-                int prevustrpos = ustrpos;
-                int cp1 = ALLEGRO_NO_KERNING;
-                int cp2 = ALLEGRO_NO_KERNING;
-                int px = 0;
-                bool cont = (ustrpos >= 0);
-                while (cont) {
-                    cp1 = cp2;
-                    cp2 = al_ustr_get(line, ustrpos);
-                    px += al_get_glyph_advance(font, cp1, cp2);
-                    if (px >= p.x) {
-                        cp += prevustrpos;
-                        return false;
-                    }
-                    prevustrpos = ustrpos;
-                    cont = al_ustr_next(line, &ustrpos);
-                }
-                cp += prevustrpos;
-                return false;
-            };
-        };
-
-        S s;
-        s.cp = 0;
-        s.p = fromlocalpos;
-        s.font = font;
-        s.prev_l = 0;
-        s.lastline = nullptr;
-
-        al_do_multiline_ustr(font, 99999, text,
-            [](int line_num, const ALLEGRO_USTR* line, void* _s) {
-                S& s = *(S*)_s;
-                s.cp += s.prev_l;
-                int l = (int)al_ustr_size(line) + 1;
-                if (s.p.y < al_get_font_line_height(s.font) * (line_num + 1)) {
-                    return s.CalcLine(line);
-                }
-                s.prev_l = l;
-                s.lastline = line;
-                return true;
-            }
-        , (void*)&s);
-
-        if (s.lastline) s.CalcLine(s.lastline);
-
-        cursorPos = s.cp;
-    }
-
-    void Draw() {
-        (*this + pos).draw_outlined(black, grey, 1);
-        al_draw_multiline_ustr(font, white, pos.x, pos.y, 99999, 0, 0, text);
-        (cursorDraw + pos).draw_filled(white);
-    }
-    Engine::InputStatus Event(ALLEGRO_EVENT& event) {
-        if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-            glm::ivec2 mpos(event.mouse.x, event.mouse.y);
-            mpos -= pos;
-            if (isInside(mpos)) {
-                CalculateCursorPos(mpos);
-                CalculateCursorDraw();
-                MarkUDX();
-            }
-        }
-        else if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
-            switch (event.keyboard.keycode) {
-            case ALLEGRO_KEY_LEFT:
-                if (DecrementCursor()) {
-                    CalculateCursorDraw();
-                    MarkUDX();
-                }
-                break;
-            case ALLEGRO_KEY_RIGHT:
-                if (IncrementCursor()) {
-                    CalculateCursorDraw();
-                    MarkUDX();
-                }
-                break;
-            case ALLEGRO_KEY_UP:
-                CalculateCursorPos(glm::ivec2(udx, cursorDraw.bottom - al_get_font_line_height(font)));
-                CalculateCursorDraw();
-                break;
-            case ALLEGRO_KEY_DOWN:
-                CalculateCursorPos(glm::ivec2(udx, cursorDraw.bottom + al_get_font_line_height(font)));
-                CalculateCursorDraw();
-                break;
-            case ALLEGRO_KEY_ENTER:
-                if (al_ustr_insert_chr(text, cursorPos, '\n')) {
-                    IncrementCursor();
-                    CalculateCursorDraw();
-                    MarkUDX();
-                    ReFrame();
-                }
-                break;
-            case ALLEGRO_KEY_BACKSPACE:
-                if (DecrementCursor() && al_ustr_remove_chr(text, cursorPos)) {
-                    CalculateCursorDraw();
-                    MarkUDX();
-                    ReFrame();
-                }
-                break;
-            case ALLEGRO_KEY_DELETE:
-                if (al_ustr_remove_chr(text, cursorPos)) {
-                    ReFrame();
-                }
-                break;
-            case ALLEGRO_KEY_HOME:
-            {
-                int cp = cursorPos;
-                while (DecrementCursor() && al_ustr_get(text, cursorPos) != '\n') {}
-                if (cursorPos > 0) IncrementCursor();
-                if (cp != cursorPos) {
-                    CalculateCursorDraw();
-                    MarkUDX();
-                }
-                break;
-            }
-            case ALLEGRO_KEY_END:
-            {
-                int cp = cursorPos;
-                while (al_ustr_get(text, cursorPos) != '\n' && IncrementCursor()) {}
-                if (cp != cursorPos) {
-                    CalculateCursorDraw();
-                    MarkUDX();
-                }
-                break;
-            }
-            default:
-                if (event.keyboard.unichar > 0) {
-                    if (al_ustr_insert_chr(text, cursorPos, event.keyboard.unichar)) {
-                        IncrementCursor();
-                        CalculateCursorDraw();
-                        MarkUDX();
-                        ReFrame();
-                    }
-                }
-                else {
-                    return Engine::InputStatus::ignored;
-                }
-                break;
-            }
-            return Engine::InputStatus::grabbed;
-        }
-        return Engine::InputStatus::ignored;
-    }
-};
-
 int main()
 {
     Engine& engine = Engine::Get();
@@ -326,9 +78,10 @@ int main()
 
         ALLEGRO_FONT* arial = al_load_font("arial.ttf", 20, 0);
 
-        EditableText texttest("Salut ça roule?\nJ'espère bien ouais.\nTroisième ligne.\nQUATRIEME LIGNe OUALALA", arial);
+        EditableTextBox texttest(arial, 4);
+        texttest.SetText("Salut ça roule?\nJ'espère bien ouais.\nTroisième ligne.\nQUATRIEME LIGNe OUALALA");
         texttest.pos = glm::ivec2(325, 25);
-        gui.AddChild(&texttest);
+        //gui.AddChild(&texttest);
 
         Window scene;
         scene.tl = glm::ivec2(700, 50);
@@ -364,156 +117,150 @@ int main()
             if (nbparams >= 0)
                 curmodel->parametersTaken = nbparams;
             else
-                curmodel->visible = false;
+                curmodel->flags.unset(InstructionModel::Flags::Visible);
             curmodel->SetText(name);
             curmodel->Place(20, yoffset);
-            if (curmodel->visible) yoffset += 25;
+            if (curmodel->flags & InstructionModel::Flags::Visible) yoffset += 25;
             instructionsList.AddChild(curmodel);
             deletelater.push_back(curmodel);
         };
 
         newmodel("Avancer un peu");
-        curmodel->function = [&sprite](Parameter*, InstructionContext&) {
+        curmodel->function = [&sprite](Parameter*, const Instruction&, InstructionContext&) {
             sprite.position.x += 0.2f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Avancer de : ", InstructionModel::Type::Default, 1);
-        curmodel->function = [&sprite](Parameter* p, InstructionContext&) {
+        curmodel->function = [&sprite](Parameter* p, const Instruction&, InstructionContext&) {
             sprite.position.x += 0.2f * p[0];
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Tourner à gauche");
-        curmodel->function = [&sprite](Parameter*, InstructionContext&) {
+        curmodel->function = [&sprite](Parameter*, const Instruction&, InstructionContext&) {
             sprite.direction -= 0.01f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Tourner à droite");
-        curmodel->function = [&sprite](Parameter*, InstructionContext&) {
+        curmodel->function = [&sprite](Parameter*, const Instruction&, InstructionContext&) {
             sprite.direction += 0.01f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Je déclenche tout yo");
-        curmodel->isTrigger = true;
-        curmodel->function = [](Parameter*, InstructionContext&) {return InstructionModel::FunctionResult::Continue; };
+        curmodel->flags |= InstructionModel::Flags::Trigger;
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext&) {return InstructionModel::FunctionResult::Continue; };
 
         newmodel("Stop ce mf script");
-        curmodel->function = [](Parameter*, InstructionContext&) {return InstructionModel::FunctionResult::Stop; };
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext&) {return InstructionModel::FunctionResult::Stop; };
 
         newmodel("Reviens par là, le singe!");
-        curmodel->function = [&sprite](Parameter*, InstructionContext&) {
+        curmodel->function = [&sprite](Parameter*, const Instruction&, InstructionContext&) {
             sprite.position = glm::vec2(270, 210);
             sprite.direction = 0.0f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Mirroir + Renversé", InstructionModel::Type::Default, 2);
-        curmodel->function = [&sprite](Parameter* pl, InstructionContext&) {
+        curmodel->function = [&sprite](Parameter* pl, const Instruction&, InstructionContext&) {
             sprite.scale.x = pl[0] ? -1 : 1;
             sprite.scale.y = pl[1] ? -1 : 1;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("VRAI", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](Parameter*, InstructionContext&) {
+        curmodel->evaluate = [](Parameter*, const Instruction&, InstructionContext&) {
             return 1.0f;
         };
 
         newmodel("FAUX", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](Parameter*, InstructionContext&) {
+        curmodel->evaluate = [](Parameter*, const Instruction&, InstructionContext&) {
             return 0.0f;
         };
 
         newmodel("NON", InstructionModel::Type::Parameter, 1);
-        curmodel->evaluate = [](Parameter* p, InstructionContext&) {
+        curmodel->evaluate = [](Parameter* p, const Instruction&, InstructionContext&) {
             return *p != 0.0f ? 0.0f : 1.0f;
         };
 
-        newmodel("1", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](Parameter*, InstructionContext&) { return 1.0f; };
-
-        newmodel("10", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [](Parameter*, InstructionContext&) { return 10.0f; };
-
         newmodel("Espace est appuyé", InstructionModel::Type::Parameter);
-        curmodel->evaluate = [&engine](Parameter*, InstructionContext&) {
+        curmodel->evaluate = [&engine](Parameter*, const Instruction&, InstructionContext&) {
             return al_key_down(&engine.inputRoot.keyboardState, ALLEGRO_KEY_SPACE) ? 1 : 0;
         };
 
         newmodel("Additionner", InstructionModel::Type::Parameter, 2);
-        curmodel->evaluate = [](Parameter* p, InstructionContext&) {
+        curmodel->evaluate = [](Parameter* p, const Instruction&, InstructionContext&) {
             return p[0] + p[1];
         };
 
         newmodel("Multiplier par 10", InstructionModel::Type::Parameter, 1);
-        curmodel->evaluate = [](Parameter* p, InstructionContext&) {
+        curmodel->evaluate = [](Parameter* p, const Instruction&, InstructionContext&) {
             return p[0] * 10.0f;
         };
 
         newmodel("Si", InstructionModel::Type::Jump, 1);
-        curmodel->function = [](Parameter* p, InstructionContext&) {
+        curmodel->function = [](Parameter* p, const Instruction&, InstructionContext&) {
             return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
         };
 
         newmodel("   ", InstructionModel::Type::Jump);
-        curmodel->function = [](Parameter*, InstructionContext&) {
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext&) {
             return InstructionModel::FunctionResult::Continue;
         };
         previousmodel->Link(curmodel);
         previousmodel->JumpsTo(curmodel);
 
         newmodel("Si", InstructionModel::Type::Jump, 1);
-        curmodel->function = [](Parameter* p, InstructionContext&) {
+        curmodel->function = [](Parameter* p, const Instruction&, InstructionContext&) {
             return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
         };
         InstructionModel* premiersi = curmodel;
 
         newmodel("[Caché] Skip le sinon", InstructionModel::Type::Jump, -1);
-        curmodel->function = [](Parameter* p, InstructionContext&) {
+        curmodel->function = [](Parameter* p, const Instruction&, InstructionContext&) {
             return InstructionModel::FunctionResult::Jump;
         };
         previousmodel->Link(curmodel);
         InstructionModel* pasvupaspris = curmodel;
 
         newmodel("sinon", InstructionModel::Type::Jump);
-        curmodel->function = [](Parameter*, InstructionContext&) {
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext&) {
             return InstructionModel::FunctionResult::Continue;
         };
         previousmodel->Link(curmodel);
         premiersi->JumpsTo(curmodel);
 
         newmodel("   ", InstructionModel::Type::Jump);
-        curmodel->function = [](Parameter*, InstructionContext&) {
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext&) {
             return InstructionModel::FunctionResult::Continue;
         };
         previousmodel->Link(curmodel);
         pasvupaspris->JumpsTo(curmodel);
 
         newmodel("Tant que", InstructionModel::Type::Jump, 1);
-        curmodel->function = [](Parameter* p, InstructionContext&) {
+        curmodel->function = [](Parameter* p, const Instruction&, InstructionContext&) {
             return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
         };
         InstructionModel* tantque = curmodel;
 
         newmodel("[Caché] Reboucle sur tant que", InstructionModel::Type::Jump, -1);
-        curmodel->function = [](Parameter* p, InstructionContext&) {
+        curmodel->function = [](Parameter* p, const Instruction&, InstructionContext&) {
             return InstructionModel::FunctionResult::Jump | InstructionModel::FunctionResult::Await;
         };
         previousmodel->Link(curmodel);
         curmodel->JumpsTo(tantque);
 
         newmodel("   ", InstructionModel::Type::Jump);
-        curmodel->function = [](Parameter*, InstructionContext&) {
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext&) {
             return InstructionModel::FunctionResult::Continue;
         };
         previousmodel->Link(curmodel);
         tantque->JumpsTo(curmodel);
 
         newmodel("Répéter", InstructionModel::Type::Jump, 1);
-        curmodel->function = [](Parameter* p, InstructionContext& c) {
+        curmodel->function = [](Parameter* p, const Instruction&, InstructionContext& c) {
             c.PushContext();
             Parameter& counter = c.DeclareVariable("___repeat_counter___");
             counter = p[0];
@@ -525,14 +272,14 @@ int main()
         InstructionModel* repeter = curmodel;
 
         newmodel("[Caché] jump target pour la boucle répéter", InstructionModel::Type::Jump, -1);
-        curmodel->function = [](Parameter* p, InstructionContext&) {
+        curmodel->function = [](Parameter* p, const Instruction&, InstructionContext&) {
             return InstructionModel::FunctionResult::Continue;
         };
-        curmodel->stickToPrev = true;
+        curmodel->flags |= InstructionModel::Flags::StickToPrev;
         previousmodel->Link(curmodel);
 
         newmodel("   ", InstructionModel::Type::Jump);
-        curmodel->function = [](Parameter*, InstructionContext& c) {
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext& c) {
             Parameter& counter = c.GetVariable("___repeat_counter___");
             --counter;
             if (counter >= 1.0f) {
@@ -546,7 +293,7 @@ int main()
         curmodel->JumpsTo(previousmodel);
 
         newmodel("Attendre", InstructionModel::Type::Jump, 1);
-        curmodel->function = [](Parameter* p, InstructionContext& c) {
+        curmodel->function = [](Parameter* p, const Instruction&, InstructionContext& c) {
             c.PushContext();
             Parameter& tt = c.DeclareVariable("___target_time___");
             tt = (float)al_get_time() + p[0];
@@ -554,7 +301,7 @@ int main()
         };
 
         newmodel("[caché] attendre le temps", InstructionModel::Type::Jump, -1);
-        curmodel->function = [](Parameter* p, InstructionContext& c) {
+        curmodel->function = [](Parameter* p, const Instruction&, InstructionContext& c) {
             Parameter& tt = c.GetVariable("___target_time___");
             float curtime = (float)al_get_time();
             if (curtime < tt) {
@@ -565,7 +312,7 @@ int main()
         };
         previousmodel->Link(curmodel);
         curmodel->JumpsTo(curmodel); // jumps to itself, that's the trick!
-        curmodel->stickToPrev = true;
+        curmodel->flags |= InstructionModel::Flags::StickToPrev;
 
         while (engine.OneLoop()) {}
 

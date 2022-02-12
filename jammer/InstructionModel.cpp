@@ -12,7 +12,7 @@ const int jumpShift = 16;
 InstructionModel* InstructionModel::GetPrevVisibleLink()
 {
     InstructionModel* ret = prevLink;
-    while (ret && !ret->visible) {
+    while (ret && !(ret->flags & Flags::Visible)) {
         ret = ret->prevLink;
     }
     return ret;
@@ -21,7 +21,7 @@ InstructionModel* InstructionModel::GetPrevVisibleLink()
 InstructionModel* InstructionModel::GetNextVisibleLink()
 {
     InstructionModel* ret = nextLink;
-    while (ret && !ret->visible) {
+    while (ret && !(ret->flags & Flags::Visible)) {
         ret = ret->nextLink;
     }
     return ret;
@@ -32,17 +32,14 @@ InstructionModel::InstructionModel(InstructionFamily& fam) :
     pos{},
     paramsX(0.0f),
     text(nullptr),
-    type(InstructionModel::Type::Default),
-    isTrigger(false),
-    fixed(false),
-    visible(true),
-    stickToPrev(false),
+    type(Type::Default),
+    flags(Flags::Visible),
     prevLink(nullptr),
     nextLink(nullptr),
     jump(nullptr),
     parametersTaken(0),
-    function([](Parameter*, InstructionContext&) {return FunctionResult::Error; }),
-    evaluate([](Parameter*, InstructionContext&) {return 0.0f; })
+    function([](Parameter*, const Instruction&, InstructionContext&) {return FunctionResult::Error; }),
+    evaluate([](Parameter*, const Instruction&, InstructionContext&) {return 0.0f; })
 {
 }
 
@@ -52,11 +49,11 @@ InstructionModel::~InstructionModel()
 
 void InstructionModel::SetText(const char* t) {
     text = t;
-    al_get_text_dimensions(family.font, text, &defaultRect.tl.x, &defaultRect.tl.y, &defaultRect.br.x, &defaultRect.br.y);
+    al_get_text_dimensions(family.font, text, &defaultRect.l, &defaultRect.t, &defaultRect.r, &defaultRect.b);
 
     defaultRect.expand(type == InstructionModel::Type::Parameter ? parampadding : padding);
-    paramsX = defaultRect.br.x + paramoffset;
-    defaultRect.br.x += (family.emptyParameter->defaultRect.w() + paramoffset) * parametersTaken;
+    paramsX = defaultRect.right + paramoffset;
+    defaultRect.right += (family.emptyParameter->defaultRect.w() + paramoffset) * parametersTaken;
 }
 
 Instruction* InstructionModel::CreateInstruction() {
@@ -79,7 +76,7 @@ Instruction* InstructionModel::CreateInstruction() {
 Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
 {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-        if (visible && defaultRect.isInside(glm::ivec2(event.mouse.x, event.mouse.y) - pos)) {
+        if ((flags & Flags::Visible) && defaultRect.isInside(glm::ivec2(event.mouse.x, event.mouse.y) - pos)) {
             // create the first instruction that's on top
             InstructionModel* topModel = this;
             while (topModel->prevLink) {
@@ -127,21 +124,22 @@ Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
 
 void InstructionModel::Draw()
 {
-    if (visible) {
+    if (flags & Flags::Visible) {
         InstructionModel* validPrev = GetPrevVisibleLink();
-        Draw(pos, defaultRect, validPrev ? pos.y - validPrev->pos.y - defaultRect.h() + 1 : 0);
+        DrawAll(pos, defaultRect, validPrev ? pos.y - validPrev->pos.y - defaultRect.h() + 1 : 0);
 
         glm::ivec2 ppos = pos;
         ppos.x += paramsX;
 
         for (int i = 0; i < parametersTaken; ++i) {
-            family.emptyParameter->Draw(ppos, family.emptyParameter->defaultRect);
+            family.emptyParameter->DrawAll(ppos, family.emptyParameter->defaultRect);
             ppos.x += family.emptyParameter->defaultRect.w() + paramoffset;
         }
     }
 }
 
-void InstructionModel::Draw(const glm::ivec2& pos, const Rect& rect, int connexion) const
+
+void InstructionModel::DrawBack(const glm::ivec2 pos, const Rect& rect) const
 {
     Rect rectpos = rect + pos;
     if (type == InstructionModel::Type::Parameter) {
@@ -150,38 +148,36 @@ void InstructionModel::Draw(const glm::ivec2& pos, const Rect& rect, int connexi
     else {
         rectpos.draw_outlined(black, grey, 1);
     }
-    al_draw_text(family.font, white, pos.x, pos.y, 0, text);
+}
 
+void InstructionModel::DrawText(const glm::ivec2 pos) const
+{
+    al_draw_text(family.font, white, pos.x, pos.y, 0, text);
+}
+
+void InstructionModel::DrawConnexion(const glm::ivec2 pos, const Rect& rect, int connexion) const
+{
     if (connexion) {
-        Rect r(rectpos.tl, rectpos.tl);
-        
+        glm::ivec2 tlp = rect.tl + pos;
+        Rect r(tlp, tlp);
+
         r.l += 1;
         r.t -= connexion;
         r.r += jumpShift;
         r.b += 1;
-        
+
         r.draw_filled(black);
 
         al_draw_line(r.l, r.t, r.l, r.b, grey, 1);
         al_draw_line(r.r, r.t, r.r, r.b, grey, 1);
     }
+}
 
-    /*
-    assert(parametersTaken == params.size());
-
-    rect.shrink(padding - parampadding);
-    rect.tl.x = rect.br.x - paramwidth;
-    const glm::ivec2 shift(-paramwidth - paramoffset, 0);
-    
-    for (int i = parametersTaken - 1; i >= 0; --i) {
-        if (params[i]) {
-            rect += glm::ivec2(-params[i]->model.w() - paramoffset);
-        }
-        else {
-            rect.draw_outlined_rounded(6, 6, white, grey, 0.6f);
-            rect += shift;
-        }
-    }*/
+void InstructionModel::DrawAll(const glm::ivec2& pos, const Rect& rect, int connexion) const
+{
+    DrawBack(pos, rect);
+    DrawText(pos);
+    DrawConnexion(pos, rect, connexion);
 }
 
 InstructionModel* InstructionModel::Link(InstructionModel* to)

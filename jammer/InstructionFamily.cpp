@@ -57,9 +57,13 @@ InstructionFamily::InstructionFamily(ALLEGRO_FONT* font) : font(font), shadowBro
 
     emptyParameter = new InstructionModel(*this);
     emptyParameter->type = InstructionModel::Type::Parameter;
-    emptyParameter->fixed = true;
+    emptyParameter->flags |= InstructionModel::Flags::Fixed;
+    emptyParameter->flags |= InstructionModel::Flags::Editable;
     emptyParameter->SetText("...");
-    emptyParameter->evaluate = [](Parameter*, InstructionContext&) { return 0.0f; };
+    emptyParameter->evaluate = [](Parameter*, const Instruction& inst, InstructionContext&) {
+        const EditableInstruction& ei = (EditableInstruction&)(inst);
+        return atof(al_cstr(ei.GetText()));
+    };
 }
 
 InstructionFamily::~InstructionFamily()
@@ -84,7 +88,7 @@ Parameter* EvaluateParameters(Instruction& inst, InstructionContext& context) {
         size_t nextmempos = curmempos + inst.parameters.size();
         paramMemory.resize(nextmempos);
         for (int i = 0; i < (int)inst.parameters.size(); ++i) {
-            paramMemory[curmempos+i] = inst.parameters[i]->model.evaluate(EvaluateParameters(*inst.parameters[i], context), context);
+            paramMemory[curmempos+i] = inst.parameters[i]->model.evaluate(EvaluateParameters(*inst.parameters[i], context), *inst.parameters[i], context);
             paramMemory.resize(nextmempos);
         }
         return &paramMemory[curmempos];
@@ -95,7 +99,7 @@ Parameter* EvaluateParameters(Instruction& inst, InstructionContext& context) {
 void InstructionFamily::ExecuteFrom(Instruction* inst)
 {
     while (inst) {
-        InstructionModel::FunctionResult ret = inst->model.function(EvaluateParameters(*inst, context), context);
+        InstructionModel::FunctionResult ret = inst->model.function(EvaluateParameters(*inst, context), *inst, context);
         paramMemory.clear();
         if (int(ret & InstructionModel::FunctionResult::Stop)) {
             inst = nullptr;
@@ -114,10 +118,12 @@ void InstructionFamily::Step()
 {
     // delayed instruction deletion
     for (auto inst : waitingDestruction) {
-        auto it = awaitingInstructions.find(inst);
-        if (it != awaitingInstructions.end()) {
-            it->second.Clear();
-            awaitingInstructions.erase(it);
+        for (Instruction* soondeleted = inst; soondeleted != nullptr; soondeleted = soondeleted->littleBro) {
+            auto it = awaitingInstructions.find(soondeleted);
+            if (it != awaitingInstructions.end()) {
+                it->second.Clear();
+                awaitingInstructions.erase(it);
+            }
         }
         demoteFromBigBro(inst);
         unorphanParameter(inst);
@@ -142,7 +148,7 @@ void InstructionFamily::Step()
 
     for (auto bro : bigBrothers) {
         // don't execute if one of our instruction were actually waiting
-        if (bro->model.isTrigger && topbrosfromwait.find(bro) == topbrosfromwait.end()) {
+        if ((bro->model.flags & InstructionModel::Flags::Trigger) && topbrosfromwait.find(bro) == topbrosfromwait.end()) {
             ExecuteFrom(bro);
         }
     }

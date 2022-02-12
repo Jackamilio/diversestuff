@@ -37,6 +37,7 @@ public:
 	Rect() : ltrb{} {}
 	Rect(const glm::ivec2& itl, const glm::ivec2& ibr) : tl(itl), br(ibr) {}
 	Rect(const Rect& rhs) : ltrb(rhs.ltrb) {}
+	Rect(const glm::ivec4& rhs) : ltrb(rhs) {}
 
 	inline glm::ivec2 tr() const {
 		return glm::ivec2(r, t);
@@ -73,9 +74,10 @@ public:
 		expand(-substraction);
 	}
 
-	void operator=(const Rect& rhs) {
-		ltrb = rhs.ltrb;
-	}
+	inline void operator=(const Rect& rhs) { ltrb = rhs.ltrb; }
+	inline void operator=(const glm::ivec4& rhs) { ltrb = rhs; }
+	inline bool operator == (const Rect& rhs) const { return ltrb == rhs.ltrb; }
+	inline bool operator != (const Rect& rhs) const { return ltrb != rhs.ltrb; }
 
 	void operator+=(const glm::ivec2& rhs) {
 		tl += rhs;

@@ -6,8 +6,9 @@ PureDisplacer::PureDisplacer() : GuiElement(true), offset{}
 
 Engine::InputStatus PureDisplacer::Event(ALLEGRO_EVENT& event)
 {
-	if (CropperDisplacer::Event(event) != Engine::InputStatus::grabbed) {
-		return Draggable::Event(event) == Engine::InputStatus::grabbed ? Engine::InputStatus::grabbed : Engine::InputStatus::notforchildren;
+	Engine::InputStatus cropperret = CropperDisplacer::Event(event);
+	if (cropperret != Engine::InputStatus::grabbed) {
+		return Draggable::Event(event) == Engine::InputStatus::grabbed ? Engine::InputStatus::grabbed : cropperret;
 	}
 	else {
 		return Engine::InputStatus::notforchildren;

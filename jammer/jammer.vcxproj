@@ -157,6 +157,7 @@
     <ClCompile Include="CropperDisplacer.cpp" />
     <ClCompile Include="DropLocation.cpp" />
     <ClCompile Include="Droppable.cpp" />
+    <ClCompile Include="EditableText.cpp" />
     <ClCompile Include="GuiElement.cpp" />
     <ClCompile Include="GuiMaster.cpp" />
     <ClCompile Include="InstructionContext.cpp" />
@@ -169,11 +170,13 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bitflag.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="CropperDisplacer.h" />
     <ClInclude Include="Draggable.h" />
     <ClInclude Include="DropLocation.h" />
     <ClInclude Include="Droppable.h" />
+    <ClInclude Include="EditableText.h" />
     <ClInclude Include="GuiElement.h" />
     <ClInclude Include="GuiMaster.h" />
     <ClInclude Include="InstructionContext.h" />

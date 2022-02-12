@@ -11,7 +11,7 @@ const int dropR = 30;
 Instruction* Instruction::GetPrevVisibleLink()
 {
     Instruction* ret = prevLink;
-    while (ret && !ret->model.visible) {
+    while (ret && !(ret->model.flags & InstructionModel::Flags::Visible)) {
         ret = ret->prevLink;
     }
     return ret;
@@ -20,21 +20,21 @@ Instruction* Instruction::GetPrevVisibleLink()
 Instruction* Instruction::GetNextVisibleLink()
 {
     Instruction* ret = nextLink;
-    while (ret && !ret->model.visible) {
+    while (ret && !(ret->model.flags & InstructionModel::Flags::Visible)) {
         ret = ret->nextLink;
     }
     return ret;
 }
 
 bool Instruction::IsUnderBro(const Instruction& bro, bool checkAdjusted) {
-    if (!bro.model.visible) return false;
+    if (!(bro.model.flags & InstructionModel::Flags::Visible)) return false;
     const glm::ivec2 brobl = (checkAdjusted ? bro.GetAdjustedPos() : bro.pos) + bro.bl();
     const glm::ivec2 mytl = pos + tl;
     return valueInside(mytl.x, brobl.x - dropL, brobl.x + dropR) && valueInside(mytl.y, brobl.y, brobl.y + bro.h());
 }
 
 bool Instruction::IsAboveBro(const Instruction& bro, bool checkAdjusted) {
-    if (!bro.model.visible || bro.model.isTrigger) return false;
+    if (!(bro.model.flags & InstructionModel::Flags::Visible) || (bro.model.flags & InstructionModel::Flags::Trigger)) return false;
     glm::ivec2 bap = checkAdjusted ? bro.GetAdjustedPos() : bro.pos;
     const int broleft = bap.x + bro.tl.x;
     const int broUp = bap.y;
@@ -60,7 +60,7 @@ void Instruction::PlaceUnderBigBroRecursive() {
             pos.x -= jumpShift;
         }
         pos.x += bigBro->tl.x - tl.x;
-        if (bigBro->model.visible) { pos.y += bigBro->h(); }
+        if (bigBro->model.flags & InstructionModel::Flags::Visible) { pos.y += bigBro->h(); }
         delta -= pos;
         RepositionParameters(this, -delta);
 
@@ -81,7 +81,7 @@ void Instruction::PlaceAboveLittleBroRecursive() {
             pos.x -= jumpShift;
         }
         pos.x += littleBro->tl.x - tl.x;
-        if (littleBro->model.visible) { pos.y -= littleBro->h(); }
+        if (littleBro->model.flags & InstructionModel::Flags::Visible) { pos.y -= littleBro->h(); }
         delta -= pos;
         RepositionParameters(this, -delta);
 
@@ -89,6 +89,29 @@ void Instruction::PlaceAboveLittleBroRecursive() {
             bigBro->PlaceAboveLittleBroRecursive();
         }
     }
+}
+
+void RepositionAllParamsAndResizeOwnersRecursive(Instruction* top, glm::ivec2& posinc) {
+    if (top->parameters.empty()) {
+        posinc.x += top->w() + paramoffset;
+    }
+    else {
+        float prevx = posinc.x - top->tl.x;
+        posinc.x += top->model.paramsX;
+        for (auto param : top->parameters) {
+            param->pos = posinc;
+            RepositionAllParamsAndResizeOwnersRecursive(param, posinc);
+        }
+        top->br.x = posinc.x - prevx;
+        posinc.x += paramoffset;
+    }
+}
+
+void Instruction::RepositionAllParamsAndResizeOwners()
+{
+    Instruction* toppestowner = GetToppestOwner();
+    glm::ivec2 travpos = toppestowner->pos;
+    RepositionAllParamsAndResizeOwnersRecursive(toppestowner, travpos);
 }
 
 Instruction* Instruction::GetFirstBro()
@@ -106,6 +129,17 @@ Instruction* Instruction::GetLastBro() {
         ret = ret->littleBro;
     }
     return ret;
+}
+
+Instruction* Instruction::GetToppestOwner()
+{
+    Instruction* toppestowner = nullptr;
+    Instruction* nextowner = this;
+    while (nextowner) {
+        toppestowner = nextowner;
+        nextowner = toppestowner->GetOwner();
+    }
+    return toppestowner;
 }
 
 Instruction::Instruction(InstructionModel& model) :
@@ -131,8 +165,21 @@ Instruction::~Instruction()
     }
 }
 
+Instruction* Instruction::Create(InstructionModel& model)
+{
+    return model.flags & InstructionModel::Flags::Editable ? new EditableInstruction(model) : new Instruction(model);
+}
+
+void Instruction::DrawHighlight()
+{
+    // highlighted param
+    if (model.family.highlightedParam == this) {
+        (*this + pos).draw_rounded(6, 6, white, 3);
+    }
+}
+
 void Instruction::Draw() {
-    if (model.visible)
+    if (model.flags & InstructionModel::Flags::Visible)
     {
         // shadow
         if (model.family.shadowBro && gui.CurrentDraggable() == this)
@@ -143,12 +190,9 @@ void Instruction::Draw() {
 
         // self
         Instruction* validPrev = GetPrevVisibleLink();
-        model.Draw(pos, *this, validPrev ? pos.y - validPrev->pos.y - h() + 1 : 0);
+        model.DrawAll(pos, *this, validPrev ? pos.y - validPrev->pos.y - h() + 1 : 0);
 
-        // highlighted param
-        if (model.family.highlightedParam == this) {
-            (*this + pos).draw_rounded(6, 6, white, 3);
-        }
+        DrawHighlight();
 
         // debug
         //if (highlightmyself) {
@@ -180,22 +224,6 @@ void MoveParameters(std::vector<Instruction*>& params, const glm::ivec2& delta) 
     }
 }
 
-void RepositionAllParamsAndResizeOwners(Instruction* top, glm::ivec2& posinc) {
-    if (top->parameters.empty()) {
-        posinc.x += top->w() + paramoffset;
-    }
-    else {
-        float prevx = posinc.x - top->tl.x;
-        posinc.x += top->model.paramsX;
-        for (auto param : top->parameters) {
-            param->pos = posinc;
-            RepositionAllParamsAndResizeOwners(param, posinc);
-        }
-        top->br.x = posinc.x - prevx;
-        posinc.x += paramoffset;
-    }
-}
-
 bool Instruction::ReplaceParameter(Instruction* oldp, Instruction* newp)
 {
     for (int i = 0; i < parameters.size(); ++i) {
@@ -213,15 +241,7 @@ bool Instruction::ReplaceParameter(Instruction* oldp, Instruction* newp)
             //}
             //ResizeOwners(this, RightestPosition(this));
 
-            Instruction* toppestowner = nullptr;
-            Instruction* nextowner = this;
-            while (nextowner) {
-                toppestowner = nextowner;
-                nextowner = toppestowner->GetOwner();
-            }
-
-            glm::ivec2 travpos = toppestowner->pos;
-            RepositionAllParamsAndResizeOwners(toppestowner, travpos);
+            RepositionAllParamsAndResizeOwners();
 
             return true;
         }
@@ -246,7 +266,7 @@ void Instruction::GrabbedBis() {
         prevLink->ForceGrab();
         return;
     }
-    if (model.fixed) {
+    if (model.flags & InstructionModel::Flags::Fixed) {
         CancelGrab();
         return;
     }
@@ -345,7 +365,7 @@ void Instruction::DroppedBis() {
             Instruction* lastBro = GetLastBro();
             for (auto bro : model.family) {
                 if (bro != this && currentDropLocation == bro->currentDropLocation && IsUnderBro(*bro)) {
-                    if (bro->littleBro && bro->littleBro->model.stickToPrev) {
+                    if (bro->littleBro && (bro->littleBro->model.flags & InstructionModel::Flags::StickToPrev)) {
                         bro->littleBro->pos = bro->pos;
                         bro->littleBro->pos.y += bro->h();
                         bro = bro->littleBro;
@@ -467,7 +487,7 @@ void Instruction::Dragged(const glm::ivec2& delta) {
 
 bool Instruction::hitCheck(const glm::ivec2& opos) const
 {
-    if (!model.visible) return false;
+    if (!(model.flags & InstructionModel::Flags::Visible)) return false;
     if (nextLink) {
         Rect r = *this;
         r.resize(jumpShift, nextLink->pos.y - pos.y);
@@ -507,3 +527,44 @@ Engine::InputStatus Instruction::Event(ALLEGRO_EVENT& ev)
     return Draggable::Event(ev);
 }
 
+EditableInstruction::EditableInstruction(InstructionModel& model) : Instruction(model), EditableText("", 0) {
+    MinimalFrame(*this);
+}
+
+ALLEGRO_FONT* EditableInstruction::Font() const
+{
+    return model.family.font;
+}
+
+const glm::ivec2& EditableInstruction::Pos() const
+{
+    return pos;
+}
+
+void EditableInstruction::MinimalFrame(Rect& inout)
+{
+    inout = model.defaultRect;
+}
+
+void EditableInstruction::Draw()
+{
+    if (model.flags & InstructionModel::Flags::Visible) {
+        model.DrawBack(pos, *this);
+        EditableText::DrawText();
+        EditableText::DrawCursor();
+        DrawHighlight();
+    }
+}
+
+Engine::InputStatus EditableInstruction::Event(ALLEGRO_EVENT& event)
+{
+    Engine::InputStatus ret1 = Instruction::Event(event);
+
+    Rect prevrect = *this;
+    Engine::InputStatus ret2 = EditableText::Event(event);
+    if (prevrect != *this) {
+        RepositionAllParamsAndResizeOwners();
+    }
+
+    return (ret1 == Engine::InputStatus::grabbed || ret2 == Engine::InputStatus::grabbed) ? Engine::InputStatus::grabbed : Engine::InputStatus::ignored;
+}
