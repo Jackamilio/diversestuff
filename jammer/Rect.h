@@ -9,33 +9,49 @@
 class Rect {
 public:
 	union {
-		glm::ivec2 topleft;
-		glm::ivec2 tl;
-	};
-	
-	union {
-		glm::ivec2 bottomright;
-		glm::ivec2 br;
+		glm::ivec4 ltrb;
+		struct {
+			union {
+				glm::ivec2 topleft;
+				glm::ivec2 tl;
+			};
+			union {
+				glm::ivec2 bottomright;
+				glm::ivec2 br;
+			};
+		};
+		struct {
+			int left;
+			int top;
+			int right;
+			int bottom;
+		};
+		struct {
+			int l;
+			int t;
+			int r;
+			int b;
+		};
 	};
 
-	Rect() : tl{}, br{} {}
+	Rect() : ltrb{} {}
 	Rect(const glm::ivec2& itl, const glm::ivec2& ibr) : tl(itl), br(ibr) {}
-	Rect(const Rect& rhs) : tl(rhs.tl), br(rhs.br) {}
+	Rect(const Rect& rhs) : ltrb(rhs.ltrb) {}
 
 	inline glm::ivec2 tr() const {
-		return glm::ivec2(br.x, tl.y);
+		return glm::ivec2(r, t);
 	}
 
 	inline glm::ivec2 bl() const {
-		return glm::ivec2(tl.x, br.y);
+		return glm::ivec2(l, b);
 	}
 
 	inline int w() const {
-		return br.x - tl.x;
+		return right - left;
 	}
 
 	inline int h() const {
-		return br.y - tl.y;
+		return bottom - top;
 	}
 
 	inline void resize(const glm::ivec2& newsize) {
@@ -47,10 +63,10 @@ public:
 	}
 
 	inline void expand(int addition) {
-		tl.x -= addition;
-		tl.y -= addition;
-		br.x += addition;
-		br.y += addition;
+		l -= addition;
+		t -= addition;
+		r += addition;
+		b += addition;
 	}
 
 	inline void shrink(int substraction) {
@@ -58,8 +74,7 @@ public:
 	}
 
 	void operator=(const Rect& rhs) {
-		tl = rhs.tl;
-		br = rhs.br;
+		ltrb = rhs.ltrb;
 	}
 
 	void operator+=(const glm::ivec2& rhs) {
@@ -81,54 +96,61 @@ public:
 	}
 
 	bool isInside(const glm::ivec2& rhs) const {
-		return valueInside(rhs.x, tl.x, br.x) && valueInside(rhs.y, tl.y, br.y);
+		return valueInside(rhs.x, left, right) && valueInside(rhs.y, top, bottom);
 	}
 
 	inline void draw(ALLEGRO_COLOR color, float thickness) {
-		al_draw_rectangle(tl.x, tl.y, br.x, br.y, color, thickness);
+		al_draw_rectangle(l, t, r, b, color, thickness);
 	}
 
 	inline void draw_filled(ALLEGRO_COLOR color) {
-		al_draw_filled_rectangle(tl.x, tl.y, br.x, br.y, color);
+		al_draw_filled_rectangle(l, t, r, b, color);
 	}
 
 	inline void draw_rounded(float rx, float ry, ALLEGRO_COLOR color, float thickness) {
-		al_draw_rounded_rectangle(tl.x, tl.y, br.x, br.y, rx, ry, color, thickness);
+		al_draw_rounded_rectangle(l, t, r, b, rx, ry, color, thickness);
 	}
 
 	inline void draw_filled_rounded(float rx, float ry, ALLEGRO_COLOR color) {
-		al_draw_filled_rounded_rectangle(tl.x, tl.y, br.x, br.y, rx, ry, color);
+		al_draw_filled_rounded_rectangle(l, t, r, b, rx, ry, color);
 	}
 
 	inline void draw_outlined(ALLEGRO_COLOR filling, ALLEGRO_COLOR outline, float thickness) {
 		// slower but prettier this way than using a draw above a filled
-		al_draw_filled_rectangle(tl.x, tl.y, br.x, br.y, outline);
-		al_draw_filled_rectangle(tl.x + thickness, tl.y + thickness, br.x - thickness, br.y - thickness, filling);
+		al_draw_filled_rectangle(l, t, r, b, outline);
+		al_draw_filled_rectangle(l + thickness, t + thickness, r - thickness, b - thickness, filling);
 	}
 
 	inline void draw_outlined_rounded(float rx, float ry, ALLEGRO_COLOR filling, ALLEGRO_COLOR outline, float thickness) {
-		al_draw_filled_rounded_rectangle(tl.x, tl.y, br.x, br.y, rx, ry, outline);
-		al_draw_filled_rounded_rectangle(tl.x + thickness, tl.y + thickness, br.x - thickness, br.y - thickness, rx, ry, filling);
+		al_draw_filled_rounded_rectangle(l, t, r, b, rx, ry, outline);
+		al_draw_filled_rounded_rectangle(l + thickness, t + thickness, r - thickness, b - thickness, rx, ry, filling);
 	}
 
-	void cropFrom(const Rect& other) {
-		tl.x = max(tl.x, other.tl.x);
-		tl.y = max(tl.y, other.tl.y);
-		br.x = min(br.x, other.br.x);
-		br.y = min(br.y, other.br.y);
+	void cropFrom(const Rect& o) {
+		l = max(l, o.l);
+		t = max(t, o.t);
+		r = min(r, o.r);
+		b = min(b, o.b);
+	}
+
+	void mergeWith(const Rect& o) {
+		l = min(l, o.l);
+		t = min(t, o.t);
+		r = max(r, o.r);
+		b = max(b, o.b);
 	}
 
 	void transform(const ALLEGRO_TRANSFORM& transform) {
-		float ftlx = tl.x;
-		float ftly = tl.y;
-		float fbrx = br.x;
-		float fbry = br.y;
-		al_transform_coordinates(&transform, &ftlx, &ftly);
-		al_transform_coordinates(&transform, &fbrx, &fbry);
-		tl.x = ftlx;
-		tl.y = ftly;
-		br.x = fbrx;
-		br.y = fbry;
+		float fl = l;
+		float ft = t;
+		float fr = r;
+		float fb = b;
+		al_transform_coordinates(&transform, &fl, &ft);
+		al_transform_coordinates(&transform, &fr, &fb);
+		l = fl;
+		t = ft;
+		r = fr;
+		b = fb;
 	}
 };
 

@@ -153,20 +153,17 @@ void InstructionModel::Draw(const glm::ivec2& pos, const Rect& rect, int connexi
     al_draw_text(family.font, white, pos.x, pos.y, 0, text);
 
     if (connexion) {
-        Rect r;
+        Rect r(rectpos.tl, rectpos.tl);
         
-        r.tl.x = rectpos.tl.x + 1;
-        r.tl.y = rectpos.tl.y - connexion;
-        r.br.x = rectpos.tl.x + jumpShift;
-        r.br.y = rectpos.tl.y + 1;
+        r.l += 1;
+        r.t -= connexion;
+        r.r += jumpShift;
+        r.b += 1;
         
         r.draw_filled(black);
 
-        glm::ivec2 tr = r.tr();
-        glm::ivec2 bl = r.bl();
-
-        al_draw_line(r.tl.x, r.tl.y, bl.x, bl.y, grey, 1);
-        al_draw_line(tr.x, tr.y, r.br.x, r.br.y, grey, 1);
+        al_draw_line(r.l, r.t, r.l, r.b, grey, 1);
+        al_draw_line(r.r, r.t, r.r, r.b, grey, 1);
     }
 
     /*
