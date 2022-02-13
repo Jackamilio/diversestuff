@@ -28,13 +28,16 @@ GuiMaster& GuiMaster::Get()
 	return *singleton;
 }
 
-GuiMaster::GuiMaster() : trackedDraggable(nullptr)
+GuiMaster::GuiMaster() : trackedDraggable(nullptr), focus(nullptr), caretTimer(nullptr), caretVisible(true)
 {
 	InitTransforms();
+	caretTimer = al_create_timer(0.5);
+	al_register_event_source(engine.eventQueue, al_get_timer_event_source(caretTimer));
 }
 
 GuiMaster::~GuiMaster()
 {
+	al_destroy_timer(caretTimer);
 	for (auto dlv : dropLocations) {
 		for (auto dl : dlv.second) {
 			delete dl;
@@ -44,6 +47,10 @@ GuiMaster::~GuiMaster()
 
 Engine::InputStatus GuiMaster::Event(ALLEGRO_EVENT& event)
 {
+	if (event.type == ALLEGRO_EVENT_TIMER && event.any.source == al_get_timer_event_source(caretTimer)) {
+		caretVisible = !caretVisible;
+		return Engine::InputStatus::grabbed;
+	}
 	return RecursiveEvent(this, event, false) ? Engine::InputStatus::grabbed : Engine::InputStatus::ignored;
 }
 
@@ -113,6 +120,31 @@ void GuiMaster::UnTrack(Draggable* dgbl)
 bool GuiMaster::IsTracked(Draggable* dgbl) const
 {
 	return trackedDraggable == dgbl;
+}
+
+void GuiMaster::RequestFocus(GuiElement* fe)
+{
+	focus = fe;
+	al_stop_timer(caretTimer);
+	al_start_timer(caretTimer);
+	caretVisible = true;
+}
+
+void GuiMaster::CancelFocus(GuiElement* fe)
+{
+	if (HasFocus(fe)) {
+		focus = nullptr;
+	}
+}
+
+bool GuiMaster::HasFocus(GuiElement* fe) const
+{
+	return focus == fe;
+}
+
+bool GuiMaster::IsCaretVisible() const
+{
+	return caretVisible;
 }
 
 void GuiMaster::PushTransform()

@@ -34,6 +34,8 @@ public:
     EditableText(const char* starttext, int framepadding = 0);
     virtual ~EditableText();
 
+    void Init(); // Don't forget to call this in subclasses, because Font() and MinimalFrame() can't be used in the constructor
+
     void ReFrame();
 
     void CalculateCursorDraw();

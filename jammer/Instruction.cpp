@@ -528,7 +528,7 @@ Engine::InputStatus Instruction::Event(ALLEGRO_EVENT& ev)
 }
 
 EditableInstruction::EditableInstruction(InstructionModel& model) : Instruction(model), EditableText("", 0) {
-    MinimalFrame(*this);
+    Init();
 }
 
 ALLEGRO_FONT* EditableInstruction::Font() const

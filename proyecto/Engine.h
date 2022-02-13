@@ -230,6 +230,7 @@ public:
 	ALLEGRO_DISPLAY* display;
 	GraphicContext graphics;
 	std::string currentDirectory;
+	ALLEGRO_EVENT_QUEUE* eventQueue;
 
 	btDiscreteDynamicsWorld* physics;
 
@@ -240,7 +241,6 @@ private:
 	btCollisionDispatcher* dispatcher;
 	btBroadphaseInterface* overlappingPairCache;
 	btSequentialImpulseConstraintSolver* solver;
-	ALLEGRO_EVENT_QUEUE* eventQueue;
 	bool initSuccess;
 
 	bool guiEnabled;

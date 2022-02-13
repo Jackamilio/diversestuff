@@ -1,81 +1,90 @@
 #include "EditableText.h"
 #include "DefaultColors.h"
+#include "GuiMaster.h"
 #include <allegro5/allegro_ttf.h>
 #include <assert.h>
 
 EditableText::EditableText(const char* starttext, int framepadding) :
     text(al_ustr_new(starttext)),
     cursorPos(0),
+    udx(0),
     framepadding(framepadding)
 {
-    ReFrame();
-    CalculateCursorDraw();
 }
 EditableText::~EditableText() {
     al_ustr_free(text);
 }
 
+void EditableText::Init()
+{
+    ReFrame();
+    CalculateCursorDraw();
+}
+
 void EditableText::ReFrame() {
+    MinimalFrame(*this);
     if (al_ustr_size(text)) {
-        MinimalFrame(*this);
         ALLEGRO_FONT* font = Font();
         al_do_multiline_ustr(font, 99999, text,
             [](int line_num, const ALLEGRO_USTR* line, void* caller) {
                 EditableText& me = *(EditableText*)caller;
                 Rect r;
                 al_get_ustr_dimensions(me.Font(), line, &r.left, &r.top, &r.right, &r.bottom);
-                r += glm::ivec2(0, line_num * al_get_font_line_height(me.Font()));
+                r += glm::ivec2(0, line_num * (al_get_font_line_height(me.Font()) + 1));
                 me.mergeWith(r);
                 return true;
             }
         , (void*)this);
-        expand(framepadding);
     }
+    expand(framepadding);
 }
 
 void EditableText::CalculateCursorDraw() {
-    if (!al_ustr_size(text)) return;
+    if (al_ustr_size(text)) {
+        struct S {
+            int cp;
+            int cpt;
+            glm::ivec2 p;
+            ALLEGRO_FONT* font;
+        };
 
-    struct S {
-        int cp;
-        int cpt;
-        glm::ivec2 p;
-        ALLEGRO_FONT* font;
-    };
+        S s;
+        s.cp = 0;
+        s.cpt = cursorPos;
+        s.p = glm::ivec2();
+        s.font = Font();
 
-    S s;
-    s.cp = 0;
-    s.cpt = cursorPos;
-    s.p = glm::ivec2();
-    s.font = Font();
-
-    al_do_multiline_ustr(Font(), 99999, text,
-        [](int line_num, const ALLEGRO_USTR* line, void* _s) {
-            S& s = *(S*)_s;
-            int l = (int)al_ustr_size(line) + 1;
-            if (s.cp + l > s.cpt) {
-                int ustrpos = al_ustr_offset(line, 0);
-                int cp1 = ALLEGRO_NO_KERNING;
-                int cp2 = ALLEGRO_NO_KERNING;
-                bool cont = (ustrpos >= 0);
-                while (cont) {
-                    cp1 = cp2;
-                    cp2 = al_ustr_get(line, ustrpos);
-                    cont = al_ustr_next(line, &ustrpos);
-                    s.p.x += al_get_glyph_advance(s.font, cp1, cp2);
-                    if (s.cp + ustrpos > s.cpt) {
-                        return false;
+        al_do_multiline_ustr(Font(), 99999, text,
+            [](int line_num, const ALLEGRO_USTR* line, void* _s) {
+                S& s = *(S*)_s;
+                int l = (int)al_ustr_size(line) + 1;
+                if (s.cp + l > s.cpt) {
+                    int ustrpos = al_ustr_offset(line, 0);
+                    int cp1 = ALLEGRO_NO_KERNING;
+                    int cp2 = ALLEGRO_NO_KERNING;
+                    bool cont = (ustrpos >= 0);
+                    while (cont) {
+                        cp1 = cp2;
+                        cp2 = al_ustr_get(line, ustrpos);
+                        cont = al_ustr_next(line, &ustrpos);
+                        s.p.x += al_get_glyph_advance(s.font, cp1, cp2);
+                        if (s.cp + ustrpos > s.cpt) {
+                            return false;
+                        }
                     }
+                    return false;
                 }
-                return false;
+                s.cp += l;
+                s.p.y += al_get_font_line_height(s.font);
+                return true;
             }
-            s.cp += l;
-            s.p.y += al_get_font_line_height(s.font);
-            return true;
-        }
-    , (void*)&s);
+        , (void*)&s);
 
-    cursorDraw.topleft = s.p;
+        cursorDraw.topleft = s.p;
+    }
+    else {
+        cursorDraw.topleft = glm::ivec2();
+    }
     cursorDraw.resize(1, al_get_font_ascent(Font()));
 }
 void EditableText::CalculateCursorPos(const glm::ivec2 fromlocalpos) {
@@ -156,7 +165,9 @@ void EditableText::DrawText()
 
 void EditableText::DrawCursor()
 {
-    (cursorDraw + Pos()).draw_filled(white);
+    if (gui.HasFocus(this) && gui.IsCaretVisible()) {
+        (cursorDraw + Pos()).draw_filled(white);
+    }
 }
 
 void EditableText::Draw() {
@@ -169,13 +180,22 @@ Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
         glm::ivec2 mpos(event.mouse.x, event.mouse.y);
         mpos -= Pos();
         if (isInside(mpos)) {
-            CalculateCursorPos(mpos);
-            CalculateCursorDraw();
-            MarkUDX();
+            gui.RequestFocus(this);
+            if (gui.HasFocus(this)) {
+                CalculateCursorPos(mpos);
+                CalculateCursorDraw();
+                MarkUDX();
+            }
+        }
+        else {
+            gui.CancelFocus(this);
         }
     }
-    else if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
+    else if (event.type == ALLEGRO_EVENT_KEY_CHAR && gui.HasFocus(this)) {
         switch (event.keyboard.keycode) {
+        case ALLEGRO_KEY_ESCAPE:
+            gui.CancelFocus(this);
+            break;
         case ALLEGRO_KEY_LEFT:
             if (DecrementCursor()) {
                 CalculateCursorDraw();
@@ -261,6 +281,7 @@ EditableTextBox::EditableTextBox(ALLEGRO_FONT* font, int framepadding) :
     pos{},
     font(font)
 {
+    Init();
 }
 
 ALLEGRO_FONT* EditableTextBox::Font() const
@@ -275,5 +296,8 @@ const glm::ivec2& EditableTextBox::Pos() const
 
 void EditableTextBox::MinimalFrame(Rect& inout)
 {
-    inout = glm::ivec4(0, 0, 20, 20);
+    inout.l = 0;
+    inout.r = 0;
+    inout.t = al_get_font_ascent(font);
+    inout.b = inout.t;
 }

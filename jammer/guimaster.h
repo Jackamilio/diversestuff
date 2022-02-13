@@ -33,6 +33,10 @@ private:
 	std::unordered_map<std::type_index, std::vector<DropLocationBase*>> dropLocations;
 	Draggable::GrabProperties grabbedElementProperties;
 
+	GuiElement* focus;
+	ALLEGRO_TIMER* caretTimer;
+	bool caretVisible;
+
 public:
 	OTN(GuiMaster);
 
@@ -69,6 +73,12 @@ public:
 	void AddDropLocation(CropperDisplacer& cpdl);
 	template<class T>
 	std::vector<DropLocation<T>*>& GetDropLocations();
+
+	// focus
+	void RequestFocus(GuiElement* fe);
+	void CancelFocus(GuiElement* fe);
+	bool HasFocus(GuiElement* fe) const;
+	bool IsCaretVisible() const;
 
 	// transformations
 	void PushTransform();
