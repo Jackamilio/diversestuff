@@ -55,6 +55,14 @@ public:
 		return bottom - top;
 	}
 
+	inline void setWidth(float newval) {
+		right = left + newval;
+	}
+
+	inline void setHeight(float newval) {
+		bottom = top + newval;
+	}
+ 
 	inline void resize(const glm::ivec2& newsize) {
 		br = tl + newsize;
 	}

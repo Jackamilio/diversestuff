@@ -81,7 +81,6 @@ int main()
         EditableTextBox texttest(arial, 4);
         texttest.SetText("Salut ça roule?\nJ'espère bien ouais.\nTroisième ligne.\nQUATRIEME LIGNe OUALALA");
         texttest.pos = glm::ivec2(325, 25);
-        gui.AddChild(&texttest);
 
         Window scene;
         scene.tl = glm::ivec2(700, 50);
@@ -95,6 +94,7 @@ int main()
 
         PureDisplacer pure;
         gui.AddChild(&pure, GuiElement::Priority::Bottom);
+        pure.AddChild(&texttest);
 
         //Button buttontest;
         //buttontest.tl = glm::ivec2(350, 50);

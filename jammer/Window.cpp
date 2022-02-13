@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "GuiMaster.h"
 #include "DefaultColors.h"
 
 Window::Window() :
@@ -34,8 +35,22 @@ void Window::PostDraw() {
 	draw(white, 1);
 }
 
+bool vecsAreClose(const glm::ivec2 v1, const glm::ivec2 v2) {
+	glm::ivec2 atob(v1 - v2);
+	return atob.x * atob.x + atob.y * atob.y <= 25;
+}
+
 Engine::InputStatus Window::Event(ALLEGRO_EVENT& event)
 {
+	if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+		glm::ivec2 mpos(event.mouse.x, event.mouse.y);
+		if (vecsAreClose(mpos, topleft)) {
+			gui.SetCursor(ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NW);
+		}
+		else {
+			//gui.SetCursor(ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT);
+		}
+	}
 	if (CropperDisplacer::Event(event) == Engine::InputStatus::grabbed) {
 		return Engine::InputStatus::grabbed;
 	}

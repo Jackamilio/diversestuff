@@ -1,5 +1,6 @@
 #include "GuiMaster.h"
 #include "Draggable.h"
+#include <allegro5/allegro_windows.h>
 
 void GuiMaster::InitTransforms()
 {
@@ -28,16 +29,39 @@ GuiMaster& GuiMaster::Get()
 	return *singleton;
 }
 
+struct WindowsCursorCallbackData {
+	ALLEGRO_DISPLAY* display;
+	ALLEGRO_SYSTEM_MOUSE_CURSOR cursor;
+};
+
+WindowsCursorCallbackData wccd;
+
+bool WindowsCursorCallback(ALLEGRO_DISPLAY* display, UINT message, WPARAM wparam,
+	LPARAM lparam, LRESULT* result, void* userdata) {
+		if (message == WM_SETCURSOR) {
+			al_set_system_mouse_cursor(wccd.display, wccd.cursor);
+			return true;
+		}
+		return false;
+}
+
 GuiMaster::GuiMaster() : trackedDraggable(nullptr), focus(nullptr), caretTimer(nullptr), caretVisible(true), numericalChars(nullptr)
 {
 	InitTransforms();
 	caretTimer = al_create_timer(0.5);
 	al_register_event_source(engine.eventQueue, al_get_timer_event_source(caretTimer));
 	numericalChars = al_ustr_new("0123456789.");
+
+	// platform specific workaround for windows to be able to change the f***** cursor
+	// this needs to be ported (or removed if everything works as intended) for other platforms
+	al_win_add_window_callback(engine.display, WindowsCursorCallback, nullptr);
+	wccd.display = engine.display;
+	wccd.cursor = ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT;
 }
 
 GuiMaster::~GuiMaster()
 {
+	al_win_remove_window_callback(engine.display, WindowsCursorCallback, nullptr);
 	al_ustr_free(numericalChars);
 	al_destroy_timer(caretTimer);
 	for (auto dlv : dropLocations) {
@@ -69,7 +93,7 @@ glm::ivec2 GuiMaster::GetDisplaceOffset() const
 bool GuiMaster::RecursiveEvent(GuiElement* guielem, ALLEGRO_EVENT& event, bool doroot)
 {
 	Engine::InputStatus ret = Engine::InputStatus::ignored;
-	if (doroot && guielem->EventBeforeChildren()) {
+	if (doroot && guielem->IsEventBeforeChildren()) {
 		ret = guielem->Event(event);
 	}
 
@@ -81,7 +105,7 @@ bool GuiMaster::RecursiveEvent(GuiElement* guielem, ALLEGRO_EVENT& event, bool d
 		}
 	}
 
-	if (doroot && !guielem->EventBeforeChildren()) {
+	if (doroot && !guielem->IsEventBeforeChildren()) {
 		ret = guielem->Event(event);
 	}
 
@@ -174,4 +198,10 @@ void GuiMaster::TranslateTransform(const glm::ivec2& offset)
 {
 	al_translate_transform(&CurrentTransform(), offset.x, offset.y);
 	al_use_transform(&CurrentTransform());
+}
+
+void GuiMaster::SetCursor(ALLEGRO_SYSTEM_MOUSE_CURSOR cursor_id)
+{
+	// platform specific stuff, see the constructor
+	wccd.cursor = cursor_id;
 }

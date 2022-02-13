@@ -89,6 +89,9 @@ public:
 	void IdentityTransform();
 	void TranslateTransform(const glm::ivec2& offset);
 	inline ALLEGRO_TRANSFORM& CurrentTransform() { return transforms.top(); }
+
+	// other
+	void SetCursor(ALLEGRO_SYSTEM_MOUSE_CURSOR cursor_id);
 };
 
 template<class T>

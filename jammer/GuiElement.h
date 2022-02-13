@@ -68,7 +68,7 @@ public:
 	inline const GuiElement* Parent() const { return parent; }
 
 	Priority FindMyPriority(Priority valIfNotFound = Priority::Unknown) const;
-	inline bool EventBeforeChildren() const { return eventBeforeChildren; }
+	inline bool IsEventBeforeChildren() const { return eventBeforeChildren; }
 
 	GuiElement(bool eventBeforeChildren = false);
 	virtual ~GuiElement();
