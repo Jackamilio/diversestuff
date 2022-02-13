@@ -59,6 +59,7 @@ InstructionFamily::InstructionFamily(ALLEGRO_FONT* font) : font(font), shadowBro
     emptyParameter->type = InstructionModel::Type::Parameter;
     emptyParameter->flags |= InstructionModel::Flags::Fixed;
     emptyParameter->flags |= InstructionModel::Flags::Editable;
+    emptyParameter->flags |= InstructionModel::Flags::Number;
     emptyParameter->SetText("   ");
     emptyParameter->evaluate = [](Parameter*, const Instruction& inst, InstructionContext&) {
         const EditableInstruction& ei = (EditableInstruction&)(inst);

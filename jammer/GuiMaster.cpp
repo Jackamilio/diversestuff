@@ -28,15 +28,17 @@ GuiMaster& GuiMaster::Get()
 	return *singleton;
 }
 
-GuiMaster::GuiMaster() : trackedDraggable(nullptr), focus(nullptr), caretTimer(nullptr), caretVisible(true)
+GuiMaster::GuiMaster() : trackedDraggable(nullptr), focus(nullptr), caretTimer(nullptr), caretVisible(true), numericalChars(nullptr)
 {
 	InitTransforms();
 	caretTimer = al_create_timer(0.5);
 	al_register_event_source(engine.eventQueue, al_get_timer_event_source(caretTimer));
+	numericalChars = al_ustr_new("0123456789.");
 }
 
 GuiMaster::~GuiMaster()
 {
+	al_ustr_free(numericalChars);
 	al_destroy_timer(caretTimer);
 	for (auto dlv : dropLocations) {
 		for (auto dl : dlv.second) {
@@ -125,9 +127,6 @@ bool GuiMaster::IsTracked(Draggable* dgbl) const
 void GuiMaster::RequestFocus(GuiElement* fe)
 {
 	focus = fe;
-	al_stop_timer(caretTimer);
-	al_start_timer(caretTimer);
-	caretVisible = true;
 }
 
 void GuiMaster::CancelFocus(GuiElement* fe)
@@ -145,6 +144,13 @@ bool GuiMaster::HasFocus(GuiElement* fe) const
 bool GuiMaster::IsCaretVisible() const
 {
 	return caretVisible;
+}
+
+void GuiMaster::ResetCaret()
+{
+	al_stop_timer(caretTimer);
+	al_start_timer(caretTimer);
+	caretVisible = true;
 }
 
 void GuiMaster::PushTransform()

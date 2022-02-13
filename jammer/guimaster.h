@@ -36,6 +36,7 @@ private:
 	GuiElement* focus;
 	ALLEGRO_TIMER* caretTimer;
 	bool caretVisible;
+	ALLEGRO_USTR* numericalChars;
 
 public:
 	OTN(GuiMaster);
@@ -74,11 +75,13 @@ public:
 	template<class T>
 	std::vector<DropLocation<T>*>& GetDropLocations();
 
-	// focus
+	// focus / text
 	void RequestFocus(GuiElement* fe);
 	void CancelFocus(GuiElement* fe);
 	bool HasFocus(GuiElement* fe) const;
 	bool IsCaretVisible() const;
+	void ResetCaret();
+	inline const ALLEGRO_USTR* GetNumericalChars() const { return numericalChars; }
 
 	// transformations
 	void PushTransform();

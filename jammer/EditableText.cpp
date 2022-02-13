@@ -8,7 +8,9 @@ EditableText::EditableText(const char* starttext, int framepadding) :
     text(al_ustr_new(starttext)),
     cursorPos(0),
     udx(0),
-    framepadding(framepadding)
+    numberPrecision(-1),
+    framepadding(framepadding),
+    canNewLine(true)
 {
 }
 EditableText::~EditableText() {
@@ -87,7 +89,7 @@ void EditableText::CalculateCursorDraw() {
     }
     cursorDraw.resize(1, al_get_font_ascent(Font()));
 }
-void EditableText::CalculateCursorPos(const glm::ivec2 fromlocalpos) {
+bool EditableText::CalculateCursorPos(const glm::ivec2 fromlocalpos) {
     struct S {
         int cp;
         glm::ivec2 p;
@@ -142,7 +144,9 @@ void EditableText::CalculateCursorPos(const glm::ivec2 fromlocalpos) {
 
     if (s.lastline) s.CalcLine(s.lastline);
 
+    int lastcp = cursorPos;
     cursorPos = s.cp;
+    return cursorPos != lastcp;
 }
 
 void EditableText::SetText(const char* t)
@@ -150,6 +154,11 @@ void EditableText::SetText(const char* t)
     assert(al_ustr_assign_cstr(text, t) && "Something went wrong.");
     ReFrame();
     CalculateCursorDraw();
+}
+
+void EditableText::SetNumerical(bool activate, int precision)
+{
+    numberPrecision = activate ? precision : -1;
 }
 
 void EditableText::DrawFrame()
@@ -182,6 +191,7 @@ Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
         if (isInside(mpos)) {
             gui.RequestFocus(this);
             if (gui.HasFocus(this)) {
+                gui.ResetCaret();
                 CalculateCursorPos(mpos);
                 CalculateCursorDraw();
                 MarkUDX();
@@ -198,34 +208,48 @@ Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
             break;
         case ALLEGRO_KEY_LEFT:
             if (DecrementCursor()) {
+                gui.ResetCaret();
                 CalculateCursorDraw();
                 MarkUDX();
             }
             break;
         case ALLEGRO_KEY_RIGHT:
             if (IncrementCursor()) {
+                gui.ResetCaret();
                 CalculateCursorDraw();
                 MarkUDX();
             }
             break;
         case ALLEGRO_KEY_UP:
-            CalculateCursorPos(glm::ivec2(udx, cursorDraw.bottom - al_get_font_line_height(Font())));
-            CalculateCursorDraw();
+            if (CalculateCursorPos(glm::ivec2(udx, cursorDraw.bottom - al_get_font_line_height(Font())))) {
+                gui.ResetCaret();
+                CalculateCursorDraw();
+                
+            }
             break;
         case ALLEGRO_KEY_DOWN:
-            CalculateCursorPos(glm::ivec2(udx, cursorDraw.bottom + al_get_font_line_height(Font())));
-            CalculateCursorDraw();
+            if (CalculateCursorPos(glm::ivec2(udx, cursorDraw.bottom + al_get_font_line_height(Font())))) {
+                gui.ResetCaret();
+                CalculateCursorDraw();
+            }
             break;
         case ALLEGRO_KEY_ENTER:
-            if (al_ustr_insert_chr(text, cursorPos, '\n')) {
-                IncrementCursor();
-                CalculateCursorDraw();
-                MarkUDX();
-                ReFrame();
+            if (canNewLine) {
+                if (al_ustr_insert_chr(text, cursorPos, '\n')) {
+                    gui.ResetCaret();
+                    IncrementCursor();
+                    CalculateCursorDraw();
+                    MarkUDX();
+                    ReFrame();
+                }
+            }
+            else {
+                gui.CancelFocus(this);
             }
             break;
         case ALLEGRO_KEY_BACKSPACE:
             if (DecrementCursor()) {
+                gui.ResetCaret();
                 CalculateCursorDraw();
                 MarkUDX();
                 if (al_ustr_remove_chr(text, cursorPos)) ReFrame();
@@ -233,6 +257,7 @@ Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
             break;
         case ALLEGRO_KEY_DELETE:
             if (al_ustr_remove_chr(text, cursorPos)) {
+                gui.ResetCaret();
                 ReFrame();
             }
             break;
@@ -242,6 +267,7 @@ Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
             while (DecrementCursor() && al_ustr_get(text, cursorPos) != '\n') {}
             if (cursorPos > 0) IncrementCursor();
             if (cp != cursorPos) {
+                gui.ResetCaret();
                 CalculateCursorDraw();
                 MarkUDX();
             }
@@ -252,14 +278,31 @@ Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
             int cp = cursorPos;
             while (al_ustr_get(text, cursorPos) != '\n' && IncrementCursor()) {}
             if (cp != cursorPos) {
+                gui.ResetCaret();
                 CalculateCursorDraw();
                 MarkUDX();
             }
             break;
         }
         default:
-            if (event.keyboard.unichar > 0) {
+        {
+            const int unichar = event.keyboard.unichar;
+            if (unichar > 0) {
+                if (numberPrecision >= 0) {
+                    // filter characters to keep the text numerical
+                    if ((unichar == '.' && numberPrecision == 0) || al_ustr_find_chr(gui.GetNumericalChars(), 0, unichar) < 0) {
+                        return Engine::InputStatus::grabbed;
+                    }
+                    const int pointpos = al_ustr_find_chr(text, 0, '.');
+                    if (unichar == '.') {
+                        if (pointpos >= 0) return Engine::InputStatus::grabbed;
+                    }
+                    else if (pointpos >= 0 && al_ustr_length(text) - pointpos > numberPrecision) {
+                        return Engine::InputStatus::grabbed;
+                    }
+                }
                 if (al_ustr_insert_chr(text, cursorPos, event.keyboard.unichar)) {
+                    gui.ResetCaret();
                     IncrementCursor();
                     CalculateCursorDraw();
                     MarkUDX();
@@ -270,6 +313,7 @@ Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
                 return Engine::InputStatus::ignored;
             }
             break;
+        }
         }
         return Engine::InputStatus::grabbed;
     }

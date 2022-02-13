@@ -12,8 +12,10 @@ private:
     Rect cursorDraw;
     int udx; // remembered x position when navigating up and down
 
+    int numberPrecision;
 public:
     int framepadding;
+    bool canNewLine;
 
     virtual ALLEGRO_FONT* Font() const = 0;
     virtual const glm::ivec2& Pos() const = 0;
@@ -39,10 +41,12 @@ public:
     void ReFrame();
 
     void CalculateCursorDraw();
-    void CalculateCursorPos(const glm::ivec2 fromlocalpos);
+    bool CalculateCursorPos(const glm::ivec2 fromlocalpos); // returns if the position has changed
 
     inline const ALLEGRO_USTR* GetText() const { return text; }
     void SetText(const char* t);
+
+    void SetNumerical(bool activate, int precision = 2);
 
     void DrawFrame();
     void DrawText();

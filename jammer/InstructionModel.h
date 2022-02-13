@@ -30,7 +30,7 @@ public:
     enum class Type { Default, Parameter, Jump };
     Type type;
 
-    enum class Flags { Trigger, Fixed, Visible, StickToPrev, Editable };
+    enum class Flags { Trigger, Fixed, Visible, StickToPrev, Editable, Number, Multiline };
     bitflag<Flags> flags;
 
     InstructionModel* prevLink;
