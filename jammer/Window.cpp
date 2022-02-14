@@ -4,7 +4,11 @@
 
 Window::Window() :
 	GuiElement(true),
-	headBandHeight(20)
+	headBandHeight(20),
+	horiResize(nullptr),
+	vertResize(nullptr),
+	minWidth(50),
+	minHeight(20)
 {
 	cropping = this;
 }
@@ -35,20 +39,85 @@ void Window::PostDraw() {
 	draw(white, 1);
 }
 
-bool vecsAreClose(const glm::ivec2 v1, const glm::ivec2 v2) {
-	glm::ivec2 atob(v1 - v2);
-	return atob.x * atob.x + atob.y * atob.y <= 25;
-}
+#undef min
+#undef max
 
 Engine::InputStatus Window::Event(ALLEGRO_EVENT& event)
 {
-	if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
-		glm::ivec2 mpos(event.mouse.x, event.mouse.y);
-		if (vecsAreClose(mpos, topleft)) {
-			gui.SetCursor(ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NW);
+	const bool leftClicked = event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1;
+	const bool leftReleased = event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == 1;
+	const bool axes = event.type == ALLEGRO_EVENT_MOUSE_AXES;
+	if (leftClicked || leftReleased || axes) {
+		const int dist = 2;
+		const int _t = top - headBandHeight;
+		bool insideHori = valueInside(event.mouse.x, l - dist, r + dist);
+		bool insideVert = valueInside(event.mouse.y, _t - dist, b + dist);
+		bool nearL = insideVert && glm::abs(event.mouse.x - l) <= dist;
+		bool nearR = insideVert && glm::abs(event.mouse.x - r) <= dist;
+		bool nearT = insideHori && glm::abs(event.mouse.y - _t) <= dist;
+		bool nearB = insideHori && glm::abs(event.mouse.y - b) <= dist;
+		char nearLRTB = 0b0;
+		if (nearL) nearLRTB |= 0b0001;
+		if (nearR) nearLRTB |= 0b0010;
+		if (nearT) nearLRTB |= 0b0100;
+		if (nearB) nearLRTB |= 0b1000;
+		switch (nearLRTB) {
+		case 0b0000:
+			gui.CancelCursor(this);
+			break;
+		case 0b0001:
+			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_W);
+			break;
+		case 0b0010:
+			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_E);
+			break;
+		case 0b0100:
+			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_N);
+			break;
+		case 0b1000:
+			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_S);
+			break;
+		case 0b0101:
+			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NW);
+			break;
+		case 0b0110:
+			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NE);
+			break;
+		case 0b1001:
+			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_SW);
+			break;
+		case 0b1010:
+			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_SE);
+			break;
+		default:
+			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_QUESTION);
+			break;
 		}
-		else {
-			//gui.SetCursor(ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT);
+		if (leftClicked) {
+			horiResize = nearL ? &left : nearR ? &right  : nullptr;
+			vertResize = nearT ? &top  : nearB ? &bottom : nullptr;
+			if (horiResize) trackedHoriResize = *horiResize;
+			if (vertResize) trackedVertResize = *vertResize;
+		}
+		else if (leftReleased) {
+			horiResize = nullptr;
+			vertResize = nullptr;
+		}
+		else if (axes) {
+			trackedHoriResize += event.mouse.dx;
+			trackedVertResize += event.mouse.dy;
+			Rect ref = *this;
+			if (horiResize) {
+				*horiResize = trackedHoriResize;
+				if (ref.l != l) l = glm::min(l, ref.r - minWidth);
+				else if (ref.r != r) r = glm::max(r, ref.l + minWidth);
+			}
+			if (vertResize) {
+				*vertResize = trackedVertResize;
+				if (ref.t != t) top = glm::min(t, ref.b - minHeight);
+				else if (ref.b != b) b = glm::max(b, ref.t + minHeight);
+			}
+			if (horiResize || vertResize) return Engine::InputStatus::grabbed;
 		}
 	}
 	if (CropperDisplacer::Event(event) == Engine::InputStatus::grabbed) {

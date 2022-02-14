@@ -53,10 +53,10 @@ GuiMaster::GuiMaster() : trackedDraggable(nullptr), focus(nullptr), caretTimer(n
 	numericalChars = al_ustr_new("0123456789.");
 
 	// platform specific workaround for windows to be able to change the f***** cursor
-	// this needs to be ported (or removed if everything works as intended) for other platforms
+	// this needs to be ported (or ifdef'd out if everything works as intended) for other platforms
 	al_win_add_window_callback(engine.display, WindowsCursorCallback, nullptr);
 	wccd.display = engine.display;
-	wccd.cursor = ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT;
+	RequestCursor(nullptr, ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT);
 }
 
 GuiMaster::~GuiMaster()
@@ -200,8 +200,20 @@ void GuiMaster::TranslateTransform(const glm::ivec2& offset)
 	al_use_transform(&CurrentTransform());
 }
 
-void GuiMaster::SetCursor(ALLEGRO_SYSTEM_MOUSE_CURSOR cursor_id)
+void GuiMaster::RequestCursor(const GuiElement* requester, ALLEGRO_SYSTEM_MOUSE_CURSOR cursor_id)
 {
+	requestedCursors[requester] = cursor_id;
+
 	// platform specific stuff, see the constructor
 	wccd.cursor = cursor_id;
 }
+
+void GuiMaster::CancelCursor(const GuiElement* requester)
+{
+	auto it = requestedCursors.find(requester);
+	if (it != requestedCursors.end()) {
+		requestedCursors.erase(it);
+		wccd.cursor = requestedCursors.rbegin()->second;
+	}
+}
+

@@ -9,7 +9,15 @@
 class Window : public Rect, public virtual GuiElement, virtual public Draggable, virtual public CropperDisplacer {
 private:
 	int headBandHeight;
+
+	int* horiResize;
+	int* vertResize;
+	int trackedHoriResize;
+	int trackedVertResize;
 public:
+	int minWidth;
+	int minHeight;
+
 	Window();
 	~Window();
 
