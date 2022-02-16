@@ -47,6 +47,14 @@ public:
 		return glm::ivec2(l, b);
 	}
 
+	inline void reposition(const glm::ivec2 newpos) {
+		*this += newpos - topleft;
+	}
+
+	inline void reposition(int x, int y) {
+		reposition(glm::ivec2(x, y));
+	}
+
 	inline int w() const {
 		return right - left;
 	}

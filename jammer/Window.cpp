@@ -7,6 +7,8 @@ Window::Window() :
 	headBandHeight(20),
 	horiResize(nullptr),
 	vertResize(nullptr),
+	trackedHoriResize(0),
+	trackedVertResize(0),
 	minWidth(50),
 	minHeight(20)
 {
@@ -100,8 +102,11 @@ Engine::InputStatus Window::Event(ALLEGRO_EVENT& event)
 			if (vertResize) trackedVertResize = *vertResize;
 		}
 		else if (leftReleased) {
-			horiResize = nullptr;
-			vertResize = nullptr;
+			if (horiResize || vertResize) {
+				horiResize = nullptr;
+				vertResize = nullptr;
+				Fire(EventType::Resized);
+			}
 		}
 		else if (axes) {
 			trackedHoriResize += event.mouse.dx;
@@ -114,7 +119,7 @@ Engine::InputStatus Window::Event(ALLEGRO_EVENT& event)
 			}
 			if (vertResize) {
 				*vertResize = trackedVertResize;
-				if (ref.t != t) top = glm::min(t, ref.b - minHeight);
+				if (ref.t != t) t = glm::min(t, ref.b - minHeight);
 				else if (ref.b != b) b = glm::max(b, ref.t + minHeight);
 			}
 			if (horiResize || vertResize) return Engine::InputStatus::grabbed;

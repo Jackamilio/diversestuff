@@ -219,3 +219,32 @@ GuiElement::Lineage GuiElement::CompileLineage() const
 
 	return ret;
 }
+
+void GuiElement::ReactTo(EventType evtype, void* subscriberID, const EventReaction& reaction)
+{
+	eventReactions[evtype][subscriberID] = reaction;
+}
+
+void GuiElement::CancelReaction(EventType evtype, void* subscriberID)
+{
+	auto typemap = eventReactions.find(evtype);
+	if (typemap != eventReactions.end()) {
+		auto reaction = typemap->second.find(subscriberID);
+		if (reaction != typemap->second.end()) {
+			typemap->second.erase(reaction);
+		}
+		if (typemap->second.empty()) {
+			eventReactions.erase(typemap);
+		}
+	}
+}
+
+void GuiElement::Fire(EventType ev)
+{
+	auto typemap = eventReactions.find(ev);
+	if (typemap != eventReactions.end()) {
+		for (auto it : typemap->second) {
+			it.second();
+		}
+	}
+}

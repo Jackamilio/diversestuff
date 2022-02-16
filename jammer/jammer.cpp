@@ -19,6 +19,7 @@
 
 #include "DefaultColors.h"
 #include "EditableText.h"
+#include "Image.h"
 
 ALLEGRO_FONT* fetchDefaultFont()
 {
@@ -70,20 +71,54 @@ int main()
         Engine::Engine::Get().inputRoot.AddChild(&gui);
         Engine::Engine::Get().overlayGraphic.AddChild(&gui);
 
+        Window resizeimagetest;
+        resizeimagetest.tl = { 20,20 };
+        resizeimagetest.resize(200, 200);
+        Image imagetest("banana.png");
+        imagetest.rect = &resizeimagetest;
+        //imagetest.stretch = true;
+        resizeimagetest.AddChild(&imagetest);
+        gui.AddChild(&resizeimagetest, GuiElement::Priority::Top);
+        resizeimagetest.ReactTo(GuiElement::EventType::Moved, &resizeimagetest,
+            [&resizeimagetest, &imagetest]() {imagetest.pos = -resizeimagetest.topleft; }
+            );
+
         Window instructionsList;
-        instructionsList.tl = glm::ivec2(1, 20);
+        instructionsList.tl = { 1, 20 };
         instructionsList.resize(300, 719);
 
         gui.AddChild(&instructionsList);
 
-        ALLEGRO_FONT* arial = al_load_font("arial.ttf", 20, 0);
+        Window textureExplorer;
+        textureExplorer.tl = {20 ,20};
+        textureExplorer.resize(500, 350);
 
-        EditableTextBox texttest(arial, 4);
-        texttest.SetText("Salut ça roule?\nJ'espère bien ouais.\nTroisième ligne.\nQUATRIEME LIGNe OUALALA");
-        texttest.pos = glm::ivec2(325, 25);
+        std::vector<Button*> buttons;
+        for (int i = 0; i < 5; ++i) {
+            Button* b = new Button;
+            b->resize(80, 80);
+            buttons.push_back(b);
+            textureExplorer.AddChild(b);
+        }
+
+        textureExplorer.ReactTo(GuiElement::EventType::Resized, &textureExplorer, [&buttons,&textureExplorer]() {
+            int x = 20;
+            int y = 20;
+            for (auto button : buttons) {
+                button->reposition(x, y);
+                x += 100;
+                if (x + button->w() > textureExplorer.w()) {
+                    x = 20;
+                    y += 100;
+                }
+            }
+            });
+        textureExplorer.Fire(GuiElement::EventType::Resized);
+
+        gui.AddChild(&textureExplorer);
 
         Window scene;
-        scene.tl = glm::ivec2(700, 50);
+        scene.tl = { 700, 50 };
         scene.resize(540, 420);
 
         gui.AddChild(&scene);
@@ -94,12 +129,6 @@ int main()
 
         PureDisplacer pure;
         gui.AddChild(&pure, GuiElement::Priority::Bottom);
-        pure.AddChild(&texttest);
-
-        //Button buttontest;
-        //buttontest.tl = glm::ivec2(350, 50);
-        //buttontest.resize(20, 20);
-        //pure.AddChild(&buttontest, GuiElement::Priority::Bottom);
         
         gui.AddDropLocation<Instruction>(instructionsList);
         gui.AddDropLocation<Instruction>(pure);
@@ -318,6 +347,10 @@ int main()
 
         for (auto inst : deletelater) {
             delete inst;
+        }
+
+        for (auto b : buttons) {
+            delete b;
         }
 
         GuiMaster::End();

@@ -11,13 +11,15 @@ Button::~Button()
 
 Engine::InputStatus Button::Event(ALLEGRO_EVENT& event)
 {
-    if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN || event.type == ALLEGRO_EVENT_MOUSE_AXES || event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+    if ( (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN || event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) && event.mouse.button == 1
+        || event.type == ALLEGRO_EVENT_MOUSE_AXES ) {
         if (isInside(glm::ivec2(event.mouse.x, event.mouse.y))) {
             if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
                 state = State::Clicked;
                 return Engine::InputStatus::grabbed;
             }
             else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+                Fire(EventType::Clicked);
                 state = State::Hovered;
             }
             else if (state == State::NeutralHeld) {

@@ -160,6 +160,7 @@
     <ClCompile Include="EditableText.cpp" />
     <ClCompile Include="GuiElement.cpp" />
     <ClCompile Include="GuiMaster.cpp" />
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="InstructionContext.cpp" />
     <ClCompile Include="InstructionModel.cpp" />
     <ClCompile Include="jammer.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="EditableText.h" />
     <ClInclude Include="GuiElement.h" />
     <ClInclude Include="GuiMaster.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="InstructionContext.h" />
     <ClInclude Include="InstructionModel.h" />
     <ClInclude Include="Parameter.h" />

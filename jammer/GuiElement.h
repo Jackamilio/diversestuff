@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <functional>
 #include "Engine.h"
 
 class GuiMaster;
@@ -12,6 +13,10 @@ class GuiElement;
 
 class GuiElement {
 public:
+	enum class EventType { Opened, Closed, Clicked, Moved, Resized };
+	typedef std::function<void()> EventReaction;
+	std::map<EventType, std::map<void*, EventReaction>> eventReactions;
+
 	enum class Priority : int {
 		Unknown = 0,
 		Bottom,
@@ -87,6 +92,11 @@ public:
 	virtual Engine::InputStatus Event(ALLEGRO_EVENT& event) { return Engine::InputStatus::ignored; }
 	virtual void Draw() {}
 	virtual void PostDraw() {}
+
+	// event system
+	void ReactTo(EventType evtype, void* subscriberID, const EventReaction& reaction);
+	void CancelReaction(EventType evtype, void* subscriberID);
+	void Fire(EventType ev);
 };
 
 template<class Elem, class Map, class MapIt>

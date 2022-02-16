@@ -8,14 +8,15 @@ void Draggable::CancelGrab()
 }
 
 Engine::InputStatus Draggable::Event(ALLEGRO_EVENT& event) {
-    if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+    if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1) {
         if (hitCheck(glm::ivec2(event.mouse.x, event.mouse.y))) {
             ForceGrab();
             return Engine::InputStatus::grabbed;
         }
     }
-    else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+    else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == 1) {
         if (gui.IsTracked(this)) {
+            Fire(EventType::Moved);
             Dropped();
             gui.UnTrack(this);
             return Engine::InputStatus::grabbed;

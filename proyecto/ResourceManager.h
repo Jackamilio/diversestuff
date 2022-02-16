@@ -30,6 +30,8 @@ public:
 
 	const Key GetKey(const ResHandler& value, const Key& def) const;
 
+	const std::map<Key, ResHandler>& GetContainer() const;
+
 	void RemoveValue(const Key& key);
 	void Clear();
 };
@@ -83,6 +85,12 @@ inline const Key ResourceManager<ResHandler, ResValue, Key>::GetKey(const ResHan
 		}
 	}
 	return def;
+}
+
+template<class ResHandler, class ResValue, class Key>
+inline const std::map<Key, ResHandler>& ResourceManager<ResHandler, ResValue, Key>::GetContainer() const
+{
+	return resources;
 }
 
 template<class ResHandler, class ResValue, class Key>
