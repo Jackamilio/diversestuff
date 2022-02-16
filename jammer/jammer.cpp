@@ -5,6 +5,7 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_native_dialog.h>
 
 #include "Scene.h"
 
@@ -71,17 +72,18 @@ int main()
         Engine::Engine::Get().inputRoot.AddChild(&gui);
         Engine::Engine::Get().overlayGraphic.AddChild(&gui);
 
-        Window resizeimagetest;
-        resizeimagetest.tl = { 20,20 };
-        resizeimagetest.resize(200, 200);
-        Image imagetest("banana.png");
-        imagetest.rect = &resizeimagetest;
-        //imagetest.stretch = true;
-        resizeimagetest.AddChild(&imagetest);
-        gui.AddChild(&resizeimagetest, GuiElement::Priority::Top);
-        resizeimagetest.ReactTo(GuiElement::EventType::Moved, &resizeimagetest,
-            [&resizeimagetest, &imagetest]() {imagetest.pos = -resizeimagetest.topleft; }
-            );
+        std::vector<GuiElement*> deletelater;
+
+        //Window resizeimagetest;
+        //resizeimagetest.tl = { 20,20 };
+        //resizeimagetest.resize(200, 200);
+        //Image imagetest("banana.png");
+        //imagetest.rect = &resizeimagetest;
+        //resizeimagetest.AddChild(&imagetest);
+        //gui.AddChild(&resizeimagetest, GuiElement::Priority::Top);
+        //resizeimagetest.ReactTo(GuiElement::EventType::Moved, &resizeimagetest,
+        //    [&resizeimagetest, &imagetest]() {imagetest.pos = -resizeimagetest.topleft; }
+        //    );
 
         Window instructionsList;
         instructionsList.tl = { 1, 20 };
@@ -93,25 +95,60 @@ int main()
         textureExplorer.tl = {20 ,20};
         textureExplorer.resize(500, 350);
 
-        std::vector<Button*> buttons;
-        for (int i = 0; i < 5; ++i) {
-            Button* b = new Button;
-            b->resize(80, 80);
-            buttons.push_back(b);
-            textureExplorer.AddChild(b);
-        }
+        engine.graphics.textures.Get("cutemonkey.png");
+        engine.graphics.textures.Get("banana.png");
+        engine.graphics.textures.Get("fail");
 
-        textureExplorer.ReactTo(GuiElement::EventType::Resized, &textureExplorer, [&buttons,&textureExplorer]() {
+        std::vector<Button*> buttons;
+        Button addImageButton;
+        addImageButton.resize(120, 120);
+        textureExplorer.AddChild(&addImageButton);
+        addImageButton.ReactTo(GuiElement::EventType::Clicked, &addImageButton, [&engine, &textureExplorer]() {
+            ALLEGRO_FILECHOOSER* dialog = al_create_native_file_dialog(
+                nullptr,
+                "Choose a new texture",
+                "*.png;*.bmp;*.jpg;",
+                ALLEGRO_FILECHOOSER_FILE_MUST_EXIST);
+            if (al_show_native_file_dialog(engine.display, dialog)) {
+                const char* answer = al_get_native_file_dialog_path(dialog, 0);
+                engine.graphics.textures.Get(answer);
+                textureExplorer.Fire(GuiElement::EventType::Resized);
+            }
+            al_destroy_native_file_dialog(dialog);
+            });
+
+        textureExplorer.ReactTo(GuiElement::EventType::Resized, &textureExplorer, [&engine, &deletelater, &buttons, &addImageButton, &textureExplorer]() {
             int x = 20;
             int y = 20;
+            int i = 0;
+            for (auto& tex : engine.graphics.textures.GetContainer()) {
+                if (i < buttons.size()) {
+                    GuiElement* firstchild = *buttons[i]->begin();
+                    ((Image*)firstchild)->ChangeTexture(tex.second);
+                }
+                else {
+                    Button* b = new Button;
+                    Image* i = new Image(tex.second);
+                    b->resize(120, 120);
+                    b->AddChild(i);
+                    i->rect = b;
+                    buttons.push_back(b);
+                    textureExplorer.AddChild(b);
+                    deletelater.push_back(b);
+                    deletelater.push_back(i);
+                }
+                ++i;
+            }
+            buttons.push_back(&addImageButton);
             for (auto button : buttons) {
                 button->reposition(x, y);
-                x += 100;
+                x += 140;
                 if (x + button->w() > textureExplorer.w()) {
                     x = 20;
-                    y += 100;
+                    y += 140;
                 }
             }
+            buttons.erase(buttons.begin() + (buttons.size() - 1));
             });
         textureExplorer.Fire(GuiElement::EventType::Resized);
 
@@ -138,7 +175,6 @@ int main()
         int yoffset = 20;
         InstructionModel* curmodel = nullptr;
         InstructionModel* previousmodel = nullptr;
-        std::vector<InstructionModel*> deletelater;
         auto newmodel = [&](const char* name, InstructionModel::Type type = InstructionModel::Type::Default, int nbparams = 0) {
             previousmodel = curmodel;
             curmodel = new InstructionModel(family);
@@ -347,10 +383,6 @@ int main()
 
         for (auto inst : deletelater) {
             delete inst;
-        }
-
-        for (auto b : buttons) {
-            delete b;
         }
 
         GuiMaster::End();
