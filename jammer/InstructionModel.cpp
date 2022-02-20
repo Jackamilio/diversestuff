@@ -75,7 +75,7 @@ Instruction* InstructionModel::CreateInstruction() {
 bool InstructionModel::Event(ALLEGRO_EVENT& event)
 {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-        if ((flags & Flags::Visible) && defaultRect.isInside(glm::ivec2(event.mouse.x, event.mouse.y))) {
+        if ((flags & Flags::Visible) && defaultRect.isInside(MousePosition(event))) {
             // create the first instruction that's on top
             InstructionModel* topModel = this;
             while (topModel->prevLink) {

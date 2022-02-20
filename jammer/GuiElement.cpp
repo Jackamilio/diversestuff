@@ -151,10 +151,7 @@ glm::ivec2 GuiElement::CalculateGlobalOffset() const
 	const GuiElement* parent = Parent();
 	while (parent)
 	{
-		const Cropper* cdparent = dynamic_cast<const Cropper*>(parent);
-		if (cdparent) {
-			offset += cdparent->pos;
-		}
+		offset += parent->pos;
 		parent = parent->Parent();
 	}
 

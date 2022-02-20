@@ -7,6 +7,7 @@
 #include <typeindex>
 #include "GuiElement.h"
 #include "DropLocation.h"
+#include "Draggable.h"
 
 class GuiMaster : public virtual GuiElement, public Engine::Input, public Engine::Graphic {
 private:
@@ -70,7 +71,7 @@ public:
 	inline Draggable::GrabProperties& GrabbedElementProperties() { return grabbedElementProperties; }
 
 	template<class T>
-	void AddDropLocation(Cropper& cpdl);
+	void AddDropLocation(GuiElement& cpdl);
 	template<class T>
 	std::vector<DropLocation<T>*>& GetDropLocations();
 
@@ -95,7 +96,7 @@ public:
 };
 
 template<class T>
-inline void GuiMaster::AddDropLocation(Cropper& cpdl)
+inline void GuiMaster::AddDropLocation(GuiElement& cpdl)
 {
 	std::type_index id = std::type_index(typeid(T));
 	dropLocations[id].push_back(new DropLocation<T>(cpdl));

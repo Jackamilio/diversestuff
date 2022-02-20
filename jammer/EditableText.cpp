@@ -185,7 +185,7 @@ void EditableText::Draw() {
 }
 bool EditableText::Event(ALLEGRO_EVENT& event) {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-        glm::ivec2 mpos(event.mouse.x, event.mouse.y);
+        glm::ivec2 mpos = MousePosition(event);
         //mpos -= pos;
         if (isInside(mpos)) {
             gui.RequestFocus(this);

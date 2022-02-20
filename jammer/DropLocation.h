@@ -2,19 +2,16 @@
 #define __DROP_LOCATION_H__
 
 #include <glm/glm.hpp>
-#include "Draggable.h"
-#include "Cropper.h"
+#include "GuiElement.h"
 
 template<class T>
 class Droppable;
 
 class DropLocationBase {
 protected:
-	DropLocationBase(Cropper& loc);
+	DropLocationBase(GuiElement& loc);
 public:
-    Cropper& location;
-
-    //inline glm::ivec2 GetGlobalOffset() const { return location.CalculateGlobalDisplaceOffset(); }
+    GuiElement& location;
 
 	virtual ~DropLocationBase() {}
 };
@@ -22,7 +19,7 @@ public:
 template<class T>
 class DropLocation : public DropLocationBase {
 public:
-	DropLocation(Cropper& loc);
+	DropLocation(GuiElement& loc);
 
     inline void ForceAccept(Droppable<T>* element, GuiElement::Priority priority = GuiElement::Priority::Default);
 	inline bool Accept(Droppable<T>* element, const glm::ivec2& pos, GuiElement::Priority priority = GuiElement::Priority::Default);
@@ -30,7 +27,7 @@ public:
 };
 
 template<class T>
-inline DropLocation<T>::DropLocation(Cropper& loc) : DropLocationBase(loc)
+inline DropLocation<T>::DropLocation(GuiElement& loc) : DropLocationBase(loc)
 {
 }
 
@@ -47,7 +44,7 @@ inline void DropLocation<T>::ForceAccept(Droppable<T>* element, GuiElement::Prio
 template<class T>
 inline bool DropLocation<T>::Accept(Droppable<T>* element, const glm::ivec2& pos, GuiElement::Priority priority)
 {
-    if (location.InsideCropping(pos)) {
+    if (location.CanAcceptDrop(pos)) {
         ForceAccept(element, priority);
         return true;
     }

@@ -3,7 +3,7 @@
 #include "DefaultColors.h"
 
 Window::Window() :
-	Cropper(*this),
+	Cropper(*((Rect*)this)), // if I don't EXPLICITLY cast "this" to Rect*, the Cropper constructor WON'T BE CALLED AT ALL WITHOUT ANY WARNING, WHAT THE ACTUAL F****, TELL ME SOMETHING COMPILER!!!!!
 	headBandHeight(20),
 	horiResize(nullptr),
 	vertResize(nullptr),
@@ -124,13 +124,8 @@ bool Window::Event(ALLEGRO_EVENT& event)
 			if (horiResize || vertResize) return true;
 		}
 	}
-	if (Cropper::Event(event)) {
-		return true;
-	}
-	else if (Draggable::Event(event)) {
-			return true;
-	}
-	return false;
+
+	return Cropper::Event(event) || Draggable::Event(event);
 }
 
 void Window::Grabbed()

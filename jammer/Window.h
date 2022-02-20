@@ -6,7 +6,9 @@
 #include "Rect.h"
 #include "Cropper.h"
 
-class Window : public Rect, public virtual GuiElement, virtual public Draggable, virtual public Cropper {
+#pragma warning( push )
+#pragma warning( disable : 4250 )
+class Window : public Rect, virtual public Draggable, virtual public Cropper {
 private:
 	int headBandHeight;
 
@@ -30,5 +32,6 @@ public:
 	virtual void Grabbed();
 	virtual bool hitCheck(const glm::ivec2& pos) const;
 };
+#pragma warning( pop )
 
 #endif //__WINDOW_H__

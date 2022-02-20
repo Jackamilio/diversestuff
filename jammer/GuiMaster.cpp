@@ -79,7 +79,7 @@ bool GuiMaster::Event(ALLEGRO_EVENT& event)
 		caretVisible = !caretVisible;
 		return true;
 	}
-	isMouseEvent = (event.type >= 20 && event.type <= 25);
+	isMouseEvent = IsMouseEvent(event);
 	return RecursiveEvent(this, event, false);
 }
 

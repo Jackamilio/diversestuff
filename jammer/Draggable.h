@@ -2,7 +2,6 @@
 #define __DRAGGABLE_H__
 
 #include <glm/glm.hpp>
-#include "Engine.h"
 #include "GuiElement.h"
 
 class DropLocationBase;
@@ -15,6 +14,7 @@ public:
 		GuiElement::Priority priority;
 	};
 
+	Draggable() {}
 	virtual ~Draggable() {}
 
 	virtual void Grabbed() {}

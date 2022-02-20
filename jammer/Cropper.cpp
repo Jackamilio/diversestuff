@@ -23,3 +23,13 @@ void Cropper::PostDraw()
 	al_set_clipping_rectangle(previousCropping.tl.x, previousCropping.tl.y, previousCropping.w(), previousCropping.h());
 }
 
+bool Cropper::Event(ALLEGRO_EVENT& event)
+{
+	return IsMouseEvent(event) && cropping.isInside(MousePosition(event));
+}
+
+bool Cropper::CanAcceptDrop(const glm::ivec2& atpos) const
+{
+	return cropping.isInside(atpos);
+}
+

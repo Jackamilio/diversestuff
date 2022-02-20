@@ -7,9 +7,6 @@
 #include "Engine.h"
 
 class GuiMaster;
-class Cropper;
-
-class GuiElement;
 
 class GuiElement {
 public:
@@ -95,6 +92,9 @@ public:
 	virtual bool Event(ALLEGRO_EVENT& event) { return false; }
 	virtual void Draw() {}
 	virtual void PostDraw() {}
+	virtual bool CanAcceptDrop(const glm::ivec2& atpos) const { return true; }
+	inline static bool IsMouseEvent(ALLEGRO_EVENT& event) { return event.type >= 20 && event.type <= 25; }
+	inline static glm::ivec2 MousePosition(ALLEGRO_EVENT& event) { return glm::ivec2(event.mouse.x, event.mouse.y); }
 
 	// event system
 	void ReactTo(EventType evtype, void* subscriberID, const EventReaction& reaction);

@@ -1,11 +1,10 @@
 #ifndef __CROPPER_H__
 #define __CROPPER_H__
 
-#include <stack>
 #include "Rect.h"
 #include "GuiElement.h"
 
-class Cropper : virtual public GuiElement {
+class Cropper : public virtual GuiElement {
 protected:
 	const Rect& cropping;
 	Rect previousCropping;
@@ -15,8 +14,9 @@ public:
 
 	virtual void Draw();
 	virtual void PostDraw();
+	virtual bool Event(ALLEGRO_EVENT& event);
 
-	inline bool InsideCropping(const glm::ivec2& pos) const { return cropping.isInside(pos); }
+	virtual bool CanAcceptDrop(const glm::ivec2& atpos) const;
 };
 
-#endif //__CROPPER_DISPLACER_H__
+#endif //__CROPPER_H__

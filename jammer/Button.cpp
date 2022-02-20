@@ -13,7 +13,7 @@ bool Button::Event(ALLEGRO_EVENT& event)
 {
     if ( (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN || event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) && event.mouse.button == 1
         || event.type == ALLEGRO_EVENT_MOUSE_AXES ) {
-        if (isInside(glm::ivec2(event.mouse.x, event.mouse.y))) {
+        if (isInside(MousePosition(event))) {
             if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
                 state = State::Clicked;
                 return true;

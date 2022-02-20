@@ -9,7 +9,7 @@ void Draggable::CancelGrab()
 
 bool Draggable::Event(ALLEGRO_EVENT& event) {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1) {
-        if (hitCheck(glm::ivec2(event.mouse.x, event.mouse.y))) {
+        if (hitCheck(MousePosition(event))) {
             ForceGrab();
             return true;
         }
