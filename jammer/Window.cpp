@@ -3,7 +3,7 @@
 #include "DefaultColors.h"
 
 Window::Window() :
-	GuiElement(true),
+	Cropper(*this),
 	headBandHeight(20),
 	horiResize(nullptr),
 	vertResize(nullptr),
@@ -12,7 +12,6 @@ Window::Window() :
 	minWidth(50),
 	minHeight(20)
 {
-	cropping = this;
 }
 
 Window::~Window() {
@@ -33,18 +32,18 @@ void Window::Draw() {
 
 	Rect::draw_filled(black);
 
-	CropperDisplacer::Draw();
+	Cropper::Draw();
 }
 
 void Window::PostDraw() {
-	CropperDisplacer::PostDraw();
+	Cropper::PostDraw();
 	Rect::draw(white, 1);
 }
 
 #undef min
 #undef max
 
-Engine::InputStatus Window::Event(ALLEGRO_EVENT& event)
+bool Window::Event(ALLEGRO_EVENT& event)
 {
 	const bool leftClicked = event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1;
 	const bool leftReleased = event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == 1;
@@ -122,16 +121,16 @@ Engine::InputStatus Window::Event(ALLEGRO_EVENT& event)
 				if (ref.t != t) t = glm::min(t, ref.b - minHeight);
 				else if (ref.b != b) b = glm::max(b, ref.t + minHeight);
 			}
-			if (horiResize || vertResize) return Engine::InputStatus::grabbed;
+			if (horiResize || vertResize) return true;
 		}
 	}
-	if (CropperDisplacer::Event(event) == Engine::InputStatus::grabbed) {
-		return Engine::InputStatus::grabbed;
+	if (Cropper::Event(event)) {
+		return true;
 	}
-	else if (Draggable::Event(event) == Engine::InputStatus::grabbed) {
-			return Engine::InputStatus::grabbed;
+	else if (Draggable::Event(event)) {
+			return true;
 	}
-	return Engine::InputStatus::ignored;
+	return false;
 }
 
 void Window::Grabbed()
@@ -144,7 +143,3 @@ bool Window::hitCheck(const glm::ivec2& pos) const
 	return HeadBandRect().isInside(pos);
 }
 
-glm::ivec2 Window::GetDisplaceOffset() const
-{
-	return pos;
-}

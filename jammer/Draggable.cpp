@@ -1,5 +1,5 @@
 #include "Draggable.h"
-#include "CropperDisplacer.h"
+#include "Cropper.h"
 #include "GuiMaster.h"
 
 void Draggable::CancelGrab()
@@ -7,11 +7,11 @@ void Draggable::CancelGrab()
     gui.UnTrack(this);
 }
 
-Engine::InputStatus Draggable::Event(ALLEGRO_EVENT& event) {
+bool Draggable::Event(ALLEGRO_EVENT& event) {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1) {
         if (hitCheck(glm::ivec2(event.mouse.x, event.mouse.y))) {
             ForceGrab();
-            return Engine::InputStatus::grabbed;
+            return true;
         }
     }
     else if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == 1) {
@@ -19,15 +19,15 @@ Engine::InputStatus Draggable::Event(ALLEGRO_EVENT& event) {
             Fire(EventType::Moved);
             Dropped();
             gui.UnTrack(this);
-            return Engine::InputStatus::grabbed;
+            return true;
         }
     }
     else if (event.type == ALLEGRO_EVENT_MOUSE_AXES && gui.IsTracked(this)) {
         Dragged(glm::ivec2(event.mouse.dx, event.mouse.dy));
 
-        return Engine::InputStatus::grabbed;
+        return true;
     }
-    return Engine::InputStatus::ignored;
+    return false;
 }
 
 void Draggable::ForceGrab()

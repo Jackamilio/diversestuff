@@ -23,8 +23,8 @@ public:
 
 	//fine tuned input, if you want more condition for when those happen
 	//otherwise just use the DefaultInput class
-	Engine::InputStatus Drag(ALLEGRO_EVENT& event, int mousebutton = 1);
-	Engine::InputStatus Zoom(ALLEGRO_EVENT& event, float scale = 1.0f, float* powerDist = nullptr, float powerIncrement = 0.2f, float maxpowerdist = FLT_MAX);
+	bool Drag(ALLEGRO_EVENT& event, int mousebutton = 1);
+	bool Zoom(ALLEGRO_EVENT& event, float scale = 1.0f, float* powerDist = nullptr, float powerIncrement = 0.2f, float maxpowerdist = FLT_MAX);
 
 	glm::vec3 focuspoint;
 	glm::vec3 up;
@@ -43,8 +43,8 @@ public:
 	float powerDist;
 
 	DefaultInput(float powerDist = 1.0f);
-	Engine::InputStatus Event(ALLEGRO_EVENT& event);
-	inline Engine::InputStatus Zoom(ALLEGRO_EVENT& event, float scale = 1.0f, float powerIncrement = 0.2f, float maxpowerdist = FLT_MAX) {
+	bool Event(ALLEGRO_EVENT& event);
+	inline bool Zoom(ALLEGRO_EVENT& event, float scale = 1.0f, float powerIncrement = 0.2f, float maxpowerdist = FLT_MAX) {
 		return EditorCamera::Zoom(event, scale, &powerDist, powerIncrement, maxpowerdist);
 	}
 };

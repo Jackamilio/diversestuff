@@ -7,7 +7,7 @@
 #include "Engine.h"
 
 class GuiMaster;
-class CropperDisplacer;
+class Cropper;
 
 class GuiElement;
 
@@ -29,8 +29,8 @@ public:
 private:
 	GuiElement* parent;
 	ChildList children;
-protected:
-	bool eventBeforeChildren;
+//protected:
+//	bool eventBeforeChildren;
 
 public:
 	GuiMaster& gui;
@@ -74,13 +74,15 @@ public:
 	inline const GuiElement* Parent() const { return parent; }
 
 	Priority FindMyPriority(Priority valIfNotFound = Priority::Unknown) const;
-	inline bool IsEventBeforeChildren() const { return eventBeforeChildren; }
+	//inline bool IsEventBeforeChildren() const { return eventBeforeChildren; }
 
-	GuiElement(bool eventBeforeChildren = false);
+	GuiElement();
 	virtual ~GuiElement();
 
 	void PutOnTop();
 	void PutAtBottom();
+
+	glm::ivec2 CalculateGlobalOffset() const;
 
 	//int CalculatePriority() const;
 	//typedef std::vector<const GuiElement*> Lineage;
@@ -90,7 +92,7 @@ public:
 	};
 	Lineage CompileLineage() const;
 
-	virtual Engine::InputStatus Event(ALLEGRO_EVENT& event) { return Engine::InputStatus::ignored; }
+	virtual bool Event(ALLEGRO_EVENT& event) { return false; }
 	virtual void Draw() {}
 	virtual void PostDraw() {}
 

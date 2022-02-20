@@ -402,7 +402,7 @@ void Instruction::DroppedBack()
 {
     if (littleBro) {
         glm::ivec2 savepos = pos;
-        pos += currentDropLocation->GetGlobalOffset();
+        pos += currentDropLocation->location.CalculateGlobalOffset();
         littleBro->PlaceUnderBigBroRecursive();
         pos = savepos;
     }
@@ -500,14 +500,14 @@ bool Instruction::hitCheck(const glm::ivec2& opos) const
 glm::ivec2 Instruction::GetAdjustedPos() const
 {
     if (currentDropLocation) {
-        return currentDropLocation->GetGlobalOffset() + pos;
+        return currentDropLocation->location.CalculateGlobalOffset() + pos;
     }
     else {
         return pos;
     }
 }
 
-Engine::InputStatus Instruction::Event(ALLEGRO_EVENT& ev)
+bool Instruction::Event(ALLEGRO_EVENT& ev)
 {
     if (ev.type == ALLEGRO_EVENT_MOUSE_AXES) {
         //highlightmyself = hitCheck(glm::ivec2(ev.mouse.x, ev.mouse.y));
@@ -549,15 +549,15 @@ void EditableInstruction::Draw()
     }
 }
 
-Engine::InputStatus EditableInstruction::Event(ALLEGRO_EVENT& event)
+bool EditableInstruction::Event(ALLEGRO_EVENT& event)
 {
-    Engine::InputStatus ret1 = Instruction::Event(event);
+    bool ret1 = Instruction::Event(event);
 
     Rect prevrect = *this;
-    Engine::InputStatus ret2 = EditableText::Event(event);
+    bool ret2 = EditableText::Event(event);
     if (prevrect != *this) {
         RepositionAllParamsAndResizeOwners();
     }
 
-    return (ret1 == Engine::InputStatus::grabbed || ret2 == Engine::InputStatus::grabbed) ? Engine::InputStatus::grabbed : Engine::InputStatus::ignored;
+    return ret1 || ret2;
 }

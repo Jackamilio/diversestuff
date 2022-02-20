@@ -1,6 +1,6 @@
 #include "DropLocation.h"
-#include "CropperDisplacer.h"
+#include "Cropper.h"
 
-DropLocationBase::DropLocationBase(CropperDisplacer& loc) : location(loc)
+DropLocationBase::DropLocationBase(Cropper& loc) : location(loc)
 {
 }

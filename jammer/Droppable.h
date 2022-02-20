@@ -25,7 +25,7 @@ public:
 
 	Droppable();
 
-	void SetDropLocation(CropperDisplacer& cpdl);
+	void SetDropLocation(Cropper& cpdl);
 	DropLocation<T>* GetDropLocation();
 };
 
@@ -52,15 +52,15 @@ inline void Droppable<T>::Dropped()
 	std::map<GuiElement::Lineage, std::pair<glm::ivec2, DropLocation<T>*>> foundlocations;
 
 	for (auto loc : dropLocations) {
-		// GetGlobalOffset is expensive so we store it
-		glm::ivec2 globaloffset(loc->GetGlobalOffset());
-		if (loc->location.InsideCropping(mousepos - globaloffset + loc->location.GetDisplaceOffset())) {
+		// CalculateGlobalOffset is expensive so we store it
+		glm::ivec2 globaloffset(loc->location.CalculateGlobalOffset());
+		if (loc->location.InsideCropping(mousepos - globaloffset)) {
 			foundlocations[loc->location.CompileLineage()] = std::pair<glm::ivec2, DropLocation<T>*>(globaloffset,loc);
 		}
 	}
 
 	if (!foundlocations.empty()) {
-		// this is reimplementing DropLocation<T>::Accept, but GetGlobalOffset is not called too much
+		// this is reimplementing DropLocation<T>::Accept, but CalculateGlobalOffset is not called too much
 		std::pair<glm::ivec2, DropLocation<T>*>& firstfound = foundlocations.begin()->second;
 		if (currentDropLocation != firstfound.second) {
 			pos -= firstfound.first;
@@ -98,7 +98,7 @@ inline Droppable<T>::Droppable() : currentDropLocation(nullptr)
 }
 
 template<class T>
-inline void Droppable<T>::SetDropLocation(CropperDisplacer& cpdl)
+inline void Droppable<T>::SetDropLocation(Cropper& cpdl)
 {
 	for (auto dl : gui.GetDropLocations<T>()) {
 		if (&dl->location == &cpdl) {

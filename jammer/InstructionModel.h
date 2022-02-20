@@ -56,7 +56,7 @@ public:
 
     void SetText(const char* t);
 
-    virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
+    virtual bool Event(ALLEGRO_EVENT& event);
     void Draw();
     void DrawBack(const Rect& rect) const;
     void DrawText() const;

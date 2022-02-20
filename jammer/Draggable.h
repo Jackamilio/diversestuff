@@ -25,7 +25,7 @@ public:
 
 	virtual bool hitCheck(const glm::ivec2& pos) const = 0;
 
-	virtual Engine::InputStatus Event(ALLEGRO_EVENT& ev);
+	virtual bool Event(ALLEGRO_EVENT& ev);
 
 	void ForceGrab();
 };

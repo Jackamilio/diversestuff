@@ -4,9 +4,9 @@
 #include "Engine.h"
 #include "Draggable.h"
 #include "Rect.h"
-#include "CropperDisplacer.h"
+#include "Cropper.h"
 
-class Window : public Rect, public virtual GuiElement, virtual public Draggable, virtual public CropperDisplacer {
+class Window : public Rect, public virtual GuiElement, virtual public Draggable, virtual public Cropper {
 private:
 	int headBandHeight;
 
@@ -25,12 +25,10 @@ public:
 
 	virtual void Draw();
 	virtual void PostDraw();
-	virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
+	virtual bool Event(ALLEGRO_EVENT& event);
 
 	virtual void Grabbed();
 	virtual bool hitCheck(const glm::ivec2& pos) const;
-
-	virtual glm::ivec2 GetDisplaceOffset() const;
 };
 
 #endif //__WINDOW_H__

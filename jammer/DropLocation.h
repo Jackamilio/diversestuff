@@ -3,18 +3,18 @@
 
 #include <glm/glm.hpp>
 #include "Draggable.h"
-#include "CropperDisplacer.h"
+#include "Cropper.h"
 
 template<class T>
 class Droppable;
 
 class DropLocationBase {
 protected:
-	DropLocationBase(CropperDisplacer& loc);
+	DropLocationBase(Cropper& loc);
 public:
-    CropperDisplacer& location;
+    Cropper& location;
 
-    inline glm::ivec2 GetGlobalOffset() const { return location.CalculateGlobalDisplaceOffset(); }
+    //inline glm::ivec2 GetGlobalOffset() const { return location.CalculateGlobalDisplaceOffset(); }
 
 	virtual ~DropLocationBase() {}
 };
@@ -22,7 +22,7 @@ public:
 template<class T>
 class DropLocation : public DropLocationBase {
 public:
-	DropLocation(CropperDisplacer& loc);
+	DropLocation(Cropper& loc);
 
     inline void ForceAccept(Droppable<T>* element, GuiElement::Priority priority = GuiElement::Priority::Default);
 	inline bool Accept(Droppable<T>* element, const glm::ivec2& pos, GuiElement::Priority priority = GuiElement::Priority::Default);
@@ -30,7 +30,7 @@ public:
 };
 
 template<class T>
-inline DropLocation<T>::DropLocation(CropperDisplacer& loc) : DropLocationBase(loc)
+inline DropLocation<T>::DropLocation(Cropper& loc) : DropLocationBase(loc)
 {
 }
 
@@ -38,7 +38,7 @@ template<class T>
 inline void DropLocation<T>::ForceAccept(Droppable<T>* element, GuiElement::Priority priority)
 {
     if (element->currentDropLocation != this) {
-        element->pos -= GetGlobalOffset();
+        element->pos -= location.CalculateGlobalOffset();
         location.AddChild(element, priority);
         element->currentDropLocation = this;
     }
@@ -47,13 +47,8 @@ inline void DropLocation<T>::ForceAccept(Droppable<T>* element, GuiElement::Prio
 template<class T>
 inline bool DropLocation<T>::Accept(Droppable<T>* element, const glm::ivec2& pos, GuiElement::Priority priority)
 {
-    glm::ivec2 globaloffset(GetGlobalOffset());
-    if (location.InsideCropping(pos - globaloffset + location.GetDisplaceOffset())) {
-        if (element->currentDropLocation != this) {
-            element->pos -= globaloffset;
-            location.AddChild(element, priority);
-            element->currentDropLocation = this;
-        }
+    if (location.InsideCropping(pos)) {
+        ForceAccept(element, priority);
         return true;
     }
     return false;
@@ -63,7 +58,7 @@ template<class T>
 inline void DropLocation<T>::Reject(Droppable<T>* element)
 {
     if (element->currentDropLocation == this) {
-        element->pos += GetGlobalOffset();
+        element->pos += location.CalculateGlobalOffset();
         location.RemoveChild(element);
         element->currentDropLocation = nullptr;
     }

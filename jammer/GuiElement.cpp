@@ -107,7 +107,7 @@ GuiElement::Priority GuiElement::FindMyPriority(GuiElement::Priority valIfNotFou
 	return valIfNotFound;
 }
 
-GuiElement::GuiElement(bool ebc) : parent(nullptr), eventBeforeChildren(ebc), gui(GuiMaster::Get()), pos{}
+GuiElement::GuiElement() : parent(nullptr), gui(GuiMaster::Get()), pos{}
 {
 	children.clear();
 }
@@ -142,6 +142,23 @@ void GuiElement::PutAtBottom()
 			it.mapIt->second.insert(it.mapIt->second.begin(), this);
 		}
 	}
+}
+
+glm::ivec2 GuiElement::CalculateGlobalOffset() const
+{
+	glm::ivec2 offset = pos;
+
+	const GuiElement* parent = Parent();
+	while (parent)
+	{
+		const Cropper* cdparent = dynamic_cast<const Cropper*>(parent);
+		if (cdparent) {
+			offset += cdparent->pos;
+		}
+		parent = parent->Parent();
+	}
+
+	return offset;
 }
 
 /*int GuiElement::CalculatePriority() const

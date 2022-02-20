@@ -22,7 +22,7 @@ public:
 	Button();
 	~Button();
 
-	virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
+	virtual bool Event(ALLEGRO_EVENT& event);
 	virtual void Draw();
 };
 

@@ -78,16 +78,12 @@ public:
 		inline int ChildrenSize() const { return Arborescent<T>::ChildrenSize(); }
 		inline T* GetChild(int i) { return Arborescent<T>::GetChild(i); }
 	};
-	enum class InputStatus {
-		grabbed,
-		ignored,
-		notforchildren
-	};
 	class Input : public Node<Input> {
 	public:
 		static ALLEGRO_MOUSE_STATE mouseState;
 		static ALLEGRO_KEYBOARD_STATE keyboardState;
-		virtual InputStatus Event(ALLEGRO_EVENT& event) = 0;
+		// true : event consumed, false : event ignored
+		virtual bool Event(ALLEGRO_EVENT& event) = 0;
 	};
 	class Dynamic : public Node<Dynamic> {
 	public:
@@ -110,7 +106,7 @@ public:
 	class InputRoot : public Input {
 	public:
 		OTN(InputRoot);
-		InputStatus Event(ALLEGRO_EVENT& event);
+		bool Event(ALLEGRO_EVENT& event);
 	};
 	class DynamicRoot : public Dynamic {
 	public:

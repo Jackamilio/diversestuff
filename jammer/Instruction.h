@@ -63,7 +63,7 @@ public:
 
     // for debug
     bool highlightmyself = false;
-    virtual Engine::InputStatus Event(ALLEGRO_EVENT& ev);
+    virtual bool Event(ALLEGRO_EVENT& ev);
 };
 
 class EditableInstruction : public Instruction, public EditableText {
@@ -78,7 +78,7 @@ public:
     virtual void MinimalFrame(Rect& inout);
 
     void Draw();
-    Engine::InputStatus Event(ALLEGRO_EVENT& event);
+    bool Event(ALLEGRO_EVENT& event);
 };
 
 #endif //__INSTRUCTION_H__

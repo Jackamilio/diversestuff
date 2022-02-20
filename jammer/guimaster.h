@@ -5,10 +5,10 @@
 #include <unordered_map>
 #include <vector>
 #include <typeindex>
-#include "CropperDisplacer.h"
+#include "GuiElement.h"
 #include "DropLocation.h"
 
-class GuiMaster : virtual public CropperDisplacer, public Engine::Input, public Engine::Graphic {
+class GuiMaster : public virtual GuiElement, public Engine::Input, public Engine::Graphic {
 private:
 	using Engine::Input::AddChild;
 	using Engine::Input::AddChildBefore;
@@ -53,10 +53,8 @@ public:
 	GuiMaster();
 	~GuiMaster();
 
-	Engine::InputStatus Event(ALLEGRO_EVENT& event);
+	bool Event(ALLEGRO_EVENT& event);
 	void Draw();
-
-	virtual glm::ivec2 GetDisplaceOffset() const;
 
 	//
 	static bool RecursiveEvent(GuiElement* guielem, ALLEGRO_EVENT& event, bool doroot = true);
@@ -72,7 +70,7 @@ public:
 	inline Draggable::GrabProperties& GrabbedElementProperties() { return grabbedElementProperties; }
 
 	template<class T>
-	void AddDropLocation(CropperDisplacer& cpdl);
+	void AddDropLocation(Cropper& cpdl);
 	template<class T>
 	std::vector<DropLocation<T>*>& GetDropLocations();
 
@@ -97,7 +95,7 @@ public:
 };
 
 template<class T>
-inline void GuiMaster::AddDropLocation(CropperDisplacer& cpdl)
+inline void GuiMaster::AddDropLocation(Cropper& cpdl)
 {
 	std::type_index id = std::type_index(typeid(T));
 	dropLocations[id].push_back(new DropLocation<T>(cpdl));

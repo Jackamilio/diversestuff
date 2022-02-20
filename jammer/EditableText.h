@@ -51,7 +51,7 @@ public:
     void DrawText();
     void DrawCursor();
     void Draw();
-    Engine::InputStatus Event(ALLEGRO_EVENT& event);
+    bool Event(ALLEGRO_EVENT& event);
 };
 
 class EditableTextBox : public EditableText {

@@ -231,19 +231,16 @@ bool Engine::Init()
 }
 
 bool Engine::RecursiveInput(Engine::Input* input, ALLEGRO_EVENT& event, bool doroot) {
-	Engine::InputStatus ret = Engine::InputStatus::ignored;
+	for (int i = 0; i < input->ChildrenSize(); ++i) {
+		if (RecursiveInput(input->GetChild(i), event)) {
+			return true;
+		}
+	}
+	bool ret = false;
 	if (doroot) {
 		ret = input->Event(event);
 	}
-
-	if (ret == Engine::InputStatus::ignored) {
-		for (int i = 0; i < input->ChildrenSize(); ++i) {
-			if (RecursiveInput(input->GetChild(i), event)) {
-				return true;
-			}
-		}
-	}
-	return ret == Engine::InputStatus::grabbed;
+	return ret;
 }
 
 void Engine::RecursiveUpdate(Engine::Update* update) {
@@ -524,9 +521,9 @@ void Engine::Dynamic::ReactToCollisionFrom(btRigidBody & body)
 ALLEGRO_MOUSE_STATE Engine::Input::mouseState;
 ALLEGRO_KEYBOARD_STATE Engine::Input::keyboardState;
 
-Engine::InputStatus Engine::InputRoot::Event(ALLEGRO_EVENT & event)
+bool Engine::InputRoot::Event(ALLEGRO_EVENT & event)
 {
-	return Engine::InputStatus::ignored;
+	return false;
 }
 
 void Engine::DynamicRoot::Tick() {}

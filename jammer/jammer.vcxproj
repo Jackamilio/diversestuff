@@ -154,7 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Button.cpp" />
-    <ClCompile Include="CropperDisplacer.cpp" />
+    <ClCompile Include="Cropper.cpp" />
     <ClCompile Include="DropLocation.cpp" />
     <ClCompile Include="Droppable.cpp" />
     <ClCompile Include="EditableText.cpp" />
@@ -173,7 +173,7 @@
   <ItemGroup>
     <ClInclude Include="bitflag.h" />
     <ClInclude Include="Button.h" />
-    <ClInclude Include="CropperDisplacer.h" />
+    <ClInclude Include="Cropper.h" />
     <ClInclude Include="Draggable.h" />
     <ClInclude Include="DropLocation.h" />
     <ClInclude Include="Droppable.h" />

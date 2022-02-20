@@ -72,7 +72,7 @@ Instruction* InstructionModel::CreateInstruction() {
     return newborn;
 }
 
-Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
+bool InstructionModel::Event(ALLEGRO_EVENT& event)
 {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
         if ((flags & Flags::Visible) && defaultRect.isInside(glm::ivec2(event.mouse.x, event.mouse.y))) {
@@ -115,10 +115,10 @@ Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
 
             // grab the first new instance that should repercutate on all next
             topInst->ForceGrab();
-            return Engine::InputStatus::grabbed;
+            return true;
         }
     }
-    return Engine::InputStatus::ignored;
+    return false;
 }
 
 void InstructionModel::Draw()

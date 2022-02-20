@@ -39,7 +39,7 @@
     <ClCompile Include="Button.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="CropperDisplacer.cpp">
+    <ClCompile Include="Cropper.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="GuiElement.cpp">
@@ -89,7 +89,7 @@
     <ClInclude Include="Button.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="CropperDisplacer.h">
+    <ClInclude Include="Cropper.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="GuiElement.h">

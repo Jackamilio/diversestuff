@@ -183,7 +183,7 @@ void EditableText::Draw() {
     DrawText();
     DrawCursor();
 }
-Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
+bool EditableText::Event(ALLEGRO_EVENT& event) {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
         glm::ivec2 mpos(event.mouse.x, event.mouse.y);
         //mpos -= pos;
@@ -290,14 +290,14 @@ Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
                 if (numberPrecision >= 0) {
                     // filter characters to keep the text numerical
                     if ((unichar == '.' && numberPrecision == 0) || al_ustr_find_chr(gui.GetNumericalChars(), 0, unichar) < 0) {
-                        return Engine::InputStatus::grabbed;
+                        return true;
                     }
                     const int pointpos = al_ustr_find_chr(text, 0, '.');
                     if (unichar == '.') {
-                        if (pointpos >= 0) return Engine::InputStatus::grabbed;
+                        if (pointpos >= 0) return true;
                     }
                     else if (pointpos >= 0 && al_ustr_length(text) - pointpos > numberPrecision) {
-                        return Engine::InputStatus::grabbed;
+                        return true;
                     }
                 }
                 if (al_ustr_insert_chr(text, cursorPos, event.keyboard.unichar)) {
@@ -309,14 +309,14 @@ Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
                 }
             }
             else {
-                return Engine::InputStatus::ignored;
+                return false;
             }
             break;
         }
         }
-        return Engine::InputStatus::grabbed;
+        return true;
     }
-    return Engine::InputStatus::ignored;
+    return false;
 }
 
 EditableTextBox::EditableTextBox(ALLEGRO_FONT* font, int framepadding) :

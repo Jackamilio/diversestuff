@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <allegro5/allegro5.h>
 #include "Instruction.h"
-#include "CropperDisplacer.h"
+#include "Cropper.h"
 #include "Engine.h"
 #include "InstructionContext.h"
 

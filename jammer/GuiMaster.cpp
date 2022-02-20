@@ -73,24 +73,19 @@ GuiMaster::~GuiMaster()
 
 static bool isMouseEvent = false;
 
-Engine::InputStatus GuiMaster::Event(ALLEGRO_EVENT& event)
+bool GuiMaster::Event(ALLEGRO_EVENT& event)
 {
 	if (event.type == ALLEGRO_EVENT_TIMER && event.any.source == al_get_timer_event_source(caretTimer)) {
 		caretVisible = !caretVisible;
-		return Engine::InputStatus::grabbed;
+		return true;
 	}
 	isMouseEvent = (event.type >= 20 && event.type <= 25);
-	return RecursiveEvent(this, event, false) ? Engine::InputStatus::grabbed : Engine::InputStatus::ignored;
+	return RecursiveEvent(this, event, false);
 }
 
 void GuiMaster::Draw()
 {
 	RecursiveDraw(this, false);
-}
-
-glm::ivec2 GuiMaster::GetDisplaceOffset() const
-{
-	return glm::ivec2();
 }
 
 bool GuiMaster::RecursiveEvent(GuiElement* guielem, ALLEGRO_EVENT& event, bool doroot)
@@ -99,28 +94,22 @@ bool GuiMaster::RecursiveEvent(GuiElement* guielem, ALLEGRO_EVENT& event, bool d
 		event.mouse.x -= guielem->pos.x;
 		event.mouse.y -= guielem->pos.y;
 	}
-	Engine::InputStatus ret = Engine::InputStatus::ignored;
-	if (doroot && guielem->IsEventBeforeChildren()) {
-		ret = guielem->Event(event);
-	}
 
-	if (ret == Engine::InputStatus::ignored) {
-		for (auto it = guielem->rbegin(); it != guielem->rend(); ++it) {
-			if (RecursiveEvent(*it, event)) {
-				return true;
-			}
+	for (auto it = guielem->rbegin(); it != guielem->rend(); ++it) {
+		if (RecursiveEvent(*it, event)) {
+			return true;
 		}
 	}
 
-	if (doroot && !guielem->IsEventBeforeChildren()) {
-		ret = guielem->Event(event);
-	}
+	bool ret = false;
+	if (doroot) ret = guielem->Event(event);
+
 	if (isMouseEvent) {
 		event.mouse.x += guielem->pos.x;
 		event.mouse.y += guielem->pos.y;
 	}
 
-	return ret == Engine::InputStatus::grabbed;
+	return ret;
 }
 
 void GuiMaster::RecursiveDraw(GuiElement* guielem, bool doroot)
