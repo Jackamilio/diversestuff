@@ -107,7 +107,7 @@ GuiElement::Priority GuiElement::FindMyPriority(GuiElement::Priority valIfNotFou
 	return valIfNotFound;
 }
 
-GuiElement::GuiElement(bool ebc) : parent(nullptr), eventBeforeChildren(ebc), gui(GuiMaster::Get())
+GuiElement::GuiElement(bool ebc) : parent(nullptr), eventBeforeChildren(ebc), gui(GuiMaster::Get()), pos{}
 {
 	children.clear();
 }

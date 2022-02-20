@@ -21,8 +21,8 @@ Window::~Window() {
 Rect Window::HeadBandRect() const
 {
 	Rect ret(*this);
-	ret.tl.y -= headBandHeight;
-	ret.br.y = tl.y;
+	ret.top -= headBandHeight;
+	ret.bottom = top;
 	return ret;
 }
 
@@ -31,14 +31,14 @@ void Window::Draw() {
 	head.draw_filled(darkgrey);
 	head.draw(white, 1);
 
-	draw_filled(black);
+	Rect::draw_filled(black);
 
 	CropperDisplacer::Draw();
 }
 
 void Window::PostDraw() {
 	CropperDisplacer::PostDraw();
-	draw(white, 1);
+	Rect::draw(white, 1);
 }
 
 #undef min
@@ -131,7 +131,7 @@ Engine::InputStatus Window::Event(ALLEGRO_EVENT& event)
 	else if (Draggable::Event(event) == Engine::InputStatus::grabbed) {
 			return Engine::InputStatus::grabbed;
 	}
-	return Engine::InputStatus::notforchildren;
+	return Engine::InputStatus::ignored;
 }
 
 void Window::Grabbed()
@@ -139,27 +139,12 @@ void Window::Grabbed()
 	PutOnTop();
 }
 
-void Window::Dragged(const glm::ivec2& delta)
-{
-	*this += delta;
-}
-
 bool Window::hitCheck(const glm::ivec2& pos) const
 {
 	return HeadBandRect().isInside(pos);
 }
 
-void Window::SetPos(const glm::ivec2& tsl)
-{
-	*this += tsl - topleft;
-}
-
-glm::ivec2 Window::GetPos() const
-{
-	return topleft;
-}
-
 glm::ivec2 Window::GetDisplaceOffset() const
 {
-	return topleft;
+	return pos;
 }

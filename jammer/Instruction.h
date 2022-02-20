@@ -41,7 +41,6 @@ protected:
     Instruction(InstructionModel& model);
     virtual ~Instruction();
 public:
-    glm::ivec2 pos;
     InstructionModel& model;
     std::vector<Instruction*> parameters;
 
@@ -57,8 +56,6 @@ public:
     virtual void Dragged(const glm::ivec2& delta);
 
     virtual bool hitCheck(const glm::ivec2& pos) const;
-    virtual void SetPos(const glm::ivec2& tsl);
-    virtual glm::ivec2 GetPos() const;
 
     glm::ivec2 GetAdjustedPos() const;
 

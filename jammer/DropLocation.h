@@ -38,7 +38,7 @@ template<class T>
 inline void DropLocation<T>::ForceAccept(Droppable<T>* element, GuiElement::Priority priority)
 {
     if (element->currentDropLocation != this) {
-        element->Move(-GetGlobalOffset());
+        element->pos -= GetGlobalOffset();
         location.AddChild(element, priority);
         element->currentDropLocation = this;
     }
@@ -50,7 +50,7 @@ inline bool DropLocation<T>::Accept(Droppable<T>* element, const glm::ivec2& pos
     glm::ivec2 globaloffset(GetGlobalOffset());
     if (location.InsideCropping(pos - globaloffset + location.GetDisplaceOffset())) {
         if (element->currentDropLocation != this) {
-            element->Move(-globaloffset);
+            element->pos -= globaloffset;
             location.AddChild(element, priority);
             element->currentDropLocation = this;
         }
@@ -63,7 +63,7 @@ template<class T>
 inline void DropLocation<T>::Reject(Droppable<T>* element)
 {
     if (element->currentDropLocation == this) {
-        element->Move(GetGlobalOffset());
+        element->pos += GetGlobalOffset();
         location.RemoveChild(element);
         element->currentDropLocation = nullptr;
     }

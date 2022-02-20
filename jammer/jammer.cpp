@@ -38,13 +38,12 @@ ALLEGRO_FONT* fetchDefaultFont()
 class SpriteTest : public GuiElement {
 public:
     const Texture& texture;
-    glm::vec2 position;
     glm::vec2 scale;
+    glm::vec2 pos;
     float direction;
 
     SpriteTest(const char* image_file) :
         texture(gui.engine.graphics.textures.Get(image_file)),
-        position{},
         scale(1,1),
         direction(0.0f)
     {
@@ -53,7 +52,7 @@ public:
     virtual void Draw() {
         glm::vec2 center(texture.GetWidth(), texture.GetHeight());
         center *= 0.5f;
-        al_draw_scaled_rotated_bitmap(texture.GetAlValue(), center.x, center.y, position.x, position.y, scale.x, scale.y, direction, 0);
+        al_draw_scaled_rotated_bitmap(texture.GetAlValue(), center.x, center.y, pos.x, pos.y, scale.x, scale.y, direction, 0);
     }
 };
 
@@ -86,13 +85,13 @@ int main()
         //    );
 
         Window instructionsList;
-        instructionsList.tl = { 1, 20 };
+        instructionsList.pos = { 1, 20 };
         instructionsList.resize(300, 719);
 
         gui.AddChild(&instructionsList);
 
         Window textureExplorer;
-        textureExplorer.tl = {20 ,20};
+        textureExplorer.pos = {20 ,20};
         textureExplorer.resize(500, 350);
 
         engine.graphics.textures.Get("cutemonkey.png");
@@ -141,7 +140,7 @@ int main()
             }
             buttons.push_back(&addImageButton);
             for (auto button : buttons) {
-                button->reposition(x, y);
+                button->pos = { x, y };
                 x += 140;
                 if (x + button->w() > textureExplorer.w()) {
                     x = 20;
@@ -155,13 +154,13 @@ int main()
         gui.AddChild(&textureExplorer);
 
         Window scene;
-        scene.tl = { 700, 50 };
+        scene.pos = { 700, 50 };
         scene.resize(540, 420);
 
         gui.AddChild(&scene);
 
         SpriteTest sprite("cutemonkey.png");
-        sprite.position = glm::vec2(270, 210);
+        sprite.pos = glm::vec2(270, 210);
         scene.AddChild(&sprite);
 
         PureDisplacer pure;
@@ -184,7 +183,7 @@ int main()
             else
                 curmodel->flags.unset(InstructionModel::Flags::Visible);
             curmodel->SetText(name);
-            curmodel->Place(20, yoffset);
+            curmodel->pos = { 20, yoffset };
             if (curmodel->flags & InstructionModel::Flags::Visible) yoffset += 25;
             instructionsList.AddChild(curmodel);
             deletelater.push_back(curmodel);
@@ -192,13 +191,13 @@ int main()
 
         newmodel("Avancer un peu");
         curmodel->function = [&sprite](Parameter*, const Instruction&, InstructionContext&) {
-            sprite.position.x += 0.2f;
+            sprite.pos.x += 0.2f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Avancer de : ", InstructionModel::Type::Default, 1);
         curmodel->function = [&sprite](Parameter* p, const Instruction&, InstructionContext&) {
-            sprite.position.x += 0.2f * p[0];
+            sprite.pos.x += 0.2f * p[0];
             return InstructionModel::FunctionResult::Continue;
         };
 
@@ -223,7 +222,7 @@ int main()
 
         newmodel("Reviens par là, le singe!");
         curmodel->function = [&sprite](Parameter*, const Instruction&, InstructionContext&) {
-            sprite.position = glm::vec2(270, 210);
+            sprite.pos = glm::vec2(270, 210);
             sprite.direction = 0.0f;
             return InstructionModel::FunctionResult::Continue;
         };

@@ -60,7 +60,7 @@ public:
 
 	//
 	static bool RecursiveEvent(GuiElement* guielem, ALLEGRO_EVENT& event, bool doroot = true);
-	static void RecursiveDraw(GuiElement* guielem, bool doroot = true);
+	void RecursiveDraw(GuiElement* guielem, bool doroot = true);
 
 	// drag and drop
 	void Track(Draggable* dgbl);

@@ -34,6 +34,7 @@ protected:
 
 public:
 	GuiMaster& gui;
+	glm::ivec2 pos;
 
 	template<typename Elem, class Map, class MapIt>
 	class TemplateIterator {

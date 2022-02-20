@@ -63,7 +63,7 @@ inline void Droppable<T>::Dropped()
 		// this is reimplementing DropLocation<T>::Accept, but GetGlobalOffset is not called too much
 		std::pair<glm::ivec2, DropLocation<T>*>& firstfound = foundlocations.begin()->second;
 		if (currentDropLocation != firstfound.second) {
-			Move(-firstfound.first);
+			pos -= firstfound.first;
 			firstfound.second->location.AddChild(this, gui.GrabbedElementProperties().priority);
 			currentDropLocation = firstfound.second;
 		}
@@ -84,7 +84,7 @@ inline void Droppable<T>::CancelGrab()
 	DropLocationBase* loc = gui.GrabbedElementProperties().location;
 	loc = loc ? loc : (DropLocationBase*)gui.GetDropLocations<T>()[0];
 	loc->location.AddChild(this);
-	SetPos(gui.GrabbedElementProperties().position);
+	pos = gui.GrabbedElementProperties().position;
 	currentDropLocation = (DropLocation<T>*)(loc);
 }
 

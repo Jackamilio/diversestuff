@@ -163,19 +163,18 @@ void EditableText::SetNumerical(bool activate, int precision)
 
 void EditableText::DrawFrame()
 {
-    (*this + Pos()).draw_outlined(black, grey, 1);
+    draw_outlined(black, grey, 1);
 }
 
 void EditableText::DrawText()
 {
-    const glm::ivec2& pos = Pos();
-    al_draw_multiline_ustr(Font(), white, pos.x, pos.y, 99999, 0, 0, text);
+    al_draw_multiline_ustr(Font(), white, 0, 0, 99999, 0, 0, text);
 }
 
 void EditableText::DrawCursor()
 {
     if (gui.HasFocus(this) && gui.IsCaretVisible()) {
-        (cursorDraw + Pos()).draw_filled(white);
+        cursorDraw.draw_filled(white);
     }
 }
 
@@ -187,7 +186,7 @@ void EditableText::Draw() {
 Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
         glm::ivec2 mpos(event.mouse.x, event.mouse.y);
-        mpos -= Pos();
+        //mpos -= pos;
         if (isInside(mpos)) {
             gui.RequestFocus(this);
             if (gui.HasFocus(this)) {
@@ -322,7 +321,6 @@ Engine::InputStatus EditableText::Event(ALLEGRO_EVENT& event) {
 
 EditableTextBox::EditableTextBox(ALLEGRO_FONT* font, int framepadding) :
     EditableText("", framepadding),
-    pos{},
     font(font)
 {
     Init();
@@ -331,11 +329,6 @@ EditableTextBox::EditableTextBox(ALLEGRO_FONT* font, int framepadding) :
 ALLEGRO_FONT* EditableTextBox::Font() const
 {
     return font;
-}
-
-const glm::ivec2& EditableTextBox::Pos() const
-{
-    return pos;
 }
 
 void EditableTextBox::MinimalFrame(Rect& inout)

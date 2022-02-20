@@ -150,8 +150,7 @@ Instruction::Instruction(InstructionModel& model) :
     owner(nullptr),
     prevLink(nullptr),
     nextLink(nullptr),
-    jump(nullptr),
-    pos{}
+    jump(nullptr)
 {
     parameters.reserve((size_t)model.parametersTaken);
     parameters.resize((size_t)model.parametersTaken, nullptr);
@@ -174,7 +173,7 @@ void Instruction::DrawHighlight()
 {
     // highlighted param
     if (model.family.highlightedParam == this) {
-        (*this + pos).draw_rounded(6, 6, white, 3);
+        draw_rounded(6, 6, white, 3);
     }
 }
 
@@ -184,13 +183,13 @@ void Instruction::Draw() {
         // shadow
         if (model.family.shadowBro && gui.CurrentDraggable() == this)
         {
-            Rect shadowRect = *this + model.family.shadowBroPos;
+            Rect shadowRect = *this + model.family.shadowBroPos - pos;
             shadowRect.draw_filled(lightgrey);
         }
 
         // self
         Instruction* validPrev = GetPrevVisibleLink();
-        model.DrawAll(pos, *this, validPrev ? pos.y - validPrev->pos.y - h() + 1 : 0);
+        model.DrawAll(*this, validPrev ? pos.y - validPrev->pos.y - h() + 1 : 0);
 
         DrawHighlight();
 
@@ -491,21 +490,11 @@ bool Instruction::hitCheck(const glm::ivec2& opos) const
     if (nextLink) {
         Rect r = *this;
         r.resize(jumpShift, nextLink->pos.y - pos.y);
-        if (r.isInside(opos - pos)) {
+        if (r.isInside(opos)) {
             return true;
         }
     }
-    return isInside(opos - pos);
-}
-
-void Instruction::SetPos(const glm::ivec2& tsl)
-{
-    pos = tsl;
-}
-
-glm::ivec2 Instruction::GetPos() const
-{
-    return pos;
+    return isInside(opos);
 }
 
 glm::ivec2 Instruction::GetAdjustedPos() const
@@ -521,7 +510,7 @@ glm::ivec2 Instruction::GetAdjustedPos() const
 Engine::InputStatus Instruction::Event(ALLEGRO_EVENT& ev)
 {
     if (ev.type == ALLEGRO_EVENT_MOUSE_AXES) {
-        highlightmyself = hitCheck(glm::ivec2(ev.mouse.x, ev.mouse.y));
+        //highlightmyself = hitCheck(glm::ivec2(ev.mouse.x, ev.mouse.y));
     }
     
     return Draggable::Event(ev);
@@ -553,7 +542,7 @@ void EditableInstruction::MinimalFrame(Rect& inout)
 void EditableInstruction::Draw()
 {
     if (model.flags & InstructionModel::Flags::Visible) {
-        model.DrawBack(pos, *this);
+        model.DrawBack(*this);
         EditableText::DrawText();
         EditableText::DrawCursor();
         DrawHighlight();

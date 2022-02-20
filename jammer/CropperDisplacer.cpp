@@ -8,14 +8,8 @@ CropperDisplacer::CropperDisplacer() : GuiElement(true), cropping(nullptr)
 
 Engine::InputStatus CropperDisplacer::Event(ALLEGRO_EVENT& event)
 {
-	// catch every mouse event
-	if (event.type == ALLEGRO_EVENT_MOUSE_AXES ||
-		event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN ||
-		event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP ||
-		event.type == ALLEGRO_EVENT_MOUSE_WARPED ||
-		event.type == ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY ||
-		event.type == ALLEGRO_EVENT_MOUSE_LEAVE_DISPLAY
-		) {
+	// catch every mouse event (check allegro's events.h)
+	/*if (event.type >= 20 && event.type <= 25) {
 
 		// deny input for children outside cropping
 		bool insidecropping = InsideCropping(glm::ivec2(event.mouse.x, event.mouse.y));
@@ -42,13 +36,16 @@ Engine::InputStatus CropperDisplacer::Event(ALLEGRO_EVENT& event)
 
 		// stop the original recursivity
 		return ret ? Engine::InputStatus::grabbed : Engine::InputStatus::notforchildren;
-	}
+	}*/
 
 	return Engine::InputStatus::ignored;
 }
 
 void CropperDisplacer::Draw()
 {
+	//gui.PushTransform();
+	//gui.TranslateTransform(GetDisplaceOffset());
+
 	if (cropping) {
 		glm::ivec2 cropsize;
 		al_get_clipping_rectangle(&previousCropping.tl.x, &previousCropping.tl.y, &cropsize.x, &cropsize.y);
@@ -65,14 +62,11 @@ void CropperDisplacer::Draw()
 
 		al_set_clipping_rectangle(newCrop.tl.x, newCrop.tl.y, newCrop.w(), newCrop.h());
 	}
-
-	gui.PushTransform();
-	gui.TranslateTransform(GetDisplaceOffset());
 }
 
 void CropperDisplacer::PostDraw()
 {
-	gui.PopTransform();
+	//gui.PopTransform();
 
 	if (cropping) {
 		al_set_clipping_rectangle(previousCropping.tl.x, previousCropping.tl.y, previousCropping.w(), previousCropping.h());

@@ -11,7 +11,6 @@ private:
 	const Texture* texture;
 
 public:
-	glm::ivec2 pos;
 	Rect* rect;
 	bool stretch;
 

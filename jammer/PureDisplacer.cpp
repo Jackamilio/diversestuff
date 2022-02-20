@@ -1,6 +1,6 @@
 #include "PureDisplacer.h"
 
-PureDisplacer::PureDisplacer() : GuiElement(true), offset{}
+PureDisplacer::PureDisplacer()// : GuiElement(true)
 {
 }
 
@@ -11,28 +11,13 @@ Engine::InputStatus PureDisplacer::Event(ALLEGRO_EVENT& event)
 		return Draggable::Event(event) == Engine::InputStatus::grabbed ? Engine::InputStatus::grabbed : cropperret;
 	}
 	else {
-		return Engine::InputStatus::notforchildren;
+		return Engine::InputStatus::ignored;
 	}
 }
 
 glm::ivec2 PureDisplacer::GetDisplaceOffset() const
 {
-	return offset;
-}
-
-void PureDisplacer::SetPos(const glm::ivec2& tsl)
-{
-	offset = tsl;
-}
-
-glm::ivec2 PureDisplacer::GetPos() const
-{
-	return offset;
-}
-
-void PureDisplacer::Dragged(const glm::ivec2& delta)
-{
-	offset += delta;
+	return pos;
 }
 
 bool PureDisplacer::hitCheck(const glm::ivec2& pos) const

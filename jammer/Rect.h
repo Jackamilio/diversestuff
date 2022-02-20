@@ -117,29 +117,29 @@ public:
 		return valueInside(rhs.x, left, right) && valueInside(rhs.y, top, bottom);
 	}
 
-	inline void draw(ALLEGRO_COLOR color, float thickness) {
+	inline void draw(ALLEGRO_COLOR color, float thickness) const {
 		al_draw_rectangle(l, t, r, b, color, thickness);
 	}
 
-	inline void draw_filled(ALLEGRO_COLOR color) {
+	inline void draw_filled(ALLEGRO_COLOR color) const {
 		al_draw_filled_rectangle(l, t, r, b, color);
 	}
 
-	inline void draw_rounded(float rx, float ry, ALLEGRO_COLOR color, float thickness) {
+	inline void draw_rounded(float rx, float ry, ALLEGRO_COLOR color, float thickness) const {
 		al_draw_rounded_rectangle(l, t, r, b, rx, ry, color, thickness);
 	}
 
-	inline void draw_filled_rounded(float rx, float ry, ALLEGRO_COLOR color) {
+	inline void draw_filled_rounded(float rx, float ry, ALLEGRO_COLOR color) const {
 		al_draw_filled_rounded_rectangle(l, t, r, b, rx, ry, color);
 	}
 
-	inline void draw_outlined(ALLEGRO_COLOR filling, ALLEGRO_COLOR outline, float thickness) {
+	inline void draw_outlined(ALLEGRO_COLOR filling, ALLEGRO_COLOR outline, float thickness) const {
 		// slower but prettier this way than using a draw above a filled
 		al_draw_filled_rectangle(l, t, r, b, outline);
 		al_draw_filled_rectangle(l + thickness, t + thickness, r - thickness, b - thickness, filling);
 	}
 
-	inline void draw_outlined_rounded(float rx, float ry, ALLEGRO_COLOR filling, ALLEGRO_COLOR outline, float thickness) {
+	inline void draw_outlined_rounded(float rx, float ry, ALLEGRO_COLOR filling, ALLEGRO_COLOR outline, float thickness) const {
 		al_draw_filled_rounded_rectangle(l, t, r, b, rx, ry, outline);
 		al_draw_filled_rounded_rectangle(l + thickness, t + thickness, r - thickness, b - thickness, rx, ry, filling);
 	}

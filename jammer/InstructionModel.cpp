@@ -29,7 +29,6 @@ InstructionModel* InstructionModel::GetNextVisibleLink()
 
 InstructionModel::InstructionModel(InstructionFamily& fam) :
     family(fam),
-    pos{},
     paramsX(0.0f),
     text(nullptr),
     type(Type::Default),
@@ -58,14 +57,14 @@ void InstructionModel::SetText(const char* t) {
 
 Instruction* InstructionModel::CreateInstruction() {
     Instruction* newborn = Instruction::Create(*this);
-    newborn->SetPos(pos);
+    newborn->pos = pos;
 
     glm::ivec2 ppos = pos;
     ppos.x += paramsX;
 
     for (int i = 0; i < parametersTaken; ++i) {
         newborn->parameters[i] = Instruction::Create(*family.emptyParameter);
-        newborn->parameters[i]->SetPos(ppos);
+        newborn->parameters[i]->pos = ppos;
         newborn->parameters[i]->owner = newborn;
         ppos.x += family.emptyParameter->defaultRect.w() + paramoffset;
     }
@@ -76,7 +75,7 @@ Instruction* InstructionModel::CreateInstruction() {
 Engine::InputStatus InstructionModel::Event(ALLEGRO_EVENT& event)
 {
     if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-        if ((flags & Flags::Visible) && defaultRect.isInside(glm::ivec2(event.mouse.x, event.mouse.y) - pos)) {
+        if ((flags & Flags::Visible) && defaultRect.isInside(glm::ivec2(event.mouse.x, event.mouse.y))) {
             // create the first instruction that's on top
             InstructionModel* topModel = this;
             while (topModel->prevLink) {
@@ -126,39 +125,45 @@ void InstructionModel::Draw()
 {
     if (flags & Flags::Visible) {
         InstructionModel* validPrev = GetPrevVisibleLink();
-        DrawAll(pos, defaultRect, validPrev ? pos.y - validPrev->pos.y - defaultRect.h() + 1 : 0);
+        DrawAll(defaultRect, validPrev ? pos.y - validPrev->pos.y - defaultRect.h() + 1 : 0);
 
-        glm::ivec2 ppos = pos;
-        ppos.x += paramsX;
+        //glm::ivec2 ppos = pos;
+        //ppos.x += paramsX;
 
+        gui.PushTransform();
+        gui.TranslateTransform({ paramsX, 0 });
         for (int i = 0; i < parametersTaken; ++i) {
-            family.emptyParameter->DrawAll(ppos, family.emptyParameter->defaultRect);
-            ppos.x += family.emptyParameter->defaultRect.w() + paramoffset;
+            family.emptyParameter->DrawAll(family.emptyParameter->defaultRect);
+            //ppos.x += family.emptyParameter->defaultRect.w() + paramoffset;
+            gui.TranslateTransform({ family.emptyParameter->defaultRect.w() + paramoffset, 0 });
         }
+        gui.PopTransform();
     }
 }
 
 
-void InstructionModel::DrawBack(const glm::ivec2 pos, const Rect& rect) const
+void InstructionModel::DrawBack(const Rect& rect) const
 {
-    Rect rectpos = rect + pos;
+    //Rect rectpos = rect + pos;
     if (type == InstructionModel::Type::Parameter) {
-        rectpos.draw_outlined_rounded(6, 6, black, grey, 1);
+        //rectpos.
+            rect.draw_outlined_rounded(6, 6, black, grey, 1);
     }
     else {
-        rectpos.draw_outlined(black, grey, 1);
+        //rectpos.
+            rect.draw_outlined(black, grey, 1);
     }
 }
 
-void InstructionModel::DrawText(const glm::ivec2 pos) const
+void InstructionModel::DrawText() const
 {
-    al_draw_text(family.font, white, pos.x, pos.y, 0, text);
+    al_draw_text(family.font, white, 0, 0, 0, text);
 }
 
-void InstructionModel::DrawConnexion(const glm::ivec2 pos, const Rect& rect, int connexion) const
+void InstructionModel::DrawConnexion(const Rect& rect, int connexion) const
 {
     if (connexion) {
-        glm::ivec2 tlp = rect.tl + pos;
+        glm::ivec2 tlp = rect.tl;// +pos;
         Rect r(tlp, tlp);
 
         r.l += 1;
@@ -173,11 +178,11 @@ void InstructionModel::DrawConnexion(const glm::ivec2 pos, const Rect& rect, int
     }
 }
 
-void InstructionModel::DrawAll(const glm::ivec2& pos, const Rect& rect, int connexion) const
+void InstructionModel::DrawAll(const Rect& rect, int connexion) const
 {
-    DrawBack(pos, rect);
-    DrawText(pos);
-    DrawConnexion(pos, rect, connexion);
+    DrawBack(rect);
+    DrawText();
+    DrawConnexion(rect, connexion);
 }
 
 InstructionModel* InstructionModel::Link(InstructionModel* to)

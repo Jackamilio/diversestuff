@@ -21,7 +21,6 @@ private:
 
 public:
     InstructionFamily& family;
-    glm::ivec2 pos;
     Rect defaultRect;
     float paramsX;
     const char* text;
@@ -55,19 +54,14 @@ public:
     InstructionModel(InstructionFamily& fam);
     ~InstructionModel();
 
-    inline void Place(int _x, int _y) {
-        pos.x = _x;
-        pos.y = _y;
-    }
-
     void SetText(const char* t);
 
     virtual Engine::InputStatus Event(ALLEGRO_EVENT& event);
     void Draw();
-    void DrawBack(const glm::ivec2 pos, const Rect& rect) const;
-    void DrawText(const glm::ivec2 pos) const;
-    void DrawConnexion(const glm::ivec2 pos, const Rect& rect, int connexion = 0) const;
-    void DrawAll(const glm::ivec2& pos, const Rect& rect, int connexion = 0) const;
+    void DrawBack(const Rect& rect) const;
+    void DrawText() const;
+    void DrawConnexion(const Rect& rect, int connexion = 0) const;
+    void DrawAll(const Rect& rect, int connexion = 0) const;
 
     // assumes both links as Jump type, returns "to" for convenience
     InstructionModel* Link(InstructionModel* to);

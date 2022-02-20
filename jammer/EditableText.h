@@ -18,7 +18,6 @@ public:
     bool canNewLine;
 
     virtual ALLEGRO_FONT* Font() const = 0;
-    virtual const glm::ivec2& Pos() const = 0;
     virtual void MinimalFrame(Rect& inout) = 0;
 
     inline bool IncrementCursor() {
@@ -57,13 +56,11 @@ public:
 
 class EditableTextBox : public EditableText {
 public:
-    glm::ivec2 pos;
     ALLEGRO_FONT* font;
 
     EditableTextBox(ALLEGRO_FONT* font, int framepadding = 0);
 
     ALLEGRO_FONT* Font() const;
-    const glm::ivec2& Pos() const;
     void MinimalFrame(Rect& inout);
 };
 

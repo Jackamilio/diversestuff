@@ -2,15 +2,15 @@
 #include "Image.h"
 #include "GuiMaster.h"
 
-Image::Image() : texture(nullptr), pos{}, rect(nullptr), stretch(false)
+Image::Image() : texture(nullptr), rect(nullptr), stretch(false)
 {
 }
 
-Image::Image(const Texture& tex) : texture(&tex), pos{}, rect(nullptr), stretch(false)
+Image::Image(const Texture& tex) : texture(&tex), rect(nullptr), stretch(false)
 {
 }
 
-Image::Image(const char* file) : texture(&gui.engine.graphics.textures.Get(file)), pos{}, rect(nullptr), stretch(false)
+Image::Image(const char* file) : texture(&gui.engine.graphics.textures.Get(file)), rect(nullptr), stretch(false)
 {
 }
 

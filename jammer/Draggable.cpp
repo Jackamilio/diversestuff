@@ -34,7 +34,7 @@ void Draggable::ForceGrab()
 {
     GrabProperties& prop = gui.GrabbedElementProperties();
     prop.location = nullptr;
-    prop.position = GetPos();
+    prop.position = pos;
     prop.priority = FindMyPriority(GuiElement::Priority::Default);
     gui.Track(this);
     Grabbed();
