@@ -56,7 +56,7 @@ GuiMaster::GuiMaster() : trackedDraggable(nullptr), focus(nullptr), caretTimer(n
 	// this needs to be ported (or ifdef'd out if everything works as intended) for other platforms
 	al_win_add_window_callback(engine.display, WindowsCursorCallback, nullptr);
 	wccd.display = engine.display;
-	RequestCursor(nullptr, ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT);
+	RequestCursor(-99999, ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT);
 }
 
 GuiMaster::~GuiMaster()
@@ -203,17 +203,17 @@ void GuiMaster::TranslateTransform(const glm::ivec2& offset)
 	al_use_transform(&CurrentTransform());
 }
 
-void GuiMaster::RequestCursor(const GuiElement* requester, ALLEGRO_SYSTEM_MOUSE_CURSOR cursor_id)
+void GuiMaster::RequestCursor(int requestID, ALLEGRO_SYSTEM_MOUSE_CURSOR cursor_id)
 {
-	requestedCursors[requester] = cursor_id;
+	requestedCursors[requestID] = cursor_id;
 
 	// platform specific stuff, see the constructor
 	wccd.cursor = cursor_id;
 }
 
-void GuiMaster::CancelCursor(const GuiElement* requester)
+void GuiMaster::CancelCursor(int requestID)
 {
-	auto it = requestedCursors.find(requester);
+	auto it = requestedCursors.find(requestID);
 	if (it != requestedCursors.end()) {
 		requestedCursors.erase(it);
 		wccd.cursor = requestedCursors.rbegin()->second;

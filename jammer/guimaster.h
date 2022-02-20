@@ -38,7 +38,7 @@ private:
 	ALLEGRO_TIMER* caretTimer;
 	bool caretVisible;
 	ALLEGRO_USTR* numericalChars;
-	std::map<const GuiElement*, ALLEGRO_SYSTEM_MOUSE_CURSOR> requestedCursors;
+	std::map<int, ALLEGRO_SYSTEM_MOUSE_CURSOR> requestedCursors;
 
 public:
 	OTN(GuiMaster);
@@ -91,8 +91,8 @@ public:
 	inline ALLEGRO_TRANSFORM& CurrentTransform() { return transforms.top(); }
 
 	// cursor
-	void RequestCursor(const GuiElement* requester, ALLEGRO_SYSTEM_MOUSE_CURSOR cursor_id);
-	void CancelCursor(const GuiElement* requester);
+	void RequestCursor(int requestID, ALLEGRO_SYSTEM_MOUSE_CURSOR cursor_id);
+	void CancelCursor(int requestID);
 };
 
 template<class T>

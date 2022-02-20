@@ -10,8 +10,6 @@
 #pragma warning( disable : 4250 )
 class Window : public Rect, virtual public Draggable, virtual public Cropper {
 private:
-	int headBandHeight;
-
 	int* horiResize;
 	int* vertResize;
 	int trackedHoriResize;

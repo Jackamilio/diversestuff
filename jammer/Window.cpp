@@ -2,9 +2,10 @@
 #include "GuiMaster.h"
 #include "DefaultColors.h"
 
+static const int headBandHeight = 20;
+
 Window::Window() :
 	Cropper(*((Rect*)this)), // if I don't EXPLICITLY cast "this" to Rect*, the Cropper constructor WON'T BE CALLED AT ALL WITHOUT ANY WARNING, WHAT THE ACTUAL F****, TELL ME SOMETHING COMPILER!!!!!
-	headBandHeight(20),
 	horiResize(nullptr),
 	vertResize(nullptr),
 	trackedHoriResize(0),
@@ -48,11 +49,13 @@ bool Window::Event(ALLEGRO_EVENT& event)
 	const bool leftClicked = event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && event.mouse.button == 1;
 	const bool leftReleased = event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button == 1;
 	const bool axes = event.type == ALLEGRO_EVENT_MOUSE_AXES;
+	bool mouseInside = false;
 	if (leftClicked || leftReleased || axes) {
 		const int dist = 2;
 		const int _t = top - headBandHeight;
 		bool insideHori = valueInside(event.mouse.x, l - dist, r + dist);
 		bool insideVert = valueInside(event.mouse.y, _t - dist, b + dist);
+		mouseInside = insideHori && insideVert;
 		bool nearL = insideVert && glm::abs(event.mouse.x - l) <= dist;
 		bool nearR = insideVert && glm::abs(event.mouse.x - r) <= dist;
 		bool nearT = insideHori && glm::abs(event.mouse.y - _t) <= dist;
@@ -64,34 +67,34 @@ bool Window::Event(ALLEGRO_EVENT& event)
 		if (nearB) nearLRTB |= 0b1000;
 		switch (nearLRTB) {
 		case 0b0000:
-			gui.CancelCursor(this);
+			gui.CancelCursor(ALLEGRO_EVENT_DISPLAY_RESIZE); // I put this as an ID because : 1) Too lazy to make an enum, 2) this makes enough sense
 			break;
 		case 0b0001:
-			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_W);
+			gui.RequestCursor(ALLEGRO_EVENT_DISPLAY_RESIZE, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_W);
 			break;
 		case 0b0010:
-			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_E);
+			gui.RequestCursor(ALLEGRO_EVENT_DISPLAY_RESIZE, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_E);
 			break;
 		case 0b0100:
-			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_N);
+			gui.RequestCursor(ALLEGRO_EVENT_DISPLAY_RESIZE, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_N);
 			break;
 		case 0b1000:
-			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_S);
+			gui.RequestCursor(ALLEGRO_EVENT_DISPLAY_RESIZE, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_S);
 			break;
 		case 0b0101:
-			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NW);
+			gui.RequestCursor(ALLEGRO_EVENT_DISPLAY_RESIZE, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NW);
 			break;
 		case 0b0110:
-			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NE);
+			gui.RequestCursor(ALLEGRO_EVENT_DISPLAY_RESIZE, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_NE);
 			break;
 		case 0b1001:
-			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_SW);
+			gui.RequestCursor(ALLEGRO_EVENT_DISPLAY_RESIZE, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_SW);
 			break;
 		case 0b1010:
-			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_SE);
+			gui.RequestCursor(ALLEGRO_EVENT_DISPLAY_RESIZE, ALLEGRO_SYSTEM_MOUSE_CURSOR_RESIZE_SE);
 			break;
 		default:
-			gui.RequestCursor(this, ALLEGRO_SYSTEM_MOUSE_CURSOR_QUESTION);
+			gui.RequestCursor(ALLEGRO_EVENT_DISPLAY_RESIZE, ALLEGRO_SYSTEM_MOUSE_CURSOR_QUESTION);
 			break;
 		}
 		if (leftClicked) {
@@ -99,6 +102,7 @@ bool Window::Event(ALLEGRO_EVENT& event)
 			vertResize = nearT ? &top  : nearB ? &bottom : nullptr;
 			if (horiResize) trackedHoriResize = *horiResize;
 			if (vertResize) trackedVertResize = *vertResize;
+			if (mouseInside) PutOnTop();
 		}
 		else if (leftReleased) {
 			if (horiResize || vertResize) {
@@ -125,7 +129,7 @@ bool Window::Event(ALLEGRO_EVENT& event)
 		}
 	}
 
-	return Cropper::Event(event) || Draggable::Event(event);
+	return Cropper::Event(event) || Draggable::Event(event) || mouseInside;
 }
 
 void Window::Grabbed()
