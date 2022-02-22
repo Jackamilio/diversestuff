@@ -11,6 +11,7 @@ class InstructionModel;
 class Instruction : virtual public Rect, virtual public Droppable<Instruction> {
     friend class InstructionFamily;
     friend class InstructionModel;
+    friend class CodeSpace;
 protected:
     Instruction* bigBro;
     Instruction* littleBro;

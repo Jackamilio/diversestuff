@@ -4,11 +4,26 @@
 #include "InstructionModel.h"
 #include <unordered_set>
 
-InstructionFamily::Iterator::Iterator(vector<Instruction*>& vec) : bigBroIt(vec.begin()), endBroIt(vec.end()), curBro(*bigBroIt) {}
-InstructionFamily::Iterator::Iterator(vector<Instruction*>& vec, int dummy) : bigBroIt(vec.end()), endBroIt(vec.end()), curBro(nullptr) {}
+CodeSpace::~CodeSpace()
+{
+    for (auto bro : bigBrothers) {
+        delete bro;
+    }
+}
+
+InstructionFamily::Iterator::Iterator(CodeSpaceSet& css) :
+    spaceIt(css.begin()),
+    endSpaceIt(css.end()),
+    bigBroIt((*spaceIt)->bigBrothers.begin()),
+    curBro(*bigBroIt)
+{}
+InstructionFamily::Iterator::Iterator(CodeSpaceSet& css, int dummy) :
+    spaceIt(css.end()),
+    endSpaceIt(css.end()),
+    curBro(nullptr) {}
 
 bool InstructionFamily::Iterator::operator !=(const Iterator& r) const {
-    return bigBroIt != r.bigBroIt || curBro != r.curBro;
+    return curBro != r.curBro; //in theory there is no duplicate
 }
 
 void InstructionFamily::Iterator::operator ++() {
@@ -17,7 +32,14 @@ void InstructionFamily::Iterator::operator ++() {
     }
     else {
         ++bigBroIt;
-        curBro = bigBroIt != endBroIt ? *bigBroIt : nullptr;
+        if (bigBroIt == (*spaceIt)->bigBrothers.end()) {
+            ++spaceIt;
+            if (spaceIt == endSpaceIt) {
+                curBro = nullptr;
+                return;
+            }
+        }
+        curBro = *bigBroIt;
     }
 }
 
@@ -26,11 +48,13 @@ Instruction* InstructionFamily::Iterator::operator*() {
 }
 
 InstructionFamily::Iterator InstructionFamily::begin() {
-    return bigBrothers.empty() ? end() : Iterator(bigBrothers);
+    //return bigBrothers.empty() ? end() : Iterator(bigBrothers);
+    return !codeSpaces.empty() && !(*codeSpaces.begin())->bigBrothers.empty() ? Iterator(codeSpaces) : end();
 }
 
 InstructionFamily::Iterator InstructionFamily::end() {
-    return Iterator(bigBrothers, 0);
+    //return Iterator(bigBrothers, 0);
+    return Iterator(codeSpaces, 0);
 }
 
 void BuildParameterStackRec(std::stack<Instruction*>& out, Instruction& inst) {
@@ -53,8 +77,6 @@ void InstructionFamily::BuildParameterStack(std::stack<Instruction*>& out)
 
 InstructionFamily::InstructionFamily(ALLEGRO_FONT* font) : font(font), shadowBroPos{}
 {
-    engine.updateRoot.AddChild(this);
-
     emptyParameter = new InstructionModel(*this);
     emptyParameter->type = InstructionModel::Type::Parameter;
     emptyParameter->flags |= InstructionModel::Flags::Fixed;
@@ -69,10 +91,9 @@ InstructionFamily::InstructionFamily(ALLEGRO_FONT* font) : font(font), shadowBro
 
 InstructionFamily::~InstructionFamily()
 {
-    engine.updateRoot.RemoveChild(this);
-    for (auto bro : bigBrothers) {
-        delete bro;
-    }
+    //for (auto bro : bigBrothers) {
+    //    delete bro;
+    //}
     for (auto orphan : orphanedParameters) {
         delete orphan;
     }
@@ -97,7 +118,7 @@ Parameter* EvaluateParameters(Instruction& inst, InstructionContext& context) {
     return nullptr;
 }
 
-void InstructionFamily::ExecuteFrom(Instruction* inst)
+void InstructionFamily::ExecuteFrom(Instruction* inst, CodeInstance& code)
 {
     while (inst) {
         InstructionModel::FunctionResult ret = inst->model.function(EvaluateParameters(*inst, context), *inst, context);
@@ -108,29 +129,32 @@ void InstructionFamily::ExecuteFrom(Instruction* inst)
         else {
             inst = int(ret & InstructionModel::FunctionResult::Jump) ? inst->jump : inst->littleBro;
             if (int(ret & InstructionModel::FunctionResult::Await)) {
-                awaitingInstructions[inst] = context.CutContextAtFlaggedDepth();
+                code.awaitingInstructions[inst] = context.CutContextAtFlaggedDepth();
                 inst = nullptr;
             }
         }//Todo : Error
     }
 }
 
-void InstructionFamily::Step()
+void InstructionFamily::ExecuteCode(CodeInstance& code)
 {
+    std::unordered_map<Instruction*, InstructionContext>& waiting = code.awaitingInstructions;
     // delayed instruction deletion
     for (auto inst : waitingDestruction) {
         for (Instruction* soondeleted = inst; soondeleted != nullptr; soondeleted = soondeleted->littleBro) {
-            auto it = awaitingInstructions.find(soondeleted);
-            if (it != awaitingInstructions.end()) {
+            auto it = waiting.find(soondeleted);
+            if (it != waiting.end()) {
                 it->second.Clear();
-                awaitingInstructions.erase(it);
+                waiting.erase(it);
             }
         }
-        demoteFromBigBro(inst);
-        unorphanParameter(inst);
-        delete inst;
+        //demoteFromBigBro(inst);
+        //unorphanParameter(inst);
+        
+        //not deleting here now, but in PurgeDeletionWaiters
+        //delete inst;
     }
-    waitingDestruction.clear();
+    //waitingDestruction.clear();
 
     // execute code!
     context.PushContext(); // first layer of context
@@ -138,43 +162,67 @@ void InstructionFamily::Step()
 
     // process awaiting instructions
     std::unordered_set<Instruction*> topbrosfromwait;
-    topbrosfromwait.reserve(awaitingInstructions.size()); // little optimisation
-    for (auto it = awaitingInstructions.begin(); it != awaitingInstructions.end();) {
+    topbrosfromwait.reserve(waiting.size()); // little optimisation
+    for (auto it = waiting.begin(); it != waiting.end();) {
         topbrosfromwait.insert(it->first->GetFirstBro());
         context.PushContext(it->second);
         Instruction* from = it->first;
-        it = awaitingInstructions.erase(it);
-        ExecuteFrom(from);
+        it = waiting.erase(it);
+        ExecuteFrom(from, code);
     }
 
-    for (auto bro : bigBrothers) {
+    for (auto bro : code.bigBrothers) {
         // don't execute if one of our instruction were actually waiting
         if ((bro->model.flags & InstructionModel::Flags::Trigger) && topbrosfromwait.find(bro) == topbrosfromwait.end()) {
-            ExecuteFrom(bro);
+            ExecuteFrom(bro, code);
         }
     }
     context.PopContext();
     assert(context.IsEmpty() && "Something went wrong, some instruction forgot to pop the context maybe.");
 }
 
+void InstructionFamily::PurgeDeletionWaiters()
+{
+    for (auto inst : waitingDestruction) {
+        delete inst;
+    }
+    waitingDestruction.clear();
+}
+
 void InstructionFamily::promoteToBigBro(Instruction* tr) {
-    bigBrothers.push_back(tr);
+    CodeSpace* parent = dynamic_cast<CodeSpace*>(tr->Parent());
+    assert(parent && "Instructions must be dropped into CodeSpace types!");
+    parent->bigBrothers.insert(tr);
+    codeSpaces.insert(parent);
+    //bigBrothers.insert(tr);
 }
 
 void InstructionFamily::demoteFromBigBro(Instruction* tr) {
-    auto it = std::find(bigBrothers.begin(), bigBrothers.end(), tr);
-    if (it != bigBrothers.end()) {
-        bigBrothers.erase(it);
+    //auto it = std::find(bigBrothers.begin(), bigBrothers.end(), tr);
+    //if (it != bigBrothers.end()) {
+    //    bigBrothers.erase(it);
+    //}
+    for (auto space : codeSpaces) {
+        space->bigBrothers.erase(tr);
     }
+    //bigBrothers.erase(tr);
 }
 
 void InstructionFamily::orphanParameter(Instruction* tr) {
-    orphanedParameters.push_back(tr);
+    orphanedParameters.insert(tr);
 }
 
 void InstructionFamily::unorphanParameter(Instruction* tr) {
-    auto it = std::find(orphanedParameters.begin(), orphanedParameters.end(), tr);
-    if (it != orphanedParameters.end()) {
-        orphanedParameters.erase(it);
-    }
+    //auto it = std::find(orphanedParameters.begin(), orphanedParameters.end(), tr);
+    //if (it != orphanedParameters.end()) {
+    //    orphanedParameters.erase(it);
+    //}
+    orphanedParameters.erase(tr);
+}
+
+void InstructionFamily::DestroyInstruction(Instruction* tr)
+{
+    demoteFromBigBro(tr);
+    unorphanParameter(tr);
+    waitingDestruction.insert(tr);
 }

@@ -163,7 +163,7 @@
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="InstructionContext.cpp" />
     <ClCompile Include="InstructionModel.cpp" />
-    <ClCompile Include="jammer.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Draggable.cpp" />
     <ClCompile Include="Instruction.cpp" />
     <ClCompile Include="InstructionFamily.cpp" />
@@ -183,6 +183,7 @@
     <ClInclude Include="Image.h" />
     <ClInclude Include="InstructionContext.h" />
     <ClInclude Include="InstructionModel.h" />
+    <ClInclude Include="Jammer.h" />
     <ClInclude Include="Parameter.h" />
     <ClInclude Include="PureDisplacer.h" />
     <ClInclude Include="Rect.h" />

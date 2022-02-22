@@ -6,34 +6,50 @@
 #include <allegro5/allegro5.h>
 #include "Instruction.h"
 #include "Cropper.h"
-#include "Engine.h"
 #include "InstructionContext.h"
 
-using std::vector;
+typedef std::set<Instruction*> InstructionSet;
 
-class InstructionFamily : public Engine::Update
+class CodeSpace : virtual public GuiElement {
+public:
+    InstructionSet bigBrothers;
+
+    virtual ~CodeSpace();
+};
+
+class CodeInstance {
+    friend class InstructionFamily;
+private:
+    InstructionSet& bigBrothers;
+    std::unordered_map<Instruction*, InstructionContext> awaitingInstructions;
+public:
+    CodeInstance(CodeSpace& space) : bigBrothers(space.bigBrothers) {}
+};
+
+class InstructionFamily
 {
     OTN(InstructionFamily);
 private:
-    vector<Instruction*> bigBrothers;
-    vector<Instruction*> orphanedParameters;
-    vector<Instruction*> waitingDestruction;
+    typedef std::set<CodeSpace*> CodeSpaceSet;
+    CodeSpaceSet codeSpaces;
+    //InstructionSet bigBrothers;
+    InstructionSet orphanedParameters;
+    InstructionSet waitingDestruction;
 
     InstructionContext context;
 
-    std::unordered_map<Instruction*, InstructionContext> awaitingInstructions;
-
-    void ExecuteFrom(Instruction* inst);
+    void ExecuteFrom(Instruction* inst, CodeInstance& code);
 
 public:
     class Iterator {
     private:
-        vector<Instruction*>::iterator bigBroIt, endBroIt;
+        CodeSpaceSet::iterator spaceIt, endSpaceIt;
+        InstructionSet::iterator bigBroIt;
         Instruction* curBro;
 
     public:
-        Iterator(vector<Instruction*>& vec);
-        Iterator(vector<Instruction*>& vec, int);
+        Iterator(CodeSpaceSet& css);
+        Iterator(CodeSpaceSet& css, int);
 
         bool operator !=(const Iterator& r) const;
         void operator ++();
@@ -48,7 +64,8 @@ public:
     InstructionFamily(ALLEGRO_FONT* font);
     ~InstructionFamily();
 
-    void Step();
+    void ExecuteCode(CodeInstance& code);
+    void PurgeDeletionWaiters(); // MUST be called when all ExecuteCode calls are done this frame
 
     void promoteToBigBro(Instruction* tr);
     void demoteFromBigBro(Instruction* tr);
@@ -56,9 +73,7 @@ public:
     void orphanParameter(Instruction* tr);
     void unorphanParameter(Instruction* tr);
 
-    inline void DestroyInstruction(Instruction* tr) {
-        waitingDestruction.push_back(tr);
-    }
+    void DestroyInstruction(Instruction* tr);
 
     ALLEGRO_FONT* font;
 

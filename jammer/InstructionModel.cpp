@@ -82,12 +82,12 @@ bool InstructionModel::Event(ALLEGRO_EVENT& event)
                 topModel = topModel->prevLink;
             }
             Instruction* topInst = topModel->CreateInstruction();
-            if (topModel->type == Type::Parameter) {
-                family.orphanParameter(topInst);
-            }
-            else {
-                family.promoteToBigBro(topInst);
-            }
+            //if (topModel->type == Type::Parameter) {
+            //    family.orphanParameter(topInst);
+            //}
+            //else {
+            //    family.promoteToBigBro(topInst);
+            //}
 
             // create subsquent instructions that are linked to the first
             std::map<InstructionModel*, Instruction*> couples;

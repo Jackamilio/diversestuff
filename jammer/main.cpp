@@ -56,6 +56,8 @@ public:
     }
 };
 
+class PureCodeSpace : public PureDisplacer, public CodeSpace {};
+
 int main()
 {
     Engine& engine = Engine::Get();
@@ -151,7 +153,7 @@ int main()
             });
         textureExplorer.Fire(GuiElement::EventType::Resized);
 
-        gui.AddChild(&textureExplorer);
+        //gui.AddChild(&textureExplorer);
 
         Window scene;
         scene.pos = { 700, 50 };
@@ -163,8 +165,10 @@ int main()
         sprite.pos = glm::vec2(270, 210);
         scene.AddChild(&sprite);
 
-        PureDisplacer pure;
+        PureCodeSpace pure;
         gui.AddChild(&pure, GuiElement::Priority::Bottom);
+
+        CodeInstance code(pure);
         
         gui.AddDropLocation<Instruction>(instructionsList);
         gui.AddDropLocation<Instruction>(pure);
@@ -378,7 +382,10 @@ int main()
         curmodel->JumpsTo(curmodel); // jumps to itself, that's the trick!
         curmodel->flags |= InstructionModel::Flags::StickToPrev;
 
-        while (engine.OneLoop()) {}
+        while (engine.OneLoop()) {
+            family.ExecuteCode(code);
+            family.PurgeDeletionWaiters();
+        }
 
         for (auto inst : deletelater) {
             delete inst;

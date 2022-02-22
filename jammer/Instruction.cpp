@@ -273,19 +273,21 @@ void Instruction::GrabbedBis() {
     RejectAllParams(this);
 
     if (model.type == InstructionModel::Type::Parameter) {
+        model.family.unorphanParameter(this);
         if (owner) {
             Instruction* newp = Create(*model.family.emptyParameter);
             owner->ReplaceParameter(this, newp);
             owner = nullptr;
-            model.family.orphanParameter(this);
+            //model.family.orphanParameter(this);
         }
     }
     else {
+        model.family.demoteFromBigBro(this);
         Instruction* rememberBigBro = bigBro;
         if (bigBro) {
             bigBro->littleBro = nullptr;
             bigBro = nullptr;
-            model.family.promoteToBigBro(this);
+            //model.family.promoteToBigBro(this);
         }
 
         Instruction* curBro = this->littleBro;
@@ -357,11 +359,15 @@ void Instruction::DroppedBis() {
             if (inst && inst!=this && inst->owner && inst->owner->ReplaceParameter(inst, this)) {
                 model.family.DestroyInstruction(inst);
             }
+            else {
+                model.family.orphanParameter(this);
+            }
             model.family.highlightedParam = nullptr;
         }
         else {
             PutAtBottom();
             Instruction* lastBro = GetLastBro();
+            bool makeMeBig = true;
             for (auto bro : model.family) {
                 if (bro != this && currentDropLocation == bro->currentDropLocation && IsUnderBro(*bro)) {
                     if (bro->littleBro && (bro->littleBro->model.flags & InstructionModel::Flags::StickToPrev)) {
@@ -379,6 +385,7 @@ void Instruction::DroppedBis() {
                     model.family.displacedBro = nullptr;
                     PlaceUnderBigBroRecursive();
                     model.family.demoteFromBigBro(this);
+                    makeMeBig = false;
                     break;
                 }
                 else if (bro != lastBro && bro->currentDropLocation == lastBro->currentDropLocation && !bro->bigBro && lastBro->IsAboveBro(*bro)) {
@@ -393,6 +400,9 @@ void Instruction::DroppedBis() {
                     model.family.demoteFromBigBro(bro);
                     break;
                 }
+            }
+            if (makeMeBig) {
+                model.family.promoteToBigBro(this);
             }
         }
     }
