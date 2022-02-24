@@ -129,7 +129,7 @@ bool Window::Event(ALLEGRO_EVENT& event)
 		}
 	}
 
-	return Cropper::Event(event) || Draggable::Event(event) || mouseInside;
+	return Draggable::Event(event) || Cropper::Event(event) || mouseInside;
 }
 
 void Window::Grabbed()

@@ -1,8 +1,9 @@
 #include "InstructionFamily.h"
 #include <allegro5/allegro_primitives.h>
 #include "DefaultColors.h"
+#include "Instruction.h"
 #include "InstructionModel.h"
-#include <unordered_set>
+#include "InstructionContext.h"
 
 CodeSpace::~CodeSpace()
 {
@@ -37,6 +38,9 @@ void InstructionFamily::Iterator::operator ++() {
             if (spaceIt == endSpaceIt) {
                 curBro = nullptr;
                 return;
+            }
+            else {
+                bigBroIt = (*spaceIt)->bigBrothers.begin();
             }
         }
         curBro = *bigBroIt;
@@ -85,7 +89,7 @@ InstructionFamily::InstructionFamily(ALLEGRO_FONT* font) : font(font), shadowBro
     emptyParameter->SetText("   ");
     emptyParameter->evaluate = [](Parameter*, const Instruction& inst, InstructionContext&) {
         const EditableInstruction& ei = (EditableInstruction&)(inst);
-        return atof(al_cstr(ei.GetText()));
+        return Parameter{ (float)atof(al_cstr(ei.GetText())) };
     };
 }
 
@@ -99,7 +103,6 @@ InstructionFamily::~InstructionFamily()
     }
 
     delete emptyParameter;
-    context.Clear();
 }
 
 std::vector<Parameter> paramMemory;
@@ -118,7 +121,7 @@ Parameter* EvaluateParameters(Instruction& inst, InstructionContext& context) {
     return nullptr;
 }
 
-void InstructionFamily::ExecuteFrom(Instruction* inst, CodeInstance& code)
+void InstructionFamily::ExecuteFrom(Instruction* inst, CodeInstance& code, InstructionContext& context)
 {
     while (inst) {
         InstructionModel::FunctionResult ret = inst->model.function(EvaluateParameters(*inst, context), *inst, context);
@@ -136,7 +139,7 @@ void InstructionFamily::ExecuteFrom(Instruction* inst, CodeInstance& code)
     }
 }
 
-void InstructionFamily::ExecuteCode(CodeInstance& code)
+void InstructionFamily::ExecuteCode(CodeInstance& code, InstructionContext& context)
 {
     std::unordered_map<Instruction*, InstructionContext>& waiting = code.awaitingInstructions;
     // delayed instruction deletion
@@ -157,7 +160,6 @@ void InstructionFamily::ExecuteCode(CodeInstance& code)
     //waitingDestruction.clear();
 
     // execute code!
-    context.PushContext(); // first layer of context
     context.FlagCurrentDepth();
 
     // process awaiting instructions
@@ -168,17 +170,16 @@ void InstructionFamily::ExecuteCode(CodeInstance& code)
         context.PushContext(it->second);
         Instruction* from = it->first;
         it = waiting.erase(it);
-        ExecuteFrom(from, code);
+        ExecuteFrom(from, code, context);
     }
 
     for (auto bro : code.bigBrothers) {
         // don't execute if one of our instruction were actually waiting
         if ((bro->model.flags & InstructionModel::Flags::Trigger) && topbrosfromwait.find(bro) == topbrosfromwait.end()) {
-            ExecuteFrom(bro, code);
+            ExecuteFrom(bro, code, context);
         }
     }
-    context.PopContext();
-    assert(context.IsEmpty() && "Something went wrong, some instruction forgot to pop the context maybe.");
+    
 }
 
 void InstructionFamily::PurgeDeletionWaiters()
@@ -202,8 +203,13 @@ void InstructionFamily::demoteFromBigBro(Instruction* tr) {
     //if (it != bigBrothers.end()) {
     //    bigBrothers.erase(it);
     //}
-    for (auto space : codeSpaces) {
-        space->bigBrothers.erase(tr);
+    for (CodeSpaceSet::iterator it = codeSpaces.begin(); it != codeSpaces.end();) {
+        InstructionSet& bb = (*it)->bigBrothers;
+        bb.erase(tr);
+        if (bb.empty())
+            it = codeSpaces.erase(it);
+        else
+            ++it;
     }
     //bigBrothers.erase(tr);
 }

@@ -2,8 +2,13 @@
 #define __PARAMETER_H__
 
 #include <vector>
+#include "Jammer.h"
 
-typedef float Parameter;
+union Parameter {
+	float fvalue;
+	Jammer::Sprite* sprite;
+	void* pointer;
+};
 typedef std::vector<Parameter> ParameterList;
 
 #endif //__PARAMETER_H__

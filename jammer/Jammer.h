@@ -12,21 +12,21 @@ public:
 		std::string image{};
 		glm::vec4 color{ 1.0f,1.0f,1.0f,1.0f };
 		glm::vec2 position{};
-		float rotation{};
-		float scale{};
+		float direction{};
+		float scale{1.0f};
 	};
 	struct Scene : Sprite {
 		std::list<Sprite> instances;
 	};
 
-	typedef ResourceMapper std::map<std::string, std::string>;
+	typedef std::map<std::string, std::string> ResourceMapper;
 	ResourceMapper images;
 	ResourceMapper sounds;
 
-	typedef SpriteList std::map<std::string, Sprite>;
+	typedef std::map<std::string, Sprite> SpriteList;
 	SpriteList sprites;
 
-	typedef SceneList std::map<std::string, Scene>;
+	typedef std::map<std::string, Scene> SceneList;
 	SceneList scenes;
 
 	Scene liveScene;

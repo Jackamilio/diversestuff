@@ -38,7 +38,7 @@ InstructionModel::InstructionModel(InstructionFamily& fam) :
     jump(nullptr),
     parametersTaken(0),
     function([](Parameter*, const Instruction&, InstructionContext&) {return FunctionResult::Error; }),
-    evaluate([](Parameter*, const Instruction&, InstructionContext&) {return 0.0f; })
+    evaluate([](Parameter*, const Instruction&, InstructionContext&) {return Parameter{ 0.0f }; })
 {
 }
 

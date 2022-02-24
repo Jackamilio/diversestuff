@@ -22,6 +22,8 @@
 #include "EditableText.h"
 #include "Image.h"
 
+#include "Jammer.h"
+
 ALLEGRO_FONT* fetchDefaultFont()
 {
     static ALLEGRO_FONT* defaultFont = NULL;
@@ -35,28 +37,31 @@ ALLEGRO_FONT* fetchDefaultFont()
     return defaultFont;
 }
 
-class SpriteTest : public GuiElement {
+class JammerDisplay : public GuiElement {
 public:
-    const Texture& texture;
-    glm::vec2 scale;
-    glm::vec2 pos;
-    float direction;
+    const Jammer& jammer;
 
-    SpriteTest(const char* image_file) :
-        texture(gui.engine.graphics.textures.Get(image_file)),
-        scale(1,1),
-        direction(0.0f)
+    JammerDisplay(const Jammer& j) : jammer(j)
     {
     }
 
     virtual void Draw() {
-        glm::vec2 center(texture.GetWidth(), texture.GetHeight());
-        center *= 0.5f;
-        al_draw_scaled_rotated_bitmap(texture.GetAlValue(), center.x, center.y, pos.x, pos.y, scale.x, scale.y, direction, 0);
+        for (auto sprite : jammer.liveScene.instances) {
+            auto it = jammer.images.find(sprite.image);
+            std::string imagefile = it != jammer.images.end() ? it->second : "errortex";
+            const Texture& tex = gui.engine.graphics.textures.Get(imagefile);
+            glm::vec2 center(tex.GetWidth(), tex.GetHeight());
+            center *= 0.5f;
+            ALLEGRO_COLOR color = al_map_rgba_f(sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a);
+            al_draw_tinted_scaled_rotated_bitmap(tex.GetAlValue(), color, center.x, center.y, sprite.position.x, sprite.position.y, sprite.scale, sprite.scale, sprite.direction, 0);
+        }
     }
 };
 
-class PureCodeSpace : public PureDisplacer, public CodeSpace {};
+class WindowCodeSpace : public Window, public CodeSpace {
+public:
+    WindowCodeSpace() : Cropper(*((Rect*)this)) {}
+};
 
 int main()
 {
@@ -85,6 +90,20 @@ int main()
         //resizeimagetest.ReactTo(GuiElement::EventType::Moved, &resizeimagetest,
         //    [&resizeimagetest, &imagetest]() {imagetest.pos = -resizeimagetest.topleft; }
         //    );
+
+        Jammer JAMMER;
+        JAMMER.images["monkey"] = "cutemonkey.png";
+        JAMMER.images["banana"] = "banana.png";
+
+        Jammer::Sprite sprite;
+        sprite.position = {270.0f, 210.0f};
+        sprite.image = "monkey";
+        JAMMER.liveScene.instances.push_back(sprite);
+
+        sprite.position = { 270.0f, 300.0f };
+        sprite.image = "banana";
+        sprite.scale = 0.2f;
+        JAMMER.liveScene.instances.push_back(sprite);
 
         Window instructionsList;
         instructionsList.pos = { 1, 20 };
@@ -161,17 +180,25 @@ int main()
 
         gui.AddChild(&scene);
 
-        SpriteTest sprite("cutemonkey.png");
-        sprite.pos = glm::vec2(270, 210);
-        scene.AddChild(&sprite);
+        JammerDisplay jammerDisplay(JAMMER);
+        scene.AddChild(&jammerDisplay);
 
-        PureCodeSpace pure;
-        gui.AddChild(&pure, GuiElement::Priority::Bottom);
+        WindowCodeSpace codeSpace1;
+        codeSpace1.pos = { 100,30 };
+        codeSpace1.resize(540, 420);
+        gui.AddChild(&codeSpace1);
 
-        CodeInstance code(pure);
+        WindowCodeSpace codeSpace2;
+        codeSpace2.pos = { 150,80 };
+        codeSpace2.resize(540, 420);
+        gui.AddChild(&codeSpace2);
+
+        CodeInstance code1(codeSpace1);
+        CodeInstance code2(codeSpace2);
         
         gui.AddDropLocation<Instruction>(instructionsList);
-        gui.AddDropLocation<Instruction>(pure);
+        gui.AddDropLocation<Instruction>(codeSpace1);
+        gui.AddDropLocation<Instruction>(codeSpace2);
 
         InstructionFamily family(fetchDefaultFont());
 
@@ -194,25 +221,29 @@ int main()
         };
 
         newmodel("Avancer un peu");
-        curmodel->function = [&sprite](Parameter*, const Instruction&, InstructionContext&) {
-            sprite.pos.x += 0.2f;
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext& c) {
+            Jammer::Sprite& sprite = *c.GetVariable("___current_sprite___").sprite;
+            sprite.position.x += 0.2f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Avancer de : ", InstructionModel::Type::Default, 1);
-        curmodel->function = [&sprite](Parameter* p, const Instruction&, InstructionContext&) {
-            sprite.pos.x += 0.2f * p[0];
+        curmodel->function = [](Parameter* p, const Instruction&, InstructionContext& c) {
+            Jammer::Sprite& sprite = *c.GetVariable("___current_sprite___").sprite;
+            sprite.position.x += 0.2f * p[0].fvalue;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Tourner à gauche");
-        curmodel->function = [&sprite](Parameter*, const Instruction&, InstructionContext&) {
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext& c) {
+            Jammer::Sprite& sprite = *c.GetVariable("___current_sprite___").sprite;
             sprite.direction -= 0.01f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("Tourner à droite");
-        curmodel->function = [&sprite](Parameter*, const Instruction&, InstructionContext&) {
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext& c) {
+            Jammer::Sprite& sprite = *c.GetVariable("___current_sprite___").sprite;
             sprite.direction += 0.01f;
             return InstructionModel::FunctionResult::Continue;
         };
@@ -225,52 +256,53 @@ int main()
         curmodel->function = [](Parameter*, const Instruction&, InstructionContext&) {return InstructionModel::FunctionResult::Stop; };
 
         newmodel("Reviens par là, le singe!");
-        curmodel->function = [&sprite](Parameter*, const Instruction&, InstructionContext&) {
-            sprite.pos = glm::vec2(270, 210);
+        curmodel->function = [](Parameter*, const Instruction&, InstructionContext& c) {
+            Jammer::Sprite& sprite = *c.GetVariable("___current_sprite___").sprite;
+            sprite.position = { 270, 210 };
             sprite.direction = 0.0f;
             return InstructionModel::FunctionResult::Continue;
         };
 
-        newmodel("Mirroir + Renversé", InstructionModel::Type::Default, 2);
-        curmodel->function = [&sprite](Parameter* pl, const Instruction&, InstructionContext&) {
-            sprite.scale.x = pl[0] ? -1 : 1;
-            sprite.scale.y = pl[1] ? -1 : 1;
+        newmodel("Changer la taille %", InstructionModel::Type::Default, 1);
+        curmodel->function = [](Parameter* pl, const Instruction&, InstructionContext& c) {
+            Jammer::Sprite& sprite = *c.GetVariable("___current_sprite___").sprite;
+            sprite.scale = pl[0].fvalue * 0.01f;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("VRAI", InstructionModel::Type::Parameter);
         curmodel->evaluate = [](Parameter*, const Instruction&, InstructionContext&) {
-            return 1.0f;
+            return Parameter{ 1.0f };
         };
 
         newmodel("FAUX", InstructionModel::Type::Parameter);
         curmodel->evaluate = [](Parameter*, const Instruction&, InstructionContext&) {
-            return 0.0f;
+            return Parameter{ 0.0f };
         };
 
         newmodel("NON", InstructionModel::Type::Parameter, 1);
         curmodel->evaluate = [](Parameter* p, const Instruction&, InstructionContext&) {
-            return *p != 0.0f ? 0.0f : 1.0f;
+            return Parameter{ p->fvalue != 0.0f ? 0.0f : 1.0f };
         };
 
         newmodel("Espace est appuyé", InstructionModel::Type::Parameter);
         curmodel->evaluate = [&engine](Parameter*, const Instruction&, InstructionContext&) {
-            return al_key_down(&engine.inputRoot.keyboardState, ALLEGRO_KEY_SPACE) ? 1 : 0;
+            return Parameter{ al_key_down(&engine.inputRoot.keyboardState, ALLEGRO_KEY_SPACE) ? 1.0f : 0.0f };
         };
 
         newmodel("Additionner", InstructionModel::Type::Parameter, 2);
         curmodel->evaluate = [](Parameter* p, const Instruction&, InstructionContext&) {
-            return p[0] + p[1];
+            return Parameter{ p[0].fvalue + p[1].fvalue };
         };
 
         newmodel("Multiplier par 10", InstructionModel::Type::Parameter, 1);
         curmodel->evaluate = [](Parameter* p, const Instruction&, InstructionContext&) {
-            return p[0] * 10.0f;
+            return Parameter{ p[0].fvalue * 10.0f };
         };
 
         newmodel("Si", InstructionModel::Type::Jump, 1);
         curmodel->function = [](Parameter* p, const Instruction&, InstructionContext&) {
-            return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
+            return p[0].fvalue != 0.0f ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
         };
 
         newmodel("   ", InstructionModel::Type::Jump);
@@ -282,7 +314,7 @@ int main()
 
         newmodel("Si", InstructionModel::Type::Jump, 1);
         curmodel->function = [](Parameter* p, const Instruction&, InstructionContext&) {
-            return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
+            return p[0].fvalue != 0.0f ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
         };
         InstructionModel* premiersi = curmodel;
 
@@ -309,7 +341,7 @@ int main()
 
         newmodel("Tant que", InstructionModel::Type::Jump, 1);
         curmodel->function = [](Parameter* p, const Instruction&, InstructionContext&) {
-            return p[0] != 0 ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
+            return p[0].fvalue != 0.0f ? InstructionModel::FunctionResult::Continue : InstructionModel::FunctionResult::Jump;
         };
         InstructionModel* tantque = curmodel;
 
@@ -332,7 +364,7 @@ int main()
             c.PushContext();
             Parameter& counter = c.DeclareVariable("___repeat_counter___");
             counter = p[0];
-            if (p[0] > 0) {
+            if (p[0].fvalue > 0.0f) {
                 return InstructionModel::FunctionResult::Continue;
             }
             return InstructionModel::FunctionResult::Jump;
@@ -348,7 +380,7 @@ int main()
 
         newmodel("   ", InstructionModel::Type::Jump);
         curmodel->function = [](Parameter*, const Instruction&, InstructionContext& c) {
-            Parameter& counter = c.GetVariable("___repeat_counter___");
+            float& counter = c.GetVariable("___repeat_counter___").fvalue;
             --counter;
             if (counter >= 1.0f) {
                 return InstructionModel::FunctionResult::Jump | InstructionModel::FunctionResult::Await;
@@ -363,14 +395,14 @@ int main()
         newmodel("Attendre", InstructionModel::Type::Jump, 1);
         curmodel->function = [](Parameter* p, const Instruction&, InstructionContext& c) {
             c.PushContext();
-            Parameter& tt = c.DeclareVariable("___target_time___");
-            tt = (float)al_get_time() + p[0];
+            float& tt = c.DeclareVariable("___target_time___").fvalue;
+            tt = (float)al_get_time() + p[0].fvalue;
             return InstructionModel::FunctionResult::Continue;
         };
 
         newmodel("[caché] attendre le temps", InstructionModel::Type::Jump, -1);
         curmodel->function = [](Parameter* p, const Instruction&, InstructionContext& c) {
-            Parameter& tt = c.GetVariable("___target_time___");
+            float& tt = c.GetVariable("___target_time___").fvalue;
             float curtime = (float)al_get_time();
             if (curtime < tt) {
                 return InstructionModel::FunctionResult::Jump | InstructionModel::FunctionResult::Await;
@@ -382,9 +414,20 @@ int main()
         curmodel->JumpsTo(curmodel); // jumps to itself, that's the trick!
         curmodel->flags |= InstructionModel::Flags::StickToPrev;
 
+        InstructionContext context;
+
         while (engine.OneLoop()) {
-            family.ExecuteCode(code);
+            context.PushContext();
+            context.DeclareVariable("___current_sprite___");
+            auto it = JAMMER.liveScene.instances.begin();
+            context.GetVariable("___current_sprite___").sprite = &(*it);
+            family.ExecuteCode(code1, context);
+            ++it;
+            context.GetVariable("___current_sprite___").sprite = &(*it);
+            family.ExecuteCode(code2, context);
             family.PurgeDeletionWaiters();
+            context.PopContext();
+            assert(context.IsEmpty() && "Something went wrong, some instruction forgot to pop the context maybe.");
         }
 
         for (auto inst : deletelater) {

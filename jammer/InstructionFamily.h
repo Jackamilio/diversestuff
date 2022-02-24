@@ -1,12 +1,18 @@
 #ifndef __INSTRUCTION_FAMILY_H__
 #define __INSTRUCTION_FAMILY_H__
 
-#include <vector>
-#include <algorithm>
+#include <stack>
+#include <map>
+#include <unordered_map>
+#include <set>
+#include <unordered_set>
 #include <allegro5/allegro5.h>
-#include "Instruction.h"
-#include "Cropper.h"
-#include "InstructionContext.h"
+#include <allegro5/allegro_font.h>
+#include "GuiElement.h"
+
+class Instruction;
+class InstructionModel;
+class InstructionContext;
 
 typedef std::set<Instruction*> InstructionSet;
 
@@ -28,7 +34,6 @@ public:
 
 class InstructionFamily
 {
-    OTN(InstructionFamily);
 private:
     typedef std::set<CodeSpace*> CodeSpaceSet;
     CodeSpaceSet codeSpaces;
@@ -36,9 +41,7 @@ private:
     InstructionSet orphanedParameters;
     InstructionSet waitingDestruction;
 
-    InstructionContext context;
-
-    void ExecuteFrom(Instruction* inst, CodeInstance& code);
+    void ExecuteFrom(Instruction* inst, CodeInstance& code, InstructionContext& context);
 
 public:
     class Iterator {
@@ -64,7 +67,7 @@ public:
     InstructionFamily(ALLEGRO_FONT* font);
     ~InstructionFamily();
 
-    void ExecuteCode(CodeInstance& code);
+    void ExecuteCode(CodeInstance& code, InstructionContext& context);
     void PurgeDeletionWaiters(); // MUST be called when all ExecuteCode calls are done this frame
 
     void promoteToBigBro(Instruction* tr);
