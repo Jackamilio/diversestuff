@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{def224d9-57b0-4565-a903-264d7efa9b18}</ProjectGuid>
-    <RootNamespace>jammer</RootNamespace>
+    <ProjectGuid>{bb1d3307-3846-4c8f-918b-319546a911f3}</ProjectGuid>
+    <RootNamespace>Knotbag</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -78,12 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>..\proyecto\;$(ExternalIncludePath)</ExternalIncludePath>
     <Allegro_AddonImage>true</Allegro_AddonImage>
-    <Allegro_AddonTTF>true</Allegro_AddonTTF>
     <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
-    <Allegro_AddonDialog>true</Allegro_AddonDialog>
-    <Allegro_AddonFont>true</Allegro_AddonFont>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -120,7 +116,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;ALLEGRO_UNSTABLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -145,64 +141,96 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\proyecto\proyecto.vcxproj">
-      <Project>{5130049c-13cb-4557-a567-2bf8b21cefd8}</Project>
-    </ProjectReference>
+    <ClCompile Include="imgui.cpp" />
+    <ClCompile Include="imgui_demo.cpp" />
+    <ClCompile Include="imgui_draw.cpp" />
+    <ClCompile Include="imgui_impl_allegro5.cpp" />
+    <ClCompile Include="imgui_tables.cpp" />
+    <ClCompile Include="imgui_widgets.cpp" />
+    <ClCompile Include="Knotbag.cpp" />
+    <ClCompile Include="lua\lapi.c" />
+    <ClCompile Include="lua\lauxlib.c" />
+    <ClCompile Include="lua\lbaselib.c" />
+    <ClCompile Include="lua\lcode.c" />
+    <ClCompile Include="lua\lcorolib.c" />
+    <ClCompile Include="lua\lctype.c" />
+    <ClCompile Include="lua\ldblib.c" />
+    <ClCompile Include="lua\ldebug.c" />
+    <ClCompile Include="lua\ldo.c" />
+    <ClCompile Include="lua\ldump.c" />
+    <ClCompile Include="lua\lfunc.c" />
+    <ClCompile Include="lua\lgc.c" />
+    <ClCompile Include="lua\linit.c" />
+    <ClCompile Include="lua\liolib.c" />
+    <ClCompile Include="lua\llex.c" />
+    <ClCompile Include="lua\lmathlib.c" />
+    <ClCompile Include="lua\lmem.c" />
+    <ClCompile Include="lua\loadlib.c" />
+    <ClCompile Include="lua\lobject.c" />
+    <ClCompile Include="lua\lopcodes.c" />
+    <ClCompile Include="lua\loslib.c" />
+    <ClCompile Include="lua\lparser.c" />
+    <ClCompile Include="lua\lstate.c" />
+    <ClCompile Include="lua\lstring.c" />
+    <ClCompile Include="lua\lstrlib.c" />
+    <ClCompile Include="lua\ltable.c" />
+    <ClCompile Include="lua\ltablib.c" />
+    <ClCompile Include="lua\ltm.c" />
+    <ClCompile Include="lua\lundump.c" />
+    <ClCompile Include="lua\lutf8lib.c" />
+    <ClCompile Include="lua\lvm.c" />
+    <ClCompile Include="lua\lzio.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Button.cpp" />
-    <ClCompile Include="Cropper.cpp" />
-    <ClCompile Include="DropLocation.cpp" />
-    <ClCompile Include="Droppable.cpp" />
-    <ClCompile Include="EditableText.cpp" />
-    <ClCompile Include="GuiElement.cpp" />
-    <ClCompile Include="GuiMaster.cpp" />
-    <ClCompile Include="Image.cpp" />
-    <ClCompile Include="InstructionContext.cpp" />
-    <ClCompile Include="InstructionModel.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Draggable.cpp" />
-    <ClCompile Include="Instruction.cpp" />
-    <ClCompile Include="InstructionFamily.cpp" />
-    <ClCompile Include="PureDisplacer.cpp" />
-    <ClCompile Include="Window.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="bitflag.h" />
-    <ClInclude Include="Button.h" />
-    <ClInclude Include="Cropper.h" />
-    <ClInclude Include="Draggable.h" />
-    <ClInclude Include="DropLocation.h" />
-    <ClInclude Include="Droppable.h" />
-    <ClInclude Include="EditableText.h" />
-    <ClInclude Include="GuiElement.h" />
-    <ClInclude Include="GuiMaster.h" />
-    <ClInclude Include="Image.h" />
-    <ClInclude Include="InstructionContext.h" />
-    <ClInclude Include="InstructionModel.h" />
-    <ClInclude Include="Jammer.h" />
-    <ClInclude Include="Parameter.h" />
-    <ClInclude Include="PureDisplacer.h" />
-    <ClInclude Include="Rect.h" />
-    <ClInclude Include="Instruction.h" />
-    <ClInclude Include="InstructionFamily.h" />
-    <ClInclude Include="Window.h" />
+    <ClInclude Include="imconfig.h" />
+    <ClInclude Include="imgui.h" />
+    <ClInclude Include="imgui_impl_allegro5.h" />
+    <ClInclude Include="imgui_internal.h" />
+    <ClInclude Include="imstb_rectpack.h" />
+    <ClInclude Include="imstb_textedit.h" />
+    <ClInclude Include="imstb_truetype.h" />
+    <ClInclude Include="lua\lapi.h" />
+    <ClInclude Include="lua\lauxlib.h" />
+    <ClInclude Include="lua\lcode.h" />
+    <ClInclude Include="lua\lctype.h" />
+    <ClInclude Include="lua\ldebug.h" />
+    <ClInclude Include="lua\ldo.h" />
+    <ClInclude Include="lua\lfunc.h" />
+    <ClInclude Include="lua\lgc.h" />
+    <ClInclude Include="lua\ljumptab.h" />
+    <ClInclude Include="lua\llex.h" />
+    <ClInclude Include="lua\llimits.h" />
+    <ClInclude Include="lua\lmem.h" />
+    <ClInclude Include="lua\lobject.h" />
+    <ClInclude Include="lua\lopcodes.h" />
+    <ClInclude Include="lua\lopnames.h" />
+    <ClInclude Include="lua\lparser.h" />
+    <ClInclude Include="lua\lprefix.h" />
+    <ClInclude Include="lua\lstate.h" />
+    <ClInclude Include="lua\lstring.h" />
+    <ClInclude Include="lua\ltable.h" />
+    <ClInclude Include="lua\ltm.h" />
+    <ClInclude Include="lua\lua.h" />
+    <ClInclude Include="lua\lua.hpp" />
+    <ClInclude Include="lua\luaconf.h" />
+    <ClInclude Include="lua\lualib.h" />
+    <ClInclude Include="lua\lundump.h" />
+    <ClInclude Include="lua\lvm.h" />
+    <ClInclude Include="lua\lzio.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\proyecto\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets" Condition="Exists('..\proyecto\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" />
-    <Import Project="..\proyecto\packages\Allegro.5.2.7.1\build\native\Allegro.targets" Condition="Exists('..\proyecto\packages\Allegro.5.2.7.1\build\native\Allegro.targets')" />
-    <Import Project="..\proyecto\packages\glm.0.9.9.800\build\native\glm.targets" Condition="Exists('..\proyecto\packages\glm.0.9.9.800\build\native\glm.targets')" />
+    <Import Project="packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets" Condition="Exists('packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" />
+    <Import Project="packages\Allegro.5.2.7.1\build\native\Allegro.targets" Condition="Exists('packages\Allegro.5.2.7.1\build\native\Allegro.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>Ce projet fait référence à des packages NuGet qui sont manquants sur cet ordinateur. Utilisez l'option de restauration des packages NuGet pour les télécharger. Pour plus d'informations, consultez http://go.microsoft.com/fwlink/?LinkID=322105. Le fichier manquant est : {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\proyecto\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\proyecto\packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets'))" />
-    <Error Condition="!Exists('..\proyecto\packages\Allegro.5.2.7.1\build\native\Allegro.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\proyecto\packages\Allegro.5.2.7.1\build\native\Allegro.targets'))" />
-    <Error Condition="!Exists('..\proyecto\packages\glm.0.9.9.800\build\native\glm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\proyecto\packages\glm.0.9.9.800\build\native\glm.targets'))" />
+    <Error Condition="!Exists('packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets'))" />
+    <Error Condition="!Exists('packages\Allegro.5.2.7.1\build\native\Allegro.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Allegro.5.2.7.1\build\native\Allegro.targets'))" />
   </Target>
 </Project>

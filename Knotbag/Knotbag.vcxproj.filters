@@ -1,0 +1,258 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Fichiers sources">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Fichiers de ressources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Fichiers sources\imgui">
+      <UniqueIdentifier>{de19158a-717e-43eb-8b0c-c00edc80c1c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\lua">
+      <UniqueIdentifier>{42b5de96-f87e-4f80-99b3-50ea5dbf5972}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\imgui">
+      <UniqueIdentifier>{062dade5-61b8-4e51-943b-85ab0267bf5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\lua">
+      <UniqueIdentifier>{1f83649b-8fee-4fbc-9807-cbb08b6f6456}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Knotbag.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui.cpp">
+      <Filter>Fichiers sources\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_demo.cpp">
+      <Filter>Fichiers sources\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_draw.cpp">
+      <Filter>Fichiers sources\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_tables.cpp">
+      <Filter>Fichiers sources\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_widgets.cpp">
+      <Filter>Fichiers sources\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lapi.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lauxlib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lbaselib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lcode.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lcorolib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lctype.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ldblib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ldebug.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ldo.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ldump.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lfunc.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lgc.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\linit.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\liolib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\llex.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lmathlib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lmem.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\loadlib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lobject.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lopcodes.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\loslib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lparser.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lstate.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lstring.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lstrlib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ltable.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ltablib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ltm.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lundump.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lutf8lib.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lvm.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lzio.c">
+      <Filter>Fichiers sources\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl_allegro5.cpp">
+      <Filter>Fichiers sources\imgui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="imconfig.h">
+      <Filter>Fichiers d%27en-tête\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui.h">
+      <Filter>Fichiers d%27en-tête\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_internal.h">
+      <Filter>Fichiers d%27en-tête\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_rectpack.h">
+      <Filter>Fichiers d%27en-tête\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_textedit.h">
+      <Filter>Fichiers d%27en-tête\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_truetype.h">
+      <Filter>Fichiers d%27en-tête\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lapi.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lauxlib.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lcode.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lctype.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\ldebug.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\ldo.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lfunc.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lgc.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\ljumptab.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\llex.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\llimits.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lmem.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lobject.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lopcodes.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lopnames.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lparser.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lprefix.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lstate.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lstring.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\ltable.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\ltm.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lua.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lua.hpp">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\luaconf.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lualib.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lundump.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lvm.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lzio.h">
+      <Filter>Fichiers d%27en-tête\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_allegro5.h">
+      <Filter>Fichiers d%27en-tête\imgui</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
