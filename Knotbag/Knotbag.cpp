@@ -5,6 +5,10 @@
 #include "lua/lua.hpp"
 #include "lua/lualib.h"
 #include "lua/lauxlib.h"
+#include "TextEditor.h"
+#include <fstream>
+#include <sstream>
+#include "stdcapture.h"
 
 namespace DearImguiIntegration {
 	void Init(ALLEGRO_DISPLAY* display) {
@@ -113,6 +117,29 @@ int main()
 	// Dear Imgui
 	DearImguiIntegration::Init(display);
 
+	// Console
+	std::string capture;
+	std::capture::CaptureStdout capturer([&capture](const char* buf, size_t szbuf) {
+		capture += std::string(buf, szbuf);
+		});
+
+	std::cout << "This is a test" << std::endl;
+
+	// Text editor
+	TextEditor editor;
+	editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+
+	static const char* fileToEdit = "test.lua";
+	//	static const char* fileToEdit = "test.cpp";
+	{
+		std::ifstream t(fileToEdit);
+		if (t.good())
+		{
+			std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+			editor.SetText(str);
+		}
+	}
+
 	// lua
 	lua_State* L;
 	L = luaL_newstate();
@@ -139,15 +166,105 @@ int main()
 
 		DearImguiIntegration::NewFrame();
 
+		ImGui::ShowDemoWindow();
+
 		ImGui::Begin("Debug");
 		ImGui::Text("Hello, world %d", 123);
+		//ImGui::InputText("string", buf, IM_ARRAYSIZE(buf));
+		ImGui::SliderFloat("float", &ctest, 0.0f, 1.0f);
+		ImGui::End();
+
+		ImGui::Begin("Console");
+		if (ImGui::Button("Clear"))
+			capture.clear();
+		bool updated = capturer.flush();
+		ImGui::BeginChild("Console text");
+		ImGui::Text(capture.c_str());
+		if (updated)
+			ImGui::SetScrollHereY(1.0f);
+		ImGui::EndChild();
+		ImGui::End();
+
+		ImGui::Begin("Text Editor Demo", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
+		ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+
+		auto DoSave = [&editor]() {
+			auto textToSave = editor.GetText();
+			std::ofstream t(fileToEdit);
+			if (t.good()) { t << textToSave; }
+		};
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("Save", "Ctrl-S")) {
+					DoSave();
+				}
+				if (ImGui::MenuItem("Quit", "Alt-F4"))
+					break;
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Edit"))
+			{
+				bool ro = editor.IsReadOnly();
+				if (ImGui::MenuItem("Read-only mode", nullptr, &ro))
+					editor.SetReadOnly(ro);
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor.CanUndo()))
+					editor.Undo();
+				if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && editor.CanRedo()))
+					editor.Redo();
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor.HasSelection()))
+					editor.Copy();
+				if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && editor.HasSelection()))
+					editor.Cut();
+				if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor.HasSelection()))
+					editor.Delete();
+				if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr))
+					editor.Paste();
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Select all", nullptr, nullptr))
+					editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
+
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("View"))
+			{
+				if (ImGui::MenuItem("Dark palette"))
+					editor.SetPalette(TextEditor::GetDarkPalette());
+				if (ImGui::MenuItem("Light palette"))
+					editor.SetPalette(TextEditor::GetLightPalette());
+				if (ImGui::MenuItem("Retro blue palette"))
+					editor.SetPalette(TextEditor::GetRetroBluePalette());
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
+
 		if (ImGui::Button("Run test.lua")) {
 			if (luaL_dofile(L, "test.lua")) {
 				std::cout << lua_tostring(L, -1) << "\n";
 			}
 		}
-		//ImGui::InputText("string", buf, IM_ARRAYSIZE(buf));
-		ImGui::SliderFloat("float", &ctest, 0.0f, 1.0f);
+
+		auto cpos = editor.GetCursorPosition();
+		ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
+			editor.IsOverwrite() ? "Ovr" : "Ins",
+			editor.CanUndo() ? "*" : " ",
+			editor.GetLanguageDefinition().mName.c_str(), fileToEdit);
+
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S))) {
+			DoSave();
+		}
+		editor.Render("TextEditor");
 		ImGui::End();
 
 		al_clear_to_color(al_map_rgba_f(ctest, ctest, ctest, 1.0f));
