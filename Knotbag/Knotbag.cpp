@@ -3,12 +3,19 @@
 #include "imgui_impl_allegro5.h"
 #include <allegro5/allegro_primitives.h>
 #include "lua/lua.hpp"
-#include "lua/lualib.h"
-#include "lua/lauxlib.h"
 #include "TextEditor.h"
 #include <fstream>
 #include <sstream>
 #include "stdcapture.h"
+#include "imgui_lua_bindings.h"
+
+extern "C" int luaopen_lallegro_core(lua_State * L);
+
+thread_local ImGuiContext* MyImGuiTLS;
+
+static double last_loop_start = 0.0;
+static bool kill_lua = false;
+static ALLEGRO_MUTEX* mutex;
 
 namespace DearImguiIntegration {
 	void Init(ALLEGRO_DISPLAY* display) {
@@ -55,6 +62,96 @@ namespace DearImguiIntegration {
 		ImGui_ImplAllegro5_Shutdown();
 		ImGui::DestroyContext();
 	}
+}
+
+static void* lua_monitoring(ALLEGRO_THREAD* thread, void* arg) {
+	ALLEGRO_DISPLAY* display = al_create_display(280, 420);
+	if (!display) {
+		fprintf(stderr, "failed to create display!\n");
+		return (void*)1;
+	}
+
+	ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
+	if (!eventQueue) {
+		fprintf(stderr, "failed to create event queue!\n");
+		return (void*)1;
+	};
+
+	al_register_event_source(eventQueue, al_get_display_event_source(display));
+	al_register_event_source(eventQueue, al_get_keyboard_event_source());
+	al_register_event_source(eventQueue, al_get_mouse_event_source());
+
+	// Dear Imgui
+	DearImguiIntegration::Init(display);
+
+	// time management
+	double lastTime = al_get_time();
+	double dtTarget = 1.0 / 60.0;
+
+	bool stayOpen = true;
+	float ctest = 0;
+	while (stayOpen) {
+		double time = al_get_time();
+
+		ALLEGRO_EVENT event;
+		while (al_get_next_event(eventQueue, &event)) {
+			if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+				stayOpen = false;
+			}
+			else if (!DearImguiIntegration::Event(event)) {
+				// other events
+			}
+		}
+		if (al_get_thread_should_stop(thread)) {
+			stayOpen = false;
+		}
+
+		DearImguiIntegration::NewFrame();
+
+		ImGui::Begin("Debug");
+
+		al_lock_mutex(mutex);
+		ImGui::Text("Last time loop started %f", last_loop_start);
+		if (ImGui::Button("Kill current lua script")) {
+			kill_lua = true;
+		}
+		al_unlock_mutex(mutex);
+
+		//ImGui::InputText("string", buf, IM_ARRAYSIZE(buf));
+		ImGui::SliderFloat("float", &ctest, 0.0f, 1.0f);
+		ImGui::End();
+
+		al_clear_to_color(al_map_rgba_f(ctest, ctest, ctest, 1.0f));
+
+		DearImguiIntegration::Render();
+
+		al_flip_display();
+
+		double elapsed = al_get_time() - time;
+
+		if (elapsed < dtTarget) {
+			al_rest(dtTarget - elapsed);
+		}
+	}
+
+	DearImguiIntegration::Destroy();
+
+	if (display) { al_destroy_display(display); }
+	if (eventQueue) { al_destroy_event_queue(eventQueue); }
+
+	return nullptr;
+}
+
+void lua_monitoring_hook(lua_State* L, lua_Debug* ar) {
+	al_lock_mutex(mutex);
+	if (kill_lua) {
+		kill_lua = false;
+		al_unlock_mutex(mutex);
+		lua_pushfstring(L, "Lua script killed from debugger");
+		lua_error(L); // never returns
+		return; // I'm explicit about this anyway
+	}
+	al_unlock_mutex(mutex);
 }
 
 int main()
@@ -123,8 +220,6 @@ int main()
 		capture += std::string(buf, szbuf);
 		});
 
-	std::cout << "This is a test" << std::endl;
-
 	// Text editor
 	TextEditor editor;
 	editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
@@ -144,6 +239,14 @@ int main()
 	lua_State* L;
 	L = luaL_newstate();
 	luaL_openlibs(L);
+	LoadImguiBindings(L);
+	luaopen_lallegro_core(L);
+	lua_sethook(L, lua_monitoring_hook, LUA_MASKCOUNT, 100);
+
+	// lua monitoring thread
+	mutex = al_create_mutex();
+	ALLEGRO_THREAD* thread = al_create_thread(lua_monitoring, NULL);
+	al_start_thread(thread);
 
 	// time management
 	double lastTime = al_get_time();
@@ -153,6 +256,10 @@ int main()
 	float ctest = 0;
 	while (stayOpen) {
 		double time = al_get_time();
+
+		al_lock_mutex(mutex);
+		last_loop_start = time;
+		al_unlock_mutex(mutex);
 
 		ALLEGRO_EVENT event;
 		while (al_get_next_event(eventQueue, &event)) {
@@ -279,6 +386,10 @@ int main()
 			al_rest(dtTarget - elapsed);
 		}
 	}
+
+	al_join_thread(thread, nullptr);
+	al_destroy_thread(thread);
+	al_destroy_mutex(mutex);
 
 	lua_close(L);
 

@@ -1,6 +1,15 @@
 print("hello la mif")
-for i = 1,3 do
-	print(tostring(i))
+
+t = al.get_time()
+print(t)
+
+if test == nil then
+	test = 0
+	print("test created")
+else
+	print("test exists")
+	test = nil
 end
 
-print("Bon")
+while true do
+end

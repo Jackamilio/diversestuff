@@ -116,7 +116,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;STATIC_LINKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -145,9 +145,11 @@
     <ClCompile Include="imgui_demo.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
     <ClCompile Include="imgui_impl_allegro5.cpp" />
+    <ClCompile Include="imgui_lua_bindings.cpp" />
     <ClCompile Include="imgui_tables.cpp" />
     <ClCompile Include="imgui_widgets.cpp" />
     <ClCompile Include="Knotbag.cpp" />
+    <ClCompile Include="lallegro.c" />
     <ClCompile Include="lua\lapi.c" />
     <ClCompile Include="lua\lauxlib.c" />
     <ClCompile Include="lua\lbaselib.c" />
@@ -183,6 +185,7 @@
     <ClCompile Include="TextEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="imgui_iterator.inl" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -190,6 +193,7 @@
     <ClInclude Include="imgui.h" />
     <ClInclude Include="imgui_impl_allegro5.h" />
     <ClInclude Include="imgui_internal.h" />
+    <ClInclude Include="imgui_lua_bindings.h" />
     <ClInclude Include="imstb_rectpack.h" />
     <ClInclude Include="imstb_textedit.h" />
     <ClInclude Include="imstb_truetype.h" />
