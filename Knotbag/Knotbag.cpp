@@ -1,5 +1,6 @@
 #include <iostream>
 #include <allegro5/allegro5.h>
+#include <allegro5/allegro_image.h>
 #include "imgui_impl_allegro5.h"
 #include <allegro5/allegro_primitives.h>
 #include "lua/lua.hpp"
@@ -8,6 +9,8 @@
 #include <sstream>
 #include "stdcapture.h"
 #include "imgui_lua_bindings.h"
+#include "ImFileDialog.h"
+#include <objbase.h>
 
 extern "C" int luaopen_lallegro_core(lua_State * L);
 
@@ -159,6 +162,8 @@ void lua_monitoring_hook(lua_State* L, lua_Debug* ar) {
 
 int main()
 {
+	CoInitialize(nullptr); // ImFileDialog needs this if we don't want the debug output complaining
+
 	// Init allegro
 	if (!al_install_system(ALLEGRO_VERSION_INT, nullptr)) {
 		fprintf(stderr, "failed to initialize allegro!\n");
@@ -180,10 +185,10 @@ int main()
 		return false;
 	}
 
-//	if (!al_init_image_addon()) {
-//		fprintf(stderr, "failed to load image addon!\n");
-//		return false;
-//	}
+	if (!al_init_image_addon()) {
+		fprintf(stderr, "failed to load image addon!\n");
+		return false;
+	}
 
 //	if (!al_init_font_addon()) {
 //		fprintf(stderr, "failed to load font addon!\n");
@@ -222,6 +227,19 @@ int main()
 	std::capture::CaptureStdout capturer([&capture](const char* buf, size_t szbuf) {
 		capture += std::string(buf, szbuf);
 		});
+
+	// File Dialog
+	ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
+		ALLEGRO_BITMAP* bmp = al_create_bitmap(w, h);
+		ALLEGRO_LOCKED_REGION* lr = al_lock_bitmap(bmp, (fmt == 0) ? ALLEGRO_PIXEL_FORMAT_ARGB_8888 : ALLEGRO_PIXEL_FORMAT_ABGR_8888, ALLEGRO_LOCK_WRITEONLY);
+		memcpy(lr->data, data, w * h * lr->pixel_size); // I mostly ignore lr, will it work?
+		al_unlock_bitmap(bmp);
+		return (void*)bmp;
+	};
+	std::vector<ALLEGRO_BITMAP*> bitmaps_to_destroy;
+	ifd::FileDialog::Instance().DeleteTexture = [&bitmaps_to_destroy](void* tex) {
+		bitmaps_to_destroy.push_back((ALLEGRO_BITMAP*)tex);
+	};
 
 	// Text editor
 	TextEditor editor;
@@ -285,6 +303,19 @@ int main()
 			ImGui::SetScrollHereY(1.0f);
 		ImGui::EndChild();
 		ImGui::End();
+
+		ImGui::Begin("Test file");
+		if (ImGui::Button("Open a texture"))
+			ifd::FileDialog::Instance().Open("TextureOpenDialog", "Open a texture", "Image file (*.png;*.jpg;*.jpeg;*.bmp;*.tga){.png,.jpg,.jpeg,.bmp,.tga},.*");
+		ImGui::End();
+
+		if (ifd::FileDialog::Instance().IsDone("TextureOpenDialog")) {
+			if (ifd::FileDialog::Instance().HasResult()) {
+				std::string res = ifd::FileDialog::Instance().GetResult().u8string();
+				printf("OPEN[%s]\n", res.c_str());
+			}
+			ifd::FileDialog::Instance().Close();
+		}
 
 		ImGui::Begin("Text Editor Demo", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
 		ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
@@ -387,12 +418,20 @@ int main()
 
 		al_flip_display();
 
+		for (auto bmp : bitmaps_to_destroy) {
+			al_destroy_bitmap(bmp);
+		}
+		bitmaps_to_destroy.clear();
+
 		double elapsed = al_get_time() - time;
 
 		if (elapsed < dtTarget) {
 			al_rest(dtTarget - elapsed);
 		}
 	}
+
+	// Memory leaks happen if we don't do this and the dialog is open while we close everything
+	ifd::FileDialog::Instance().Close();
 
 	al_join_thread(thread, nullptr);
 	al_destroy_thread(thread);
@@ -406,15 +445,5 @@ int main()
 	if (eventQueue) { al_destroy_event_queue(eventQueue); }
 
 	al_uninstall_system();
+	CoUninitialize(); // see CoInitialize at the top of main
 }
-
-// Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage
-// Déboguer le programme : F5 ou menu Déboguer > Démarrer le débogage
-
-// Astuces pour bien démarrer : 
-//   1. Utilisez la fenêtre Explorateur de solutions pour ajouter des fichiers et les gérer.
-//   2. Utilisez la fenêtre Team Explorer pour vous connecter au contrôle de code source.
-//   3. Utilisez la fenêtre Sortie pour voir la sortie de la génération et d'autres messages.
-//   4. Utilisez la fenêtre Liste d'erreurs pour voir les erreurs.
-//   5. Accédez à Projet > Ajouter un nouvel élément pour créer des fichiers de code, ou à Projet > Ajouter un élément existant pour ajouter des fichiers de code existants au projet.
-//   6. Pour rouvrir ce projet plus tard, accédez à Fichier > Ouvrir > Projet et sélectionnez le fichier .sln.

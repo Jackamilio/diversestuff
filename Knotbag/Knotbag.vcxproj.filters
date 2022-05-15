@@ -153,6 +153,9 @@
     <ClCompile Include="TextEditor.cpp">
       <Filter>Fichiers sources\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="ImFileDialog.cpp">
+      <Filter>Fichiers sources\imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -274,6 +277,9 @@
     </ClInclude>
     <ClInclude Include="imgui_lua_bindings.h">
       <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="ImFileDialog.h">
+      <Filter>Fichiers d%27en-tête\imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
