@@ -132,7 +132,7 @@ void ImGui_ImplAllegro5_RenderDrawData(ImDrawData* draw_data)
 
         // Allegro's implementation of al_draw_indexed_prim() for DX9 is completely broken. Unindex our buffers ourselves.
         // FIXME-OPT: Unfortunately Allegro doesn't support 32-bit packed colors so we have to convert them to 4 float as well..
-        static ImVector<ImDrawVertAllegro> vertices;
+        static thread_local ImVector<ImDrawVertAllegro> vertices;
         vertices.resize(cmd_list->IdxBuffer.Size);
         for (int i = 0; i < cmd_list->IdxBuffer.Size; i++)
         {
@@ -149,7 +149,7 @@ void ImGui_ImplAllegro5_RenderDrawData(ImDrawData* draw_data)
         {
             // FIXME-OPT: Unfortunately Allegro doesn't support 16-bit indices.. You can '#define ImDrawIdx int' in imconfig.h to request Dear ImGui to output 32-bit indices.
             // Otherwise, we convert them from 16-bit to 32-bit at runtime here, which works perfectly but is a little wasteful.
-            static ImVector<int> indices_converted;
+            static thread_local ImVector<int> indices_converted;
             indices_converted.resize(cmd_list->IdxBuffer.Size);
             for (int i = 0; i < cmd_list->IdxBuffer.Size; ++i)
                 indices_converted[i] = (int)cmd_list->IdxBuffer.Data[i];

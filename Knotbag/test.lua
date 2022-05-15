@@ -1,15 +1,12 @@
-print("hello la mif")
+cont = true;
 
-t = al.get_time()
-print(t)
-
-if test == nil then
-	test = 0
-	print("test created")
-else
-	print("test exists")
-	test = nil
+show, cont = imgui.Begin("Hello", cont)
+if show then
+	imgui.TextUnformatted("Boop bip bap bup")
+	if imgui.SmallButton("Test") then
+		cont = false
+	end
 end
+imgui.End()
 
-while true do
-end
+return cont

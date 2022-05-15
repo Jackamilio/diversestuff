@@ -17,6 +17,9 @@ static double last_loop_start = 0.0;
 static bool kill_lua = false;
 static ALLEGRO_MUTEX* mutex;
 
+static std::vector<std::string> lua_scripts[2];
+static int current_lua_scripts = 0;
+
 namespace DearImguiIntegration {
 	void Init(ALLEGRO_DISPLAY* display) {
 		// Setup Dear ImGui context
@@ -239,7 +242,7 @@ int main()
 	lua_State* L;
 	L = luaL_newstate();
 	luaL_openlibs(L);
-	LoadImguiBindings(L);
+	ImGui::LuaBindings::Load(L);
 	luaopen_lallegro_core(L);
 	lua_sethook(L, lua_monitoring_hook, LUA_MASKCOUNT, 100);
 
@@ -356,9 +359,7 @@ int main()
 		}
 
 		if (ImGui::Button("Run test.lua")) {
-			if (luaL_dofile(L, "test.lua")) {
-				std::cout << lua_tostring(L, -1) << "\n";
-			}
+			lua_scripts[current_lua_scripts].push_back("test.lua");
 		}
 
 		auto cpos = editor.GetCursorPosition();
@@ -375,6 +376,21 @@ int main()
 		ImGui::End();
 
 		al_clear_to_color(al_map_rgba_f(ctest, ctest, ctest, 1.0f));
+
+		const int next_scripts = (current_lua_scripts + 1) % 2;
+		for (auto script : lua_scripts[current_lua_scripts]) {
+			if (luaL_dofile(L, script.c_str())) {
+				std::cout << lua_tostring(L, -1) << "\n";
+			}
+			else if (lua_isboolean(L, -1)) {
+				if (lua_toboolean(L, -1)) {
+					lua_scripts[next_scripts].push_back(script);
+				}
+			}
+			ImGui::LuaBindings::CleanEndStack();
+		}
+		lua_scripts[current_lua_scripts].clear();
+		current_lua_scripts = next_scripts;
 
 		DearImguiIntegration::Render();
 

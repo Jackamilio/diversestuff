@@ -2,4 +2,9 @@
 
 #include "lua/lua.hpp"
 
-void LoadImguiBindings(lua_State* lState);
+namespace ImGui {
+	namespace LuaBindings {
+		void Load(lua_State* lState);
+		void CleanEndStack();
+	}
+}

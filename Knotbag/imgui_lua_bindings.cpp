@@ -10,7 +10,7 @@
 
 
 
-// define ENABLE_IM_LUA_END_STACK
+#define ENABLE_IM_LUA_END_STACK
 // to keep track of end and begins and clean up the imgui stack
 // if lua errors
 
@@ -32,7 +32,6 @@ static void PopEndStack(int type) {
 }
 
 static void ImEndStack(int type);
-
 #endif
 
 // Example lua run string function
@@ -494,10 +493,21 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
   lua_rawset(lState, -3);
 };
 
-
-void LoadImguiBindings(lua_State* lState) {
-  lua_newtable(lState);
-  luaL_setfuncs(lState, imguilib, 0);
-  PushImguiEnums(lState, "constant");
-  lua_setglobal(lState, "imgui");
+namespace ImGui {
+    namespace LuaBindings {
+        void Load(lua_State* lState) {
+            lua_newtable(lState);
+            luaL_setfuncs(lState, imguilib, 0);
+            PushImguiEnums(lState, "constant");
+            lua_setglobal(lState, "imgui");
+        }
+        void CleanEndStack() {
+#ifdef ENABLE_IM_LUA_END_STACK
+            while (!endStack.empty()) {
+                ImEndStack(endStack.back());
+                endStack.pop_back();
+            }
+#endif
+        }
+    }
 }
