@@ -144,14 +144,14 @@
     <ClCompile Include="imgui_impl_allegro5.cpp">
       <Filter>Fichiers sources\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="TextEditor.cpp">
-      <Filter>Fichiers d%27en-tête\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="imgui_lua_bindings.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="lallegro.c">
       <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="TextEditor.cpp">
+      <Filter>Fichiers sources\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

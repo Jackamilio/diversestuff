@@ -494,8 +494,27 @@ bool ImGui_ImplAllegro5_ProcessEvent(ALLEGRO_EVENT* ev)
         return true;
     case ALLEGRO_EVENT_KEY_CHAR:
         if (ev->keyboard.display == bd->Display)
-            if (ev->keyboard.unichar != 0)
-                io.AddInputCharacter((unsigned int)ev->keyboard.unichar);
+            if (ev->keyboard.unichar != 0) {
+                unsigned int c = (unsigned int)ev->keyboard.unichar;
+                // HACKY AS HELL, ONLY FOR FRENCH, COULDN'T BE BOTHERED TO FIX ALLEGRO
+                const int mods = ev->keyboard.modifiers;
+                if ((mods & ALLEGRO_KEYMOD_ALTGR) || ((mods & ALLEGRO_KEYMOD_CTRL) && (mods & ALLEGRO_KEYMOD_ALT))) {
+                    switch (c) {
+                    case ((unsigned char)'é'): c = '~'; break;
+                    case '"': c = '#'; break;
+                    case '\'': c = '{'; break;
+                    case '(': c = '['; break;
+                    case '-': c = '|'; break;
+                    case ((unsigned char)'è'): c = '`'; break;
+                    case '_': c = '\\'; break;
+                    case 'à': c = '@'; break;
+                    case 'ç': c = '^'; break;
+                    case ')': c = ']'; break;
+                    case '=': c = '}'; break;
+                    }
+                }
+                io.AddInputCharacter(c);
+            }
         return true;
     case ALLEGRO_EVENT_KEY_DOWN:
     case ALLEGRO_EVENT_KEY_UP:

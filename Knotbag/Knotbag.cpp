@@ -256,7 +256,6 @@ int main()
 	double dtTarget = 1.0 / 60.0;
 
 	bool stayOpen = true;
-	float ctest = 0;
 	while (stayOpen) {
 		double time = al_get_time();
 
@@ -275,14 +274,6 @@ int main()
 		}
 
 		DearImguiIntegration::NewFrame();
-
-		ImGui::ShowDemoWindow();
-
-		ImGui::Begin("Debug");
-		ImGui::Text("Hello, world %d", 123);
-		//ImGui::InputText("string", buf, IM_ARRAYSIZE(buf));
-		ImGui::SliderFloat("float", &ctest, 0.0f, 1.0f);
-		ImGui::End();
 
 		ImGui::Begin("Console");
 		if (ImGui::Button("Clear"))
@@ -375,7 +366,7 @@ int main()
 		editor.Render("TextEditor");
 		ImGui::End();
 
-		al_clear_to_color(al_map_rgba_f(ctest, ctest, ctest, 1.0f));
+		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
 
 		const int next_scripts = (current_lua_scripts + 1) % 2;
 		for (auto script : lua_scripts[current_lua_scripts]) {
