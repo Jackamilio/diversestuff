@@ -241,20 +241,8 @@ int main()
 		bitmaps_to_destroy.push_back((ALLEGRO_BITMAP*)tex);
 	};
 
-	// Text editor
-	TextEditor editor;
-	editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
-
-	static const char* fileToEdit = "test.lua";
-	//	static const char* fileToEdit = "test.cpp";
-	{
-		std::ifstream t(fileToEdit);
-		if (t.good())
-		{
-			std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-			editor.SetText(str);
-		}
-	}
+	// Text editors
+	std::unordered_map<std::string, TextEditor*> lua_editors;
 
 	// lua
 	lua_State* L;
@@ -268,6 +256,10 @@ int main()
 	mutex = al_create_mutex();
 	ALLEGRO_THREAD* thread = al_create_thread(lua_monitoring, NULL);
 	al_start_thread(thread);
+
+	// gui stuff
+	bool win_demo = false;
+	bool win_console = true;
 
 	// time management
 	double lastTime = al_get_time();
@@ -293,109 +285,161 @@ int main()
 
 		DearImguiIntegration::NewFrame();
 
-		ImGui::Begin("Console");
-		if (ImGui::Button("Clear"))
-			capture.clear();
-		bool updated = capturer.flush();
-		ImGui::BeginChild("Console text");
-		ImGui::Text(capture.c_str());
-		if (updated)
-			ImGui::SetScrollHereY(1.0f);
-		ImGui::EndChild();
-		ImGui::End();
+		ifd::FileDialog& fileDialog = ifd::FileDialog::Instance();
 
-		ImGui::Begin("Test file");
-		if (ImGui::Button("Open a texture"))
-			ifd::FileDialog::Instance().Open("TextureOpenDialog", "Open a texture", "Image file (*.png;*.jpg;*.jpeg;*.bmp;*.tga){.png,.jpg,.jpeg,.bmp,.tga},.*");
-		ImGui::End();
-
-		if (ifd::FileDialog::Instance().IsDone("TextureOpenDialog")) {
-			if (ifd::FileDialog::Instance().HasResult()) {
-				std::string res = ifd::FileDialog::Instance().GetResult().u8string();
-				printf("OPEN[%s]\n", res.c_str());
+		if (ImGui::BeginMainMenuBar()) {
+			if (ImGui::MenuItem("Open", nullptr)) {
+				fileDialog.Open("FileOpenDialog", "Open a file", ",.*");
 			}
-			ifd::FileDialog::Instance().Close();
+			ImGui::MenuItem("Console", nullptr, &win_console);
+			ImGui::MenuItem("Demo", nullptr, &win_demo);
+			ImGui::EndMainMenuBar();
 		}
 
-		ImGui::Begin("Text Editor Demo", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
-		ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+		if (fileDialog.IsDone("FileOpenDialog")) {
+			if (fileDialog.HasResult()) {
+				std::string ext = fileDialog.GetResult().extension().u8string();
+				for (auto& c : ext) { c = std::tolower(c); } //lowercase
+				if (ext == ".lua") {
+					const std::string& res = fileDialog.GetResult().u8string();
+					if (lua_editors.find(res) == lua_editors.end()) {
+						std::cout << "Now opening " << res << std::endl;
 
-		auto DoSave = [&editor]() {
-			auto textToSave = editor.GetText();
-			std::ofstream t(fileToEdit);
-			if (t.good()) { t << textToSave; }
-		};
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("File"))
-			{
-				if (ImGui::MenuItem("Save", "Ctrl-S")) {
-					DoSave();
+						std::ifstream t(res);
+						if (t.good())
+						{
+							TextEditor* te = new TextEditor;
+							te->SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+							std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+							te->SetText(str);
+							lua_editors[res] = te;
+						}
+						else {
+							std::cout << "Something went wrong, couldn't open \"" << res << '\"' << std::endl;
+						}
+					}
+					else {
+						std::cout << res << " is already opened!" << std::endl;
+					}
 				}
-				if (ImGui::MenuItem("Quit", "Alt-F4"))
-					break;
-				ImGui::EndMenu();
+				else {
+					std::cout << "File type \"" << ext << "\" not supported." << std::endl;
+				}
 			}
-			if (ImGui::BeginMenu("Edit"))
-			{
-				bool ro = editor.IsReadOnly();
-				if (ImGui::MenuItem("Read-only mode", nullptr, &ro))
-					editor.SetReadOnly(ro);
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor.CanUndo()))
-					editor.Undo();
-				if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && editor.CanRedo()))
-					editor.Redo();
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor.HasSelection()))
-					editor.Copy();
-				if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && editor.HasSelection()))
-					editor.Cut();
-				if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor.HasSelection()))
-					editor.Delete();
-				if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr))
-					editor.Paste();
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Select all", nullptr, nullptr))
-					editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
-
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("View"))
-			{
-				if (ImGui::MenuItem("Dark palette"))
-					editor.SetPalette(TextEditor::GetDarkPalette());
-				if (ImGui::MenuItem("Light palette"))
-					editor.SetPalette(TextEditor::GetLightPalette());
-				if (ImGui::MenuItem("Retro blue palette"))
-					editor.SetPalette(TextEditor::GetRetroBluePalette());
-				ImGui::EndMenu();
-			}
-			ImGui::EndMenuBar();
+			fileDialog.Close();
 		}
 
-		if (ImGui::Button("Run test.lua")) {
-			lua_scripts[current_lua_scripts].push_back("test.lua");
+		if (win_demo) {
+			ImGui::ShowDemoWindow(&win_demo);
 		}
 
-		auto cpos = editor.GetCursorPosition();
-		ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
-			editor.IsOverwrite() ? "Ovr" : "Ins",
-			editor.CanUndo() ? "*" : " ",
-			editor.GetLanguageDefinition().mName.c_str(), fileToEdit);
-
-		ImGuiIO& io = ImGui::GetIO();
-		if (io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S))) {
-			DoSave();
+		if (win_console) {
+			if (ImGui::Begin("Console", &win_console)) {
+				if (ImGui::Button("Clear"))
+					capture.clear();
+				bool updated = capturer.flush();
+				ImGui::BeginChild("Console text");
+				ImGui::Text(capture.c_str());
+				if (updated)
+					ImGui::SetScrollHereY(1.0f);
+				ImGui::EndChild();
+				ImGui::End();
+			}
 		}
-		editor.Render("TextEditor");
-		ImGui::End();
+
+		for (auto it = lua_editors.begin(); it != lua_editors.end();) {
+			bool is_opened = true;
+			const std::string& file = it->first;
+			bool incrementIt = true;
+			if (ImGui::Begin(file.c_str(), &is_opened, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar)) {
+				if (!is_opened) {
+					delete it->second;
+					it = lua_editors.erase(it);
+					incrementIt = false;
+				}
+				else {
+					TextEditor& editor = *it->second;
+					ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+
+					auto DoSave = [](TextEditor& editor, const std::string& file) {
+						auto textToSave = editor.GetText();
+						std::ofstream t(file);
+						if (t.good()) { t << textToSave; }
+					};
+					if (ImGui::BeginMenuBar())
+					{
+						if (ImGui::BeginMenu("File"))
+						{
+							if (ImGui::MenuItem("Save", "Ctrl-S")) {
+								DoSave(editor, file);
+							}
+							if (ImGui::MenuItem("Quit", "Alt-F4"))
+								break;
+							ImGui::EndMenu();
+						}
+						if (ImGui::BeginMenu("Edit"))
+						{
+							bool ro = editor.IsReadOnly();
+							if (ImGui::MenuItem("Read-only mode", nullptr, &ro))
+								editor.SetReadOnly(ro);
+							ImGui::Separator();
+
+							if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor.CanUndo()))
+								editor.Undo();
+							if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && editor.CanRedo()))
+								editor.Redo();
+
+							ImGui::Separator();
+
+							if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor.HasSelection()))
+								editor.Copy();
+							if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && editor.HasSelection()))
+								editor.Cut();
+							if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor.HasSelection()))
+								editor.Delete();
+							if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr))
+								editor.Paste();
+
+							ImGui::Separator();
+
+							if (ImGui::MenuItem("Select all", nullptr, nullptr))
+								editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
+
+							ImGui::EndMenu();
+						}
+
+						if (ImGui::BeginMenu("View"))
+						{
+							if (ImGui::MenuItem("Dark palette"))
+								editor.SetPalette(TextEditor::GetDarkPalette());
+							if (ImGui::MenuItem("Light palette"))
+								editor.SetPalette(TextEditor::GetLightPalette());
+							if (ImGui::MenuItem("Retro blue palette"))
+								editor.SetPalette(TextEditor::GetRetroBluePalette());
+							ImGui::EndMenu();
+						}
+						ImGui::EndMenuBar();
+					}
+
+					if (ImGui::Button("Run this file")) {
+						lua_scripts[current_lua_scripts].push_back(file);
+					}
+
+					auto cpos = editor.GetCursorPosition();
+					ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
+						editor.IsOverwrite() ? "Ovr" : "Ins",
+						editor.CanUndo() ? "*" : " ",
+						editor.GetLanguageDefinition().mName.c_str(), file);
+
+					if (ImGui::IsWindowFocused() && ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S))) {
+						DoSave(editor, file);
+					}
+					editor.Render("TextEditor");
+				}
+			}
+			if (incrementIt) ++it;
+			ImGui::End();
+		}
 
 		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
 
