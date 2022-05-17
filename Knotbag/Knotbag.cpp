@@ -20,7 +20,8 @@ static double last_loop_start = 0.0;
 static bool kill_lua = false;
 static ALLEGRO_MUTEX* mutex;
 
-static std::vector<std::string> lua_scripts[2];
+typedef std::pair<std::string, bool> Script;
+static std::vector<Script> lua_scripts[2];
 static int current_lua_scripts = 0;
 
 namespace DearImguiIntegration {
@@ -242,7 +243,8 @@ int main()
 	};
 
 	// Text editors
-	std::unordered_map<std::string, TextEditor*> lua_editors;
+	std::unordered_map<std::string, std::pair<TextEditor*, bool>> lua_editors;
+	std::pair<std::string, TextEditor*> editor_saving_as("", nullptr);
 
 	// lua
 	lua_State* L;
@@ -260,6 +262,7 @@ int main()
 	// gui stuff
 	bool win_demo = false;
 	bool win_console = true;
+	bool win_scripts = true;
 
 	// time management
 	double lastTime = al_get_time();
@@ -288,15 +291,35 @@ int main()
 		ifd::FileDialog& fileDialog = ifd::FileDialog::Instance();
 
 		if (ImGui::BeginMainMenuBar()) {
-			if (ImGui::MenuItem("Open", nullptr)) {
-				fileDialog.Open("FileOpenDialog", "Open a file", ",.*");
+			if (ImGui::BeginMenu("File")) {
+				if (ImGui::MenuItem("New")) {
+					std::string newfilename = "New lua script ";
+					if (lua_editors.find(newfilename) != lua_editors.end()) {
+						int newnew = 1;
+						while (lua_editors.find(newfilename + std::to_string(newnew++)) != lua_editors.end());
+						newfilename += std::to_string(--newnew);
+					}
+					TextEditor* te = new TextEditor;
+					te->SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+					lua_editors[newfilename] = std::make_pair(te, true);
+				}
+				if (ImGui::MenuItem("Open")) {
+					fileDialog.Open("MultiPurposeOpen", "Open a file", "Lua script (*.lua){.lua},.*");
+				}
+				ImGui::EndMenu();
 			}
-			ImGui::MenuItem("Console", nullptr, &win_console);
-			ImGui::MenuItem("Demo", nullptr, &win_demo);
+
+			if (ImGui::BeginMenu("Windows")) {
+				ImGui::MenuItem("Console", nullptr, &win_console);
+				ImGui::MenuItem("Demo", nullptr, &win_demo);
+				ImGui::MenuItem("Scripts", nullptr, &win_scripts);
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMainMenuBar();
 		}
 
-		if (fileDialog.IsDone("FileOpenDialog")) {
+		if (fileDialog.IsDone("MultiPurposeOpen")) {
 			if (fileDialog.HasResult()) {
 				std::string ext = fileDialog.GetResult().extension().u8string();
 				for (auto& c : ext) { c = std::tolower(c); } //lowercase
@@ -312,7 +335,7 @@ int main()
 							te->SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
 							std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 							te->SetText(str);
-							lua_editors[res] = te;
+							lua_editors[res] = std::make_pair(te, false);
 						}
 						else {
 							std::cout << "Something went wrong, couldn't open \"" << res << '\"' << std::endl;
@@ -343,38 +366,81 @@ int main()
 				if (updated)
 					ImGui::SetScrollHereY(1.0f);
 				ImGui::EndChild();
-				ImGui::End();
 			}
+			ImGui::End();
 		}
+
+		if (win_scripts) {
+			if (ImGui::Begin("Scripts", &win_scripts)) {
+				std::vector<Script>& cur_scripts = lua_scripts[current_lua_scripts];
+				if (ImGui::Button("Kill selected")) {
+					for (auto it = cur_scripts.begin(); it != cur_scripts.end();) {
+						if (it->second) {
+							it = cur_scripts.erase(it);
+						}
+						else {
+							++it;
+						}
+					}
+				}
+				int i = 0;
+				for (auto& script : cur_scripts) {
+					ImGui::PushID(i++);
+					if (ImGui::Selectable(script.first.c_str(), script.second))
+					{
+						script.second ^= 1;
+					}
+					ImGui::PopID();
+				}
+			}
+			ImGui::End();
+		}
+
+		auto EditorSaveFile = [&fileDialog, &editor_saving_as](TextEditor& editor, const std::string& file, bool saveas) {
+			if (saveas) {
+				fileDialog.Save("SaveLuaScriptAs", "Save the script", "Lua script (*.lua){.lua}");
+				editor_saving_as.first = file;
+				editor_saving_as.second = &editor;
+			}
+			else {
+				auto textToSave = editor.GetText();
+				std::ofstream t(file);
+				if (t.good()) {
+					t << textToSave;
+					return true;
+				}
+			}
+			return false;
+		};
 
 		for (auto it = lua_editors.begin(); it != lua_editors.end();) {
 			bool is_opened = true;
 			const std::string& file = it->first;
-			bool incrementIt = true;
+			bool wants_quit = false;
 			if (ImGui::Begin(file.c_str(), &is_opened, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar)) {
 				if (!is_opened) {
-					delete it->second;
-					it = lua_editors.erase(it);
-					incrementIt = false;
+					wants_quit = true;
 				}
 				else {
-					TextEditor& editor = *it->second;
+					TextEditor& editor = *it->second.first;
 					ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
 
-					auto DoSave = [](TextEditor& editor, const std::string& file) {
-						auto textToSave = editor.GetText();
-						std::ofstream t(file);
-						if (t.good()) { t << textToSave; }
-					};
 					if (ImGui::BeginMenuBar())
 					{
 						if (ImGui::BeginMenu("File"))
 						{
 							if (ImGui::MenuItem("Save", "Ctrl-S")) {
-								DoSave(editor, file);
+								EditorSaveFile(editor, file, it->second.second);
 							}
-							if (ImGui::MenuItem("Quit", "Alt-F4"))
-								break;
+							if (ImGui::MenuItem("Save as")) {
+								EditorSaveFile(editor, file, true);
+							}
+							if (ImGui::MenuItem("Run", "Ctrl-R")) {
+								lua_scripts[current_lua_scripts].push_back(Script(file, false));
+							}
+							if (ImGui::MenuItem("Quit", "Ctrl-Q")) {
+								wants_quit = true;
+							}
 							ImGui::EndMenu();
 						}
 						if (ImGui::BeginMenu("Edit"))
@@ -418,34 +484,65 @@ int main()
 								editor.SetPalette(TextEditor::GetRetroBluePalette());
 							ImGui::EndMenu();
 						}
+
 						ImGui::EndMenuBar();
 					}
 
-					if (ImGui::Button("Run this file")) {
-						lua_scripts[current_lua_scripts].push_back(file);
-					}
-
 					auto cpos = editor.GetCursorPosition();
-					ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
+					ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
 						editor.IsOverwrite() ? "Ovr" : "Ins",
 						editor.CanUndo() ? "*" : " ",
-						editor.GetLanguageDefinition().mName.c_str(), file);
+						editor.GetLanguageDefinition().mName.c_str());
 
-					if (ImGui::IsWindowFocused() && ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S))) {
-						DoSave(editor, file);
+					if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::GetIO().KeyCtrl) {
+						if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S))) {
+							EditorSaveFile(editor, file, it->second.second);
+						}
+						else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R))) {
+							lua_scripts[current_lua_scripts].push_back(Script(file,false));
+						}
+						else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Q))) {
+							wants_quit = true;
+						}
 					}
 					editor.Render("TextEditor");
 				}
 			}
-			if (incrementIt) ++it;
+			if (wants_quit) {
+				delete it->second.first;
+				it = lua_editors.erase(it);
+			}
+			else {
+				++it;
+			}
 			ImGui::End();
+		}
+
+		if (fileDialog.IsDone("SaveLuaScriptAs")) {
+			if (fileDialog.HasResult() && editor_saving_as.second) {
+				std::string res = fileDialog.GetResult().u8string();
+				if (EditorSaveFile(*editor_saving_as.second, res, false)) {
+					std::cout << "Saved file \"" << res << '\"' << std::endl;
+					auto it = lua_editors.find(editor_saving_as.first);
+					if (it != lua_editors.end()) {
+						lua_editors.erase(it);
+					}
+					lua_editors[res] = std::make_pair(editor_saving_as.second, false);
+				}
+				else {
+					std::cout << "Something went wrong while saving \"" << res << '\"' << std::endl;
+				}
+				editor_saving_as.first.clear();
+				editor_saving_as.second = nullptr;
+			}
+			fileDialog.Close();
 		}
 
 		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
 
 		const int next_scripts = (current_lua_scripts + 1) % 2;
 		for (auto script : lua_scripts[current_lua_scripts]) {
-			if (luaL_dofile(L, script.c_str())) {
+			if (luaL_dofile(L, script.first.c_str())) {
 				std::cout << lua_tostring(L, -1) << "\n";
 			}
 			else if (lua_isboolean(L, -1)) {
