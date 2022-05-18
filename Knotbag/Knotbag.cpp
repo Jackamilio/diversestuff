@@ -245,7 +245,7 @@ int main()
 //		return false;
 //	}
 
-//	al_set_new_display_flags(ALLEGRO_OPENGL);
+	al_set_new_display_flags(ALLEGRO_RESIZABLE);
 //	al_set_new_display_option(ALLEGRO_DEPTH_SIZE, 16, ALLEGRO_SUGGEST);
 
 	main_display = al_create_display(1280, 720);
@@ -268,9 +268,10 @@ int main()
 	DearImguiIntegration::Init(main_display);
 
 	// Console
-	std::string capture;
+	ImGuiTextBuffer capture;
 	std::capture::CaptureStdout capturer([&capture](const char* buf, size_t szbuf) {
-		capture += std::string(buf, szbuf);
+		capture.append(buf);
+		//capture += std::string(buf, szbuf);
 		});
 
 	// File Dialog
@@ -326,6 +327,9 @@ int main()
 		while (al_get_next_event(eventQueue, &event)) {
 			if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 				stayOpen = false;
+			}
+			else if (event.type == ALLEGRO_EVENT_DISPLAY_RESIZE) {
+				al_acknowledge_resize(main_display);
 			}
 			else if (!DearImguiIntegration::Event(event)) {
 				// other events
@@ -408,7 +412,7 @@ int main()
 					capture.clear();
 				bool updated = capturer.flush();
 				ImGui::BeginChild("Console text");
-				ImGui::Text(capture.c_str());
+				ImGui::TextUnformatted(capture.begin(), capture.end());
 				if (updated)
 					ImGui::SetScrollHereY(1.0f);
 				ImGui::EndChild();
@@ -463,8 +467,7 @@ int main()
 			bool is_opened = true;
 			const std::string& file = it->first;
 			bool wants_quit = false;
-			ImGui::PushID(it->second.first); // The editor is the ID, not the title
-			if (ImGui::Begin((file + std::string("###")).c_str(), &is_opened, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar)) {
+			if (ImGui::Begin((file + std::string("###") + std::to_string((int)it->second.first)).c_str(), &is_opened, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings)) {
 				if (!is_opened) {
 					wants_quit = true;
 				}
@@ -568,7 +571,6 @@ int main()
 				++it;
 			}
 			ImGui::End();
-			ImGui::PopID();
 		}
 
 		if (fileDialog.IsDone("SaveLuaScriptAs")) {
@@ -603,6 +605,7 @@ int main()
 					lua_scripts[next_scripts].push_back(script);
 				}
 			}
+			lua_settop(L, 0);
 			ImGui::LuaBindings::CleanEndStack();
 		}
 		lua_scripts[current_lua_scripts].clear();

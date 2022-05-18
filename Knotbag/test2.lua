@@ -6,7 +6,7 @@ if (eventQueue == nil) then
 end
 
 local ev = al.ALLEGRO_EVENT()
-while al._get_next_event(eventQueue, ev) do
+while al.get_next_event(eventQueue, ev) do
 	if ev.type == al.ALLEGRO_EVENT_KEY_CHAR then
 		print("bip " .. string.char(ev.keyboard.unichar))
 	end

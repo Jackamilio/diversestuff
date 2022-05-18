@@ -143,7 +143,7 @@ private :
 		do
 		{
 #ifdef _MSC_VER
-			ret = pipe(pipes, 65536, O_BINARY);
+			ret = pipe(pipes, 0xFFFFFFFF, O_BINARY);
 #else
 			ret = pipe(pipes) == -1;
 #endif

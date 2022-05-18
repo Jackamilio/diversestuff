@@ -3355,7 +3355,7 @@ static int _wrap__init_timeout(lua_State* L) {
   if(!lua_isnumber(L,2)) SWIG_fail_arg("al_init_timeout",2,"double");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_TIMEOUT,0))){
-    SWIG_fail_ptr("_init_timeout",1,SWIGTYPE_p_ALLEGRO_TIMEOUT);
+    SWIG_fail_ptr("init_timeout",1,SWIGTYPE_p_ALLEGRO_TIMEOUT);
   }
   
   arg2 = (double)lua_tonumber(L, 2);
@@ -13185,7 +13185,7 @@ fail:
 }
 
 
-static int _wrap__get_next_event(lua_State* L) {
+static int _wrap_get_next_event(lua_State* L) {
   int SWIG_arg = 0;
   ALLEGRO_EVENT_QUEUE *arg1 = (ALLEGRO_EVENT_QUEUE *) 0 ;
   ALLEGRO_EVENT *arg2 = (ALLEGRO_EVENT *) 0 ;
@@ -13196,12 +13196,12 @@ static int _wrap__get_next_event(lua_State* L) {
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("al_get_next_event",2,"ALLEGRO_EVENT *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_EVENT_QUEUE,0))){
-    SWIG_fail_ptr("_get_next_event",1,SWIGTYPE_p_ALLEGRO_EVENT_QUEUE);
+    SWIG_fail_ptr("get_next_event",1,SWIGTYPE_p_ALLEGRO_EVENT_QUEUE);
   }
   
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_ALLEGRO_EVENT,0))){
-    SWIG_fail_ptr("_get_next_event",2,SWIGTYPE_p_ALLEGRO_EVENT);
+    SWIG_fail_ptr("get_next_event",2,SWIGTYPE_p_ALLEGRO_EVENT);
   }
   
   result = (bool)al_get_next_event(arg1,arg2);
@@ -13216,7 +13216,7 @@ fail:
 }
 
 
-static int _wrap__peek_next_event(lua_State* L) {
+static int _wrap_peek_next_event(lua_State* L) {
   int SWIG_arg = 0;
   ALLEGRO_EVENT_QUEUE *arg1 = (ALLEGRO_EVENT_QUEUE *) 0 ;
   ALLEGRO_EVENT *arg2 = (ALLEGRO_EVENT *) 0 ;
@@ -13227,12 +13227,12 @@ static int _wrap__peek_next_event(lua_State* L) {
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("al_peek_next_event",2,"ALLEGRO_EVENT *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_EVENT_QUEUE,0))){
-    SWIG_fail_ptr("_peek_next_event",1,SWIGTYPE_p_ALLEGRO_EVENT_QUEUE);
+    SWIG_fail_ptr("peek_next_event",1,SWIGTYPE_p_ALLEGRO_EVENT_QUEUE);
   }
   
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_ALLEGRO_EVENT,0))){
-    SWIG_fail_ptr("_peek_next_event",2,SWIGTYPE_p_ALLEGRO_EVENT);
+    SWIG_fail_ptr("peek_next_event",2,SWIGTYPE_p_ALLEGRO_EVENT);
   }
   
   result = (bool)al_peek_next_event(arg1,arg2);
@@ -17296,7 +17296,7 @@ static int _wrap__get_display_mode(lua_State* L) {
   arg1 = (int)lua_tonumber(L, 1);
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_ALLEGRO_DISPLAY_MODE,0))){
-    SWIG_fail_ptr("_get_display_mode",2,SWIGTYPE_p_ALLEGRO_DISPLAY_MODE);
+    SWIG_fail_ptr("get_display_mode",2,SWIGTYPE_p_ALLEGRO_DISPLAY_MODE);
   }
   
   result = (ALLEGRO_DISPLAY_MODE *)al_get_display_mode(arg1,arg2);
@@ -17973,12 +17973,12 @@ static int _wrap__get_joystick_state(lua_State* L) {
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("al_get_joystick_state",2,"ALLEGRO_JOYSTICK_STATE *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_JOYSTICK,0))){
-    SWIG_fail_ptr("_get_joystick_state",1,SWIGTYPE_p_ALLEGRO_JOYSTICK);
+    SWIG_fail_ptr("get_joystick_state",1,SWIGTYPE_p_ALLEGRO_JOYSTICK);
   }
   
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_ALLEGRO_JOYSTICK_STATE,0))){
-    SWIG_fail_ptr("_get_joystick_state",2,SWIGTYPE_p_ALLEGRO_JOYSTICK_STATE);
+    SWIG_fail_ptr("get_joystick_state",2,SWIGTYPE_p_ALLEGRO_JOYSTICK_STATE);
   }
   
   al_get_joystick_state(arg1,arg2);
@@ -18286,7 +18286,7 @@ static int _wrap__get_keyboard_state(lua_State* L) {
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("al_get_keyboard_state",1,"ALLEGRO_KEYBOARD_STATE *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_KEYBOARD_STATE,0))){
-    SWIG_fail_ptr("_get_keyboard_state",1,SWIGTYPE_p_ALLEGRO_KEYBOARD_STATE);
+    SWIG_fail_ptr("get_keyboard_state",1,SWIGTYPE_p_ALLEGRO_KEYBOARD_STATE);
   }
   
   al_get_keyboard_state(arg1);
@@ -19074,7 +19074,7 @@ static int _wrap__get_monitor_info(lua_State* L) {
   arg1 = (int)lua_tonumber(L, 1);
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_ALLEGRO_MONITOR_INFO,0))){
-    SWIG_fail_ptr("_get_monitor_info",2,SWIGTYPE_p_ALLEGRO_MONITOR_INFO);
+    SWIG_fail_ptr("get_monitor_info",2,SWIGTYPE_p_ALLEGRO_MONITOR_INFO);
   }
   
   result = (bool)al_get_monitor_info(arg1,arg2);
@@ -19788,7 +19788,7 @@ static int _wrap__get_mouse_state(lua_State* L) {
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("al_get_mouse_state",1,"ALLEGRO_MOUSE_STATE *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_MOUSE_STATE,0))){
-    SWIG_fail_ptr("_get_mouse_state",1,SWIGTYPE_p_ALLEGRO_MOUSE_STATE);
+    SWIG_fail_ptr("get_mouse_state",1,SWIGTYPE_p_ALLEGRO_MOUSE_STATE);
   }
   
   al_get_mouse_state(arg1);
@@ -20480,7 +20480,7 @@ static int _wrap__path_cstr(lua_State* L) {
   if(!SWIG_lua_isnilstring(L,2)) SWIG_fail_arg("al_path_cstr",2,"char");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_PATH,0))){
-    SWIG_fail_ptr("_path_cstr",1,SWIGTYPE_p_ALLEGRO_PATH);
+    SWIG_fail_ptr("path_cstr",1,SWIGTYPE_p_ALLEGRO_PATH);
   }
   
   arg2 = (lua_tostring(L, 2))[0];
@@ -21833,7 +21833,7 @@ static int _wrap__store_state(lua_State* L) {
   if(!lua_isnumber(L,2)) SWIG_fail_arg("al_store_state",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_STATE,0))){
-    SWIG_fail_ptr("_store_state",1,SWIGTYPE_p_ALLEGRO_STATE);
+    SWIG_fail_ptr("store_state",1,SWIGTYPE_p_ALLEGRO_STATE);
   }
   
   arg2 = (int)lua_tonumber(L, 2);
@@ -22478,7 +22478,7 @@ static int _wrap__get_touch_input_state(lua_State* L) {
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("al_get_touch_input_state",1,"ALLEGRO_TOUCH_INPUT_STATE *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_TOUCH_INPUT_STATE,0))){
-    SWIG_fail_ptr("_get_touch_input_state",1,SWIGTYPE_p_ALLEGRO_TOUCH_INPUT_STATE);
+    SWIG_fail_ptr("get_touch_input_state",1,SWIGTYPE_p_ALLEGRO_TOUCH_INPUT_STATE);
   }
   
   al_get_touch_input_state(arg1);
@@ -22695,12 +22695,12 @@ static int _wrap__copy_transform(lua_State* L) {
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("al_copy_transform",2,"ALLEGRO_TRANSFORM const *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_TRANSFORM,0))){
-    SWIG_fail_ptr("_copy_transform",1,SWIGTYPE_p_ALLEGRO_TRANSFORM);
+    SWIG_fail_ptr("copy_transform",1,SWIGTYPE_p_ALLEGRO_TRANSFORM);
   }
   
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_ALLEGRO_TRANSFORM,0))){
-    SWIG_fail_ptr("_copy_transform",2,SWIGTYPE_p_ALLEGRO_TRANSFORM);
+    SWIG_fail_ptr("copy_transform",2,SWIGTYPE_p_ALLEGRO_TRANSFORM);
   }
   
   al_copy_transform(arg1,(struct ALLEGRO_TRANSFORM const *)arg2);
@@ -22723,7 +22723,7 @@ static int _wrap__identity_transform(lua_State* L) {
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("al_identity_transform",1,"ALLEGRO_TRANSFORM *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_TRANSFORM,0))){
-    SWIG_fail_ptr("_identity_transform",1,SWIGTYPE_p_ALLEGRO_TRANSFORM);
+    SWIG_fail_ptr("identity_transform",1,SWIGTYPE_p_ALLEGRO_TRANSFORM);
   }
   
   al_identity_transform(arg1);
@@ -22756,7 +22756,7 @@ static int _wrap__build_transform(lua_State* L) {
   if(!lua_isnumber(L,6)) SWIG_fail_arg("al_build_transform",6,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_TRANSFORM,0))){
-    SWIG_fail_ptr("_build_transform",1,SWIGTYPE_p_ALLEGRO_TRANSFORM);
+    SWIG_fail_ptr("build_transform",1,SWIGTYPE_p_ALLEGRO_TRANSFORM);
   }
   
   arg2 = (float)lua_tonumber(L, 2);
@@ -22802,7 +22802,7 @@ static int _wrap__build_camera_transform(lua_State* L) {
   if(!lua_isnumber(L,10)) SWIG_fail_arg("al_build_camera_transform",10,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ALLEGRO_TRANSFORM,0))){
-    SWIG_fail_ptr("_build_camera_transform",1,SWIGTYPE_p_ALLEGRO_TRANSFORM);
+    SWIG_fail_ptr("build_camera_transform",1,SWIGTYPE_p_ALLEGRO_TRANSFORM);
   }
   
   arg2 = (float)lua_tonumber(L, 2);
@@ -23918,7 +23918,7 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "run_main", _wrap_run_main},
     { "get_time", _wrap_get_time},
     { "rest", _wrap_rest},
-    { "_init_timeout", _wrap__init_timeout},
+    { "init_timeout", _wrap__init_timeout},
     { "set_new_bitmap_format", _wrap_set_new_bitmap_format},
     { "set_new_bitmap_flags", _wrap_set_new_bitmap_flags},
     { "get_new_bitmap_format", _wrap_get_new_bitmap_format},
@@ -24091,8 +24091,8 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "pause_event_queue", _wrap_pause_event_queue},
     { "is_event_queue_paused", _wrap_is_event_queue_paused},
     { "is_event_queue_empty", _wrap_is_event_queue_empty},
-    { "_get_next_event", _wrap__get_next_event},
-    { "_peek_next_event", _wrap__peek_next_event},
+    { "get_next_event", _wrap_get_next_event},
+    { "peek_next_event", _wrap_peek_next_event},
     { "drop_next_event", _wrap_drop_next_event},
     { "flush_event_queue", _wrap_flush_event_queue},
     { "wait_for_event", _wrap_wait_for_event},
@@ -24162,7 +24162,7 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "set_fs_interface", _wrap_set_fs_interface},
     { "set_standard_fs_interface", _wrap_set_standard_fs_interface},
     { "get_num_display_modes", _wrap_get_num_display_modes},
-    { "_get_display_mode", _wrap__get_display_mode},
+    { "get_display_mode", _wrap__get_display_mode},
     { "install_joystick", _wrap_install_joystick},
     { "uninstall_joystick", _wrap_uninstall_joystick},
     { "is_joystick_installed", _wrap_is_joystick_installed},
@@ -24179,14 +24179,14 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "get_joystick_axis_name", _wrap_get_joystick_axis_name},
     { "get_joystick_num_buttons", _wrap_get_joystick_num_buttons},
     { "get_joystick_button_name", _wrap_get_joystick_button_name},
-    { "_get_joystick_state", _wrap__get_joystick_state},
+    { "get_joystick_state", _wrap__get_joystick_state},
     { "get_joystick_event_source", _wrap_get_joystick_event_source},
     { "is_keyboard_installed", _wrap_is_keyboard_installed},
     { "install_keyboard", _wrap_install_keyboard},
     { "uninstall_keyboard", _wrap_uninstall_keyboard},
     { "set_keyboard_leds", _wrap_set_keyboard_leds},
     { "keycode_to_name", _wrap_keycode_to_name},
-    { "_get_keyboard_state", _wrap__get_keyboard_state},
+    { "get_keyboard_state", _wrap__get_keyboard_state},
     { "key_down", _wrap_key_down},
     { "get_keyboard_event_source", _wrap_get_keyboard_event_source},
     { "set_memory_interface", _wrap_set_memory_interface},
@@ -24195,7 +24195,7 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "realloc_with_context", _wrap_realloc_with_context},
     { "calloc_with_context", _wrap_calloc_with_context},
     { "get_num_video_adapters", _wrap_get_num_video_adapters},
-    { "_get_monitor_info", _wrap__get_monitor_info},
+    { "get_monitor_info", _wrap__get_monitor_info},
     { "get_monitor_dpi", _wrap_get_monitor_dpi},
     { "is_mouse_installed", _wrap_is_mouse_installed},
     { "install_mouse", _wrap_install_mouse},
@@ -24206,7 +24206,7 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "set_mouse_z", _wrap_set_mouse_z},
     { "set_mouse_w", _wrap_set_mouse_w},
     { "set_mouse_axis", _wrap_set_mouse_axis},
-    { "_get_mouse_state", _wrap__get_mouse_state},
+    { "get_mouse_state", _wrap__get_mouse_state},
     { "mouse_button_down", _wrap_mouse_button_down},
     { "get_mouse_state_axis", _wrap_get_mouse_state_axis},
     { "get_mouse_cursor_position", _wrap_get_mouse_cursor_position},
@@ -24234,7 +24234,7 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "append_path_component", _wrap_append_path_component},
     { "join_paths", _wrap_join_paths},
     { "rebase_path", _wrap_rebase_path},
-    { "_path_cstr", _wrap__path_cstr},
+    { "path_cstr", _wrap__path_cstr},
     { "path_ustr", _wrap_path_ustr},
     { "destroy_path", _wrap_destroy_path},
     { "set_path_drive", _wrap_set_path_drive},
@@ -24287,19 +24287,19 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "set_timer_count", _wrap_set_timer_count},
     { "add_timer_count", _wrap_add_timer_count},
     { "get_timer_event_source", _wrap_get_timer_event_source},
-    { "_store_state", _wrap__store_state},
+    { "store_state", _wrap__store_state},
     { "restore_state", _wrap_restore_state},
     { "is_touch_input_installed", _wrap_is_touch_input_installed},
     { "install_touch_input", _wrap_install_touch_input},
     { "uninstall_touch_input", _wrap_uninstall_touch_input},
-    { "_get_touch_input_state", _wrap__get_touch_input_state},
+    { "get_touch_input_state", _wrap__get_touch_input_state},
     { "get_touch_input_event_source", _wrap_get_touch_input_event_source},
     { "use_transform", _wrap_use_transform},
     { "use_projection_transform", _wrap_use_projection_transform},
-    { "_copy_transform", _wrap__copy_transform},
-    { "_identity_transform", _wrap__identity_transform},
-    { "_build_transform", _wrap__build_transform},
-    { "_build_camera_transform", _wrap__build_camera_transform},
+    { "copy_transform", _wrap__copy_transform},
+    { "identity_transform", _wrap__identity_transform},
+    { "build_transform", _wrap__build_transform},
+    { "build_camera_transform", _wrap__build_camera_transform},
     { "translate_transform", _wrap_translate_transform},
     { "translate_transform_3d", _wrap_translate_transform_3d},
     { "rotate_transform", _wrap_rotate_transform},
