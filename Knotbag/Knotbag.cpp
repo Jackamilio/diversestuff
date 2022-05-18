@@ -417,7 +417,8 @@ int main()
 			bool is_opened = true;
 			const std::string& file = it->first;
 			bool wants_quit = false;
-			if (ImGui::Begin(file.c_str(), &is_opened, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar)) {
+			ImGui::PushID(it->second.first); // The editor is the ID, not the title
+			if (ImGui::Begin((file + std::string("###")).c_str(), &is_opened, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar)) {
 				if (!is_opened) {
 					wants_quit = true;
 				}
@@ -436,7 +437,12 @@ int main()
 								EditorSaveFile(editor, file, true);
 							}
 							if (ImGui::MenuItem("Run", "Ctrl-R")) {
-								lua_scripts[current_lua_scripts].push_back(Script(file, false));
+								if (it->second.second) {
+									std::cout << "Please save the file before running." << std::endl;
+								}
+								else {
+									lua_scripts[current_lua_scripts].push_back(Script(file, false));
+								}
 							}
 							if (ImGui::MenuItem("Quit", "Ctrl-Q")) {
 								wants_quit = true;
@@ -516,6 +522,7 @@ int main()
 				++it;
 			}
 			ImGui::End();
+			ImGui::PopID();
 		}
 
 		if (fileDialog.IsDone("SaveLuaScriptAs")) {
