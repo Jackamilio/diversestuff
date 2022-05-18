@@ -361,8 +361,9 @@ int main()
 
 			if (ImGui::BeginMenu("Windows")) {
 				ImGui::MenuItem("Console", nullptr, &win_console);
-				ImGui::MenuItem("Demo", nullptr, &win_demo);
 				ImGui::MenuItem("Scripts", nullptr, &win_scripts);
+				ImGui::Separator();
+				ImGui::MenuItem("Demo", nullptr, &win_demo);
 				ImGui::EndMenu();
 			}
 

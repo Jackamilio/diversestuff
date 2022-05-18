@@ -13,13 +13,13 @@ function scan_table(t, store)
 	table.sort(store)
 end
 
-function show_result(offset, res)
+function print_result(res, offset)
 	local n, v
 	for n, v in pairs(res) do
 		if n ~= "loaded" and n ~= "_G" then
 			if type(v) == "table" then
 				print(offset .. n)
-				show_result(offset .. "  ", res[n])
+				print_result(v, offset .. "  ")
 			else
 				print(offset .. v)
 			end
@@ -27,6 +27,34 @@ function show_result(offset, res)
 	end
 end
 
-local test = {}
-scan_table(_G, test)
-show_result("", test)
+function show_result(res)
+	local n, v
+	for n, v in pairs(res) do
+		if n ~= "loaded" and n ~= "_G" then
+			if type(v) == "table" then
+				if imgui.TreeNode(n) then
+					show_result(v)
+					imgui.TreePop()
+				end
+			else
+				imgui.TextUnformatted(v)
+			end
+		end
+	end
+end
+
+if scanned_context == nil then
+	local res = {}
+	scan_table(_G, res)
+	scanned_context = res
+end
+
+--print_result(scanned_context, "")
+
+local show, cont = imgui.Begin("Scanned lua", true)
+if show then
+	show_result(scanned_context)
+end
+imgui.End()
+
+return cont
