@@ -18,11 +18,3 @@ if al.bitmap == nil then
 		end
 	}
 end
-
-
-
-
-local test = al.bitmap.load("errortexture.png")
-al.bitmap.draw(test, 0, 0)
-
-return true

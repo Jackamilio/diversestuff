@@ -11,6 +11,7 @@
 #include "imgui_lua_bindings.h"
 #include "ImFileDialog.h"
 #include <objbase.h>
+#include "additional_bindings.h"
 
 extern "C" int luaopen_lallegro_core(lua_State * L);
 
@@ -297,6 +298,8 @@ int main()
 	luaL_openlibs(L);
 	ImGui::LuaBindings::Load(L);
 	luaopen_lallegro_core(L);
+	additional_bindings(L);
+
 	lua_sethook(L, lua_monitoring_hook, LUA_MASKCOUNT, 100);
 
 	// lua monitoring thread
@@ -375,7 +378,8 @@ int main()
 				std::string ext = fileDialog.GetResult().extension().u8string();
 				for (auto& c : ext) { c = std::tolower(c); } //lowercase
 				if (ext == ".lua") {
-					const std::string& res = fileDialog.GetResult().u8string();
+					const std::string& res = std::filesystem::relative(fileDialog.GetResult()).u8string();
+					
 					if (lua_editors.find(res) == lua_editors.end()) {
 						std::cout << "Now opening " << res << std::endl;
 

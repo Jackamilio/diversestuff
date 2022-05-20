@@ -25,6 +25,12 @@
     <Filter Include="Fichiers d%27en-tête\lua">
       <UniqueIdentifier>{1f83649b-8fee-4fbc-9807-cbb08b6f6456}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers d%27en-tête\bindings">
+      <UniqueIdentifier>{31decfae-a8d9-4496-ac2a-d9c6dcae1255}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\bindings">
+      <UniqueIdentifier>{fed35742-20e8-480c-b23b-86aad80ba2d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Knotbag.cpp">
@@ -144,23 +150,26 @@
     <ClCompile Include="imgui_impl_allegro5.cpp">
       <Filter>Fichiers sources\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui_lua_bindings.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="lallegro.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="TextEditor.cpp">
       <Filter>Fichiers sources\imgui</Filter>
     </ClCompile>
     <ClCompile Include="ImFileDialog.cpp">
       <Filter>Fichiers sources\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="imgui_lua_bindings.cpp">
+      <Filter>Fichiers sources\bindings</Filter>
+    </ClCompile>
+    <ClCompile Include="lallegro.c">
+      <Filter>Fichiers sources\bindings</Filter>
+    </ClCompile>
+    <ClCompile Include="additional_bindings.cpp">
+      <Filter>Fichiers sources\bindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="imgui_iterator.inl">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête\bindings</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -275,11 +284,14 @@
     <ClInclude Include="stdcapture.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="imgui_lua_bindings.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="ImFileDialog.h">
       <Filter>Fichiers d%27en-tête\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_lua_bindings.h">
+      <Filter>Fichiers d%27en-tête\bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="additional_bindings.h">
+      <Filter>Fichiers d%27en-tête\bindings</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

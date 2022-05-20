@@ -81,6 +81,7 @@
     <Allegro_AddonImage>true</Allegro_AddonImage>
     <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
     <Allegro_LibraryType>StaticMonolithRelease</Allegro_LibraryType>
+    <ExternalIncludePath>..\..\LuaBridge\Source;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -143,6 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="additional_bindings.cpp" />
     <ClCompile Include="ImFileDialog.cpp" />
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_demo.cpp" />
@@ -192,6 +194,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="additional_bindings.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="ImFileDialog.h" />
     <ClInclude Include="imgui.h" />
