@@ -11,7 +11,10 @@ if show then
 
 runcommand.inputvalue = imgui.InputText("##run_command_window", runcommand.inputvalue)
 imgui.SameLine()
-if (imgui.Button("Run")) then
+
+local run = imgui.IsWindowFocused(0) and imgui.IsKeyPressed(imgui.constant.Key.Enter)
+
+if imgui.Button("Run") or run then
 	local ret, err = pcall(
 		function()
 			local ret, err = load(runcommand.inputvalue)

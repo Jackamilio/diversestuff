@@ -1,29 +1,35 @@
 if bitmaps == nil then
 	bitmaps = {
-		errortexture = "errortexture.png",
-		failtex = "nofileherelol.png",
-		banana = "banana.png",
-		monkey = "cutemonkey.png"}
+		{name = "errortexture", file = "errortexture.png"},
+		{name = "failtex", file = "nofileherelol.png"},
+		{name = "banana", file = "banana.png"},
+		{name = "monkey", file = "cutemonkey.png"}
+	}
 end
 
 local show, cont = imgui.Begin("Bitmap aliases", true)
 
 if show then
-	local change = {}
-	for bmp, f in pairs(bitmaps) do
-		local newval = imgui.InputText(f, bmp)
-		if bmp ~= newval then
-			change[bmp] = newval
-			break
+	local fd = imgui.GetFileDialog()
+	for t, v in pairs(bitmaps) do
+		imgui.PushID(t)
+		v.name = imgui.InputText("", v.name)
+		imgui.SameLine()
+		if imgui.Button("...") then
+			fd:Open("LoadTextureForAlias", "Open a file", "Image (*.bmp,*.png){.bmp,.png},.*")
 		end
-	end
-	for old, new in pairs(change) do
-		bitmaps[new] = bitmaps[old]
-		bitmaps[old] = nil
+		imgui.SameLine()
+		imgui.Text(v.file)
+		imgui.PopID()
 	end
 
 	if (imgui.Button("New alias")) then
-		bitmaps["New alias"] = "no address"
+		table.insert(bitmaps, {name = "new texture", file = "no file yet"})
+	end
+
+	if fd:IsDone("LoadTextureForAlias") then
+		print(fd:GetResult())
+		fd:Close()
 	end
 end
 

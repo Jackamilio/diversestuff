@@ -36,6 +36,8 @@ namespace ifd {
 		inline const std::filesystem::path& GetResult() { return m_result[0]; }
 		inline const std::vector<std::filesystem::path>& GetResults() { return m_result; }
 
+		inline std::string GetStrLocalResult() const { return std::filesystem::relative(m_result[0]).u8string(); }
+
 		void Close();
 
 		void RemoveFavorite(const std::string& path);

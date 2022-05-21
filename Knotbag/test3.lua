@@ -1,5 +1,5 @@
-s = "salut : :       :hoy"
+local io = imgui.GetIO()
 
-local res = string.match(s, ":[^:]*$")
+print(imgui.IsKeyPressed(imgui.constant.Key.A))
 
-print(res)
+return true

@@ -51,10 +51,12 @@ end
 
 --print_result(scanned_context, "")
 
+
 local show, cont = imgui.Begin("Scanned lua", true)
 if show then
 	show_result(scanned_context)
 end
 imgui.End()
+
 
 return cont

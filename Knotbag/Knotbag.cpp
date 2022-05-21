@@ -8,9 +8,9 @@
 #include <fstream>
 #include <sstream>
 #include "stdcapture.h"
-#include "imgui_lua_bindings.h"
 #include "ImFileDialog.h"
 #include <objbase.h>
+#include "imgui_lua_bindings.h"
 #include "additional_bindings.h"
 
 extern "C" int luaopen_lallegro_core(lua_State * L);
@@ -378,7 +378,7 @@ int main()
 				std::string ext = fileDialog.GetResult().extension().u8string();
 				for (auto& c : ext) { c = std::tolower(c); } //lowercase
 				if (ext == ".lua") {
-					const std::string& res = std::filesystem::relative(fileDialog.GetResult()).u8string();
+					const std::string res = fileDialog.GetStrLocalResult();
 					
 					if (lua_editors.find(res) == lua_editors.end()) {
 						std::cout << "Now opening " << res << std::endl;

@@ -156,13 +156,13 @@
     <ClCompile Include="ImFileDialog.cpp">
       <Filter>Fichiers sources\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui_lua_bindings.cpp">
-      <Filter>Fichiers sources\bindings</Filter>
-    </ClCompile>
     <ClCompile Include="lallegro.c">
       <Filter>Fichiers sources\bindings</Filter>
     </ClCompile>
     <ClCompile Include="additional_bindings.cpp">
+      <Filter>Fichiers sources\bindings</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_lua_bindings.cpp">
       <Filter>Fichiers sources\bindings</Filter>
     </ClCompile>
   </ItemGroup>
@@ -287,10 +287,10 @@
     <ClInclude Include="ImFileDialog.h">
       <Filter>Fichiers d%27en-tête\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui_lua_bindings.h">
+    <ClInclude Include="additional_bindings.h">
       <Filter>Fichiers d%27en-tête\bindings</Filter>
     </ClInclude>
-    <ClInclude Include="additional_bindings.h">
+    <ClInclude Include="imgui_lua_bindings.h">
       <Filter>Fichiers d%27en-tête\bindings</Filter>
     </ClInclude>
   </ItemGroup>
