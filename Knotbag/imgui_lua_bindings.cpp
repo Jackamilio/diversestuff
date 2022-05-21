@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include <deque>
 
+#define LUA_COMPAT_APIINTCASTS
 #include "lua/lua.hpp"
 
 

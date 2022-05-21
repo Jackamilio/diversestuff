@@ -13,11 +13,8 @@ std::string imgui_inputtext(const char* label, std::string text) {
 
 void additional_bindings(lua_State* L)
 {
-	// for convenience
-	luaL_dostring(L, "imgui.Text = imgui.TextUnformatted imgui.Button = imgui.SmallButton");
 	luabridge::getGlobalNamespace(L).beginNamespace("imgui")
 		.addFunction("InputText", imgui_inputtext)
-		.addFunction("IsWindowFocused", ImGui::IsWindowFocused)
 		.beginClass<ImGuiIO>("IO")
 			.addProperty("KeyCtrl", &ImGuiIO::KeyCtrl)
 			.addProperty("KeyShift", &ImGuiIO::KeyShift)

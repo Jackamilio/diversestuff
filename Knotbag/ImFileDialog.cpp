@@ -514,6 +514,11 @@ namespace ifd {
 
 		return isMe && !m_isOpen;
 	}
+	
+	std::string FileDialog::GetStrLocalResult() const
+	{
+		return m_result.empty() ? std::string() : std::filesystem::relative(m_result[0]).u8string();
+	}
 	void FileDialog::Close()
 	{
 		m_currentKey.clear();
