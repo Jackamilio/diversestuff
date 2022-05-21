@@ -37,7 +37,7 @@ if show then
 	local fd = imgui.GetFileDialog()
 	local ed = bitmaps.__editor_values__
 	local fieldtodel = -1
-	if imgui.BeginTable("Bitmaps table", math.max(imgui.GetWindowWidth() / ed.elemwidth, 1)) then
+	if imgui.BeginTable("Bitmaps table", math.max(imgui.GetWindowWidth() / ed.elemwidth, 1), imgui.constant.WindowFlags.NoSavedSettings) then
 		for t, v in pairs(bitmaps) do
 			if type(t) == "number" then
 				imgui.TableNextColumn()
