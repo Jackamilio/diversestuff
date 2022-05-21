@@ -88,10 +88,16 @@ static int impl_##name(lua_State *L) { \
   int arg = 1; \
   int stackval = 0;
 
-// I use OpenGL so this is a GLuint
-// Using unsigned int cause im lazy don't copy me
+// Retrieving the data wrapped by SWIG with lallegro
+typedef struct {
+    void* type;
+    int own;
+    void* ptr;
+} swig_lua_userdata;
+
 #define IM_TEXTURE_ID_ARG(name) \
-  const ImTextureID name = (ImTextureID)luaL_checkinteger(L, arg++);
+  if (!lua_isuserdata(L, arg)) {lua_pushfstring(L, "Error in IM_TEXTURE_ID_ARG : Expected userdata"); lua_error(L);} \
+  const ImTextureID name = (ImTextureID)((swig_lua_userdata*)lua_touserdata(L, arg++))->ptr;
 
 #define OPTIONAL_LABEL_ARG(name) \
   const char* name; \

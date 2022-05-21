@@ -1,5 +1,3 @@
-local io = imgui.GetIO()
-
-print(imgui.IsKeyPressed(imgui.constant.Key.A))
+al.bitmap.draw(bitmaps.banana, 0, 0)
 
 return true

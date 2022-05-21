@@ -573,12 +573,14 @@ END_IMGUI_FUNC
 IMGUI_FUNCTION(PushID)
 LABEL_ARG(str_id)
 CALL_FUNCTION_NO_RET(PushID, str_id)
+ADD_END_STACK(20)
 END_IMGUI_FUNC
 //    IMGUI_API void          PushID(const char* str_id_begin, const char* str_id_end);       // push string into the ID stack (will hash string).
 IMGUI_FUNCTION(PushID_2)
 LABEL_ARG(str_id_begin)
 LABEL_ARG(str_id_end)
 CALL_FUNCTION_NO_RET(PushID, str_id_begin, str_id_end)
+ADD_END_STACK(20)
 END_IMGUI_FUNC
 //    IMGUI_API void          PushID(const void* ptr_id);                                     // push pointer into the ID stack (will hash pointer).
 // Unsupported arg type const void* ptr_id
@@ -586,10 +588,12 @@ END_IMGUI_FUNC
 IMGUI_FUNCTION(PushID_1)
 INT_ARG(int_id)
 CALL_FUNCTION_NO_RET(PushID, int_id)
+ADD_END_STACK(20)
 END_IMGUI_FUNC
 //    IMGUI_API void          PopID();                                                        // pop from the ID stack.
 IMGUI_FUNCTION(PopID)
 CALL_FUNCTION_NO_RET(PopID)
+POP_END_STACK(20)
 END_IMGUI_FUNC
 //    IMGUI_API ImGuiID       GetID(const char* str_id);                                      // calculate unique ID (hash of whole ID stack + given parameter). e.g. if you want to query into ImGuiStorage yourself
 IMGUI_FUNCTION(GetID)
@@ -1881,6 +1885,7 @@ END_STACK_OPTION(16, EndDragDropSource)
 END_STACK_OPTION(17, EndDragDropTarget)
 END_STACK_OPTION(18, EndDisabled)
 END_STACK_OPTION(19, EndChildFrame)
+END_STACK_OPTION(20, PopID)
 END_STACK_END
 //enum ImGuiWindowFlags_
 

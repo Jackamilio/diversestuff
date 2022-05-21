@@ -30,7 +30,9 @@ if imgui.Button("Run") or run then
 		runcommand.successtotal = runcommand.successtotal + 1
 	else
 		runcommand.successtime = 0
-		runcommand.errorstring = "Error" .. string.match(err, ":[^:]*$")
+		local errstr = string.match(err, ":[^:]*$")
+		if not errstr then errstr = ": " .. err end
+		runcommand.errorstring = "Error" .. errstr
 	end
 end
 

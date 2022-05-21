@@ -206,6 +206,24 @@ void lua_monitoring_hook(lua_State* L, lua_Debug* ar) {
 	al_unlock_mutex(lua_monitoring_mutex);
 }
 
+static thread_local lua_State* currentluacontext = nullptr;
+
+void ImGuiFriendlyLuaAssert(bool pass, const char* message) {
+	if (pass) return;
+	if (currentluacontext) {
+		std::string str(message);
+		size_t message_pos = str.rfind("&& ");
+		if (message_pos != std::string::npos) {
+			std::string sub = str.substr(message_pos + 3, std::string::npos);
+			str = std::string("IMGUI ASSERT : ") + sub;
+		}
+		lua_pushfstring(currentluacontext, str.c_str());
+		lua_error(currentluacontext);
+		return;
+	}
+	assert(pass && message);
+}
+
 int main()
 {
 	CoInitialize(nullptr); // ImFileDialog needs this if we don't want the debug output complaining
@@ -599,7 +617,8 @@ int main()
 		}
 
 		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
-
+		
+		currentluacontext = L;
 		const int next_scripts = (current_lua_scripts + 1) % 2;
 		for (auto script : lua_scripts[current_lua_scripts]) {
 			if (luaL_dofile(L, script.first.c_str())) {
@@ -615,6 +634,7 @@ int main()
 		}
 		lua_scripts[current_lua_scripts].clear();
 		current_lua_scripts = next_scripts;
+		currentluacontext = nullptr;
 
 		DearImguiIntegration::Render();
 
