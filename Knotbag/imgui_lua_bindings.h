@@ -5,6 +5,6 @@
 namespace ImGui {
 	namespace LuaBindings {
 		void Load(lua_State* lState);
-		void CleanEndStack();
+		bool CleanEndStack();
 	}
 }

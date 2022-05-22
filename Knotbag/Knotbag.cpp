@@ -22,10 +22,6 @@ static double last_loop_start = 0.0;
 static bool kill_lua = false;
 static ALLEGRO_MUTEX* lua_monitoring_mutex;
 
-typedef std::pair<std::string, bool> Script;
-static std::vector<Script> lua_scripts[2];
-static int current_lua_scripts = 0;
-
 static ALLEGRO_DISPLAY* main_display = nullptr;
 
 namespace DearImguiIntegration {
@@ -227,6 +223,42 @@ void ImGuiFriendlyLuaAssert(bool pass, const char* message) {
 	assert(pass && message);
 }
 
+const char* luastartupscript =
+"\
+function fileexists(name)\n\
+	local f = io.open(name, \"r\")\n\
+	if f~= nil then\n\
+		io.close(f)\n\
+		return true\n\
+	else\n\
+		return false\n\
+	end\n\
+end\n\
+\n\
+if fileexists(\"start.lua\") then\n\
+		dofile(\"start.lua\")\n\
+end\
+";
+
+const char* luaframescript =
+"\
+if knotbag and type(knotbag.framescript) == \"function\" then\n\
+	knotbag.framescript() \n\
+end\
+";
+
+bool SafeLuaDoString(lua_State* L, const char* str) {
+	bool ret = true;
+	currentluacontext = L;
+	if (luaL_dostring(L, str)) {
+		std::cout << lua_tostring(L, -1) << std::endl;
+		ret = false;
+	}
+	ImGui::LuaBindings::CleanEndStack();
+	currentluacontext = nullptr;
+	return ret;
+}
+
 int main()
 {
 	CoInitialize(nullptr); // ImFileDialog needs this if we don't want the debug output complaining
@@ -313,13 +345,13 @@ int main()
 	std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>> lua_editors;
 	std::set<int> lua_editors_ids;
 	std::tuple<std::string, TextEditor*, int> editor_saving_as("", nullptr, -1);
-	auto InsertNewLuaEditor = [&lua_editors,&lua_editors_ids](const std::string& name) {
+	auto InsertNewLuaEditor = [&lua_editors,&lua_editors_ids](const std::string& name, bool needsSaveAs) {
 		TextEditor* te = new TextEditor;
 		te->SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
 		int newid = 1;
 		while (lua_editors_ids.find(newid++) != lua_editors_ids.end());
 		lua_editors_ids.insert(--newid);
-		lua_editors[name] = std::make_tuple(te, false, newid);
+		lua_editors[name] = std::make_tuple(te, needsSaveAs, newid);
 		return te;
 	};
 
@@ -330,6 +362,9 @@ int main()
 	ImGui::LuaBindings::Load(L);
 	luaopen_lallegro_core(L);
 	additional_bindings(L);
+	if (luaL_dostring(L, luastartupscript)) {
+		std::cout << "Startup script error : " << lua_tostring(L, -1) << std::endl;
+	}
 
 	lua_sethook(L, lua_monitoring_hook, LUA_MASKCOUNT, 100);
 
@@ -337,11 +372,6 @@ int main()
 	lua_monitoring_mutex = al_create_mutex();
 	ALLEGRO_THREAD* thread = al_create_thread(lua_monitoring, NULL);
 	al_start_thread(thread);
-
-	// gui stuff
-	bool win_demo = false;
-	bool win_console = true;
-	bool win_scripts = true;
 
 	// time management
 	double lastTime = al_get_time();
@@ -381,19 +411,11 @@ int main()
 						while (lua_editors.find(newfilename + std::to_string(newnew++)) != lua_editors.end());
 						newfilename += std::to_string(--newnew);
 					}
-					InsertNewLuaEditor(newfilename);
+					InsertNewLuaEditor(newfilename, true);
 				}
 				if (ImGui::MenuItem("Open")) {
 					fileDialog.Open("MultiPurposeOpen", "Open a file", "Lua script (*.lua){.lua},.*");
 				}
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Windows")) {
-				ImGui::MenuItem("Console", nullptr, &win_console);
-				ImGui::MenuItem("Scripts", nullptr, &win_scripts);
-				ImGui::Separator();
-				ImGui::MenuItem("Demo", nullptr, &win_demo);
 				ImGui::EndMenu();
 			}
 
@@ -415,7 +437,7 @@ int main()
 						std::ifstream t(res);
 						if (t.good())
 						{
-							TextEditor* te = InsertNewLuaEditor(res);
+							TextEditor* te = InsertNewLuaEditor(res, false);
 							std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 							te->SetText(str);
 						}
@@ -434,12 +456,9 @@ int main()
 			fileDialog.Close();
 		}
 
-		if (win_demo) {
-			ImGui::ShowDemoWindow(&win_demo);
-		}
-
-		if (win_console) {
-			if (ImGui::Begin("Console", &win_console)) {
+		//if (win_console) {
+		//	if (ImGui::Begin("Console", &win_console)) {
+			if (ImGui::Begin("Console")) {
 				if (ImGui::Button("Clear"))
 					capture.clear();
 				bool updated = capturer.flush();
@@ -450,33 +469,7 @@ int main()
 				ImGui::EndChild();
 			}
 			ImGui::End();
-		}
-
-		if (win_scripts) {
-			if (ImGui::Begin("Scripts", &win_scripts)) {
-				std::vector<Script>& cur_scripts = lua_scripts[current_lua_scripts];
-				if (ImGui::Button("Kill selected")) {
-					for (auto it = cur_scripts.begin(); it != cur_scripts.end();) {
-						if (it->second) {
-							it = cur_scripts.erase(it);
-						}
-						else {
-							++it;
-						}
-					}
-				}
-				int i = 0;
-				for (auto& script : cur_scripts) {
-					ImGui::PushID(i++);
-					if (ImGui::Selectable(script.first.c_str(), script.second))
-					{
-						script.second ^= 1;
-					}
-					ImGui::PopID();
-				}
-			}
-			ImGui::End();
-		}
+		//}
 
 		auto EditorSaveFile = [&fileDialog, &editor_saving_as](TextEditor& editor, const std::string& file, bool saveas, int editor_id) {
 			if (saveas) {
@@ -517,12 +510,8 @@ int main()
 								EditorSaveFile(editor, file, true, editor_id);
 							}
 							if (ImGui::MenuItem("Run", "Ctrl-R")) {
-								if (needsSaveAs) {
-									std::cout << "Please save the file before running." << std::endl;
-								}
-								else {
-									lua_scripts[current_lua_scripts].push_back(Script(file, false));
-								}
+								std::cout << "Running " << file << std::endl;
+								SafeLuaDoString(L, editor.GetText().c_str());
 							}
 							if (ImGui::MenuItem("Quit", "Ctrl-Q")) {
 								is_opened = false;
@@ -585,7 +574,8 @@ int main()
 							EditorSaveFile(editor, file, needsSaveAs, editor_id);
 						}
 						else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R))) {
-							lua_scripts[current_lua_scripts].push_back(Script(file,false));
+							std::cout << "Running " << file << std::endl;
+							SafeLuaDoString(L, editor.GetText().c_str());
 						}
 						else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Q))) {
 							is_opened = false;
@@ -607,7 +597,7 @@ int main()
 
 		if (fileDialog.IsDone("SaveLuaScriptAs")) {
 			if (fileDialog.HasResult() && std::get<1>(editor_saving_as)) {
-				std::string res = fileDialog.GetResult().u8string();
+				std::string res = fileDialog.GetStrLocalResult();
 				if (EditorSaveFile(*std::get<1>(editor_saving_as), res, false, std::get<2>(editor_saving_as))) {
 					std::cout << "Saved file \"" << res << '\"' << std::endl;
 					auto it = lua_editors.find(std::get<0>(editor_saving_as));
@@ -628,23 +618,8 @@ int main()
 
 		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
 		
-		currentluacontext = L;
-		const int next_scripts = (current_lua_scripts + 1) % 2;
-		for (auto script : lua_scripts[current_lua_scripts]) {
-			if (luaL_dofile(L, script.first.c_str())) {
-				std::cout << lua_tostring(L, -1) << "\n";
-			}
-			else if (lua_isboolean(L, -1)) {
-				if (lua_toboolean(L, -1)) {
-					lua_scripts[next_scripts].push_back(script);
-				}
-			}
-			lua_settop(L, 0);
-			ImGui::LuaBindings::CleanEndStack();
-		}
-		lua_scripts[current_lua_scripts].clear();
-		current_lua_scripts = next_scripts;
-		currentluacontext = nullptr;
+		// function that gets called automatically each frame, the rest is lua's code reponsibility
+		SafeLuaDoString(L, luaframescript);
 
 		DearImguiIntegration::Render();
 

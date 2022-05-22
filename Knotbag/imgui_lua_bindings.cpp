@@ -508,13 +508,16 @@ namespace ImGui {
             PushImguiEnums(lState, "constant");
             lua_setglobal(lState, "imgui");
         }
-        void CleanEndStack() {
+        bool CleanEndStack() {
+            bool ret = false;
 #ifdef ENABLE_IM_LUA_END_STACK
             while (!endStack.empty()) {
                 ImEndStack(endStack.back());
                 endStack.pop_back();
+                ret = true;
             }
 #endif
+            return ret;
         }
     }
 }
