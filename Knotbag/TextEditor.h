@@ -319,7 +319,10 @@ public:
 	bool CanRedo() const;
 	void Undo(int aSteps = 1);
 	void Redo(int aSteps = 1);
-	void SetExternalUndoBuffer(ExternalUndoBufferInterface*);
+	//void SetExternalUndoBuffer(ExternalUndoBufferInterface*);
+
+	void MarkSaved();
+	inline bool IsModified() const { return mUndoIndex != mSavedUndoIndex; }
 
 	static const Palette& GetDarkPalette();
 	static const Palette& GetLightPalette();
@@ -371,6 +374,7 @@ private:
 	EditorState mState;
 	UndoBuffer mUndoBuffer;
 	int mUndoIndex;
+	int mSavedUndoIndex;
 	ExternalUndoBufferInterface* mExternalUndoBuffer;
 
 	int mTabSize;

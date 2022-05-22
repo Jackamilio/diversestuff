@@ -27,6 +27,7 @@ bool equals(InputIt1 first1, InputIt1 last1,
 TextEditor::TextEditor()
 	: mLineSpacing(1.0f)
 	, mUndoIndex(0)
+	, mSavedUndoIndex(0)
 	, mTabSize(4)
 	, mOverwrite(false)
 	, mReadOnly(false)
@@ -317,6 +318,11 @@ void TextEditor::AddUndo(UndoRecord& aValue)
 	//	aValue.mRemoved.c_str(), aValue.mRemovedStart.mLine, aValue.mRemovedStart.mColumn, aValue.mRemovedEnd.mLine, aValue.mRemovedEnd.mColumn,
 	//	aValue.mAfter.mCursorPosition.mLine, aValue.mAfter.mCursorPosition.mColumn
 	//	);
+
+	// Invalidate the saved undo index if we're "earlier"
+	if (mUndoIndex < mSavedUndoIndex) {
+		mSavedUndoIndex = -1;
+	}
 
 	mUndoBuffer.resize((size_t)mUndoIndex + 1);
 	mUndoBuffer.back() = aValue;
@@ -1232,6 +1238,7 @@ void TextEditor::SetText(const std::string & aText)
 
 	mUndoBuffer.clear();
 	mUndoIndex = 0;
+	mSavedUndoIndex = 0;
 
 	Colorize();
 }
@@ -2093,6 +2100,11 @@ void TextEditor::Redo(int aSteps)
 {
 	while (CanRedo() && aSteps-- > 0)
 		mUndoBuffer[mUndoIndex++].Redo(this);
+}
+
+void TextEditor::MarkSaved()
+{
+	mSavedUndoIndex = mUndoIndex;
 }
 
 const TextEditor::Palette & TextEditor::GetDarkPalette()

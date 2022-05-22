@@ -397,10 +397,12 @@ int main()
 			std::get<2>(editor_saving_as) = std::get<2>(it->second);
 		}
 		else {
-			auto textToSave = std::get<0>(it->second)->GetText();
+			TextEditor& editor = *std::get<0>(it->second);
+			auto textToSave = editor.GetText();
 			std::ofstream t(it->first);
 			if (t.good()) {
 				t << textToSave;
+				editor.MarkSaved();
 				return true;
 			}
 		}
@@ -468,25 +470,36 @@ int main()
 			bool is_opened = true;
 			const std::string& file = it->first;
 			const int editor_id = std::get<2>(it->second);
+			TextEditor& editor = *std::get<0>(it->second);
 			if (editorNeedsFocus && it == editorit) {
 				editorNeedsFocus = false;
 				ImGui::SetNextWindowFocus();
 			}
-			if (ImGui::Begin((file + std::string("###lua_editor n") + std::to_string(editor_id)).c_str(), &is_opened, ImGuiWindowFlags_HorizontalScrollbar)) {
-				TextEditor& editor = *std::get<0>(it->second);
+			ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar;
+			if (editor.IsModified()) {
+				flags |= ImGuiWindowFlags_UnsavedDocument;
+			}
+			if (ImGui::Begin((file + std::string("###lua_editor n") + std::to_string(editor_id)).c_str(), &is_opened, flags)) {
 				if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
 					lastFocusedEditor = file;
 				}
-				const bool needsSaveAs = std::get<1>(it->second);
 				ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
-
-				auto cpos = editor.GetCursorPosition();
-				ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
-					editor.IsOverwrite() ? "Ovr" : "Ins",
-					editor.CanUndo() ? "*" : " ",
-					editor.GetLanguageDefinition().mName.c_str());
-
 				editor.Render("TextEditor");
+
+				ImVec2 work_pos = ImGui::GetWindowPos();
+				ImVec2 work_size = ImGui::GetWindowSize();
+				ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove;
+				const float PAD = 20.0f;
+				ImVec2 window_pos;
+				window_pos.x = work_pos.x + work_size.x - PAD;
+				window_pos.y = work_pos.y + work_size.y - PAD;
+				ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(1.0f, 1.0f));
+				if (ImGui::BeginChild("Cursor position overlay", ImVec2(190.0f, 20.0f), false, window_flags))
+				{
+					auto cpos = editor.GetCursorPosition();
+					ImGui::Text("%6d/%-6d %6d lines", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines());
+				}
+				ImGui::EndChild();
 			}
 			if (!is_opened) {
 				EditorClose(it);
