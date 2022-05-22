@@ -340,20 +340,7 @@ int main()
 	ifd::FileDialog::Instance().DeleteTexture = [&bitmaps_to_destroy](void* tex) {
 		bitmaps_to_destroy.push_back((ALLEGRO_BITMAP*)tex);
 	};
-
-	// Text editors
-	std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>> lua_editors;
-	std::set<int> lua_editors_ids;
-	std::tuple<std::string, TextEditor*, int> editor_saving_as("", nullptr, -1);
-	auto InsertNewLuaEditor = [&lua_editors,&lua_editors_ids](const std::string& name, bool needsSaveAs) {
-		TextEditor* te = new TextEditor;
-		te->SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
-		int newid = 1;
-		while (lua_editors_ids.find(newid++) != lua_editors_ids.end());
-		lua_editors_ids.insert(--newid);
-		lua_editors[name] = std::make_tuple(te, needsSaveAs, newid);
-		return te;
-	};
+	ifd::FileDialog& fileDialog = ifd::FileDialog::Instance();
 
 	// lua
 	lua_State* L;
@@ -372,6 +359,62 @@ int main()
 	lua_monitoring_mutex = al_create_mutex();
 	ALLEGRO_THREAD* thread = al_create_thread(lua_monitoring, NULL);
 	al_start_thread(thread);
+
+	// Text editors
+	std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>> lua_editors;
+	std::set<int> lua_editors_ids;
+	std::tuple<std::string, TextEditor*, int> editor_saving_as("", nullptr, -1);
+	std::string lastFocusedEditor;
+	bool editorNeedsFocus = false;
+	auto InsertNewLuaEditor = [&lua_editors,&lua_editors_ids, &lastFocusedEditor, &editorNeedsFocus](const std::string& name, bool needsSaveAs) {
+		TextEditor* te = new TextEditor;
+		te->SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+		int newid = 1;
+		while (lua_editors_ids.find(newid++) != lua_editors_ids.end());
+		lua_editors_ids.insert(--newid);
+		lua_editors[name] = std::make_tuple(te, needsSaveAs, newid);
+		lastFocusedEditor = name;
+		editorNeedsFocus = true;
+		return te;
+	};
+	auto EditorNewFile = [&lua_editors,&InsertNewLuaEditor]() {
+		std::string newfilename = "New lua script ";
+		if (lua_editors.find(newfilename) != lua_editors.end()) {
+			int newnew = 1;
+			while (lua_editors.find(newfilename + std::to_string(newnew++)) != lua_editors.end());
+			newfilename += std::to_string(--newnew);
+		}
+		InsertNewLuaEditor(newfilename, true);
+	};
+	auto EditorOpenFile = [&fileDialog]() {
+		fileDialog.Open("MultiPurposeOpen", "Open a file", "Lua script (*.lua){.lua},.*");
+	};
+	auto EditorSaveFile = [&fileDialog, &editor_saving_as](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator it, bool saveas) {
+		if (saveas) {
+			fileDialog.Save("SaveLuaScriptAs", "Save the script", "Lua script (*.lua){.lua}");
+			std::get<0>(editor_saving_as) = it->first;
+			std::get<1>(editor_saving_as) = std::get<0>(it->second);
+			std::get<2>(editor_saving_as) = std::get<2>(it->second);
+		}
+		else {
+			auto textToSave = std::get<0>(it->second)->GetText();
+			std::ofstream t(it->first);
+			if (t.good()) {
+				t << textToSave;
+				return true;
+			}
+		}
+		return false;
+	};
+	auto EditorRun = [&L](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator& it) {
+		std::cout << "Running " << it->first << std::endl;
+		SafeLuaDoString(L, std::get<0>(it->second)->GetText().c_str());
+	};
+	auto EditorClose = [&lua_editors_ids, &lua_editors](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator& it) {
+		delete std::get<0>(it->second);
+		lua_editors_ids.erase(std::get<2>(it->second));
+		it = lua_editors.erase(it);
+	};
 
 	// time management
 	double lastTime = al_get_time();
@@ -400,37 +443,152 @@ int main()
 
 		DearImguiIntegration::NewFrame();
 
-		ifd::FileDialog& fileDialog = ifd::FileDialog::Instance();
+		ImGui::DockSpaceOverViewport();
 
+		//if (win_console) {
+		//	if (ImGui::Begin("Console", &win_console)) {
+			if (ImGui::Begin("Console")) {
+				if (ImGui::Button("Clear"))
+					capture.clear();
+				bool updated = capturer.flush();
+				ImGui::BeginChild("Console text");
+				ImGui::TextUnformatted(capture.begin(), capture.end());
+				if (updated)
+					ImGui::SetScrollHereY(1.0f);
+				ImGui::EndChild();
+			}
+			ImGui::End();
+		//}
+
+		auto editorit = lua_editors.find(lastFocusedEditor);
+		TextEditor* editor = editorit == lua_editors.end() ? nullptr : std::get<0>(editorit->second);
+
+		// lua editors
+		for (auto it = lua_editors.begin(); it != lua_editors.end();) {
+			bool is_opened = true;
+			const std::string& file = it->first;
+			const int editor_id = std::get<2>(it->second);
+			if (editorNeedsFocus && it == editorit) {
+				editorNeedsFocus = false;
+				ImGui::SetNextWindowFocus();
+			}
+			if (ImGui::Begin((file + std::string("###lua_editor n") + std::to_string(editor_id)).c_str(), &is_opened, ImGuiWindowFlags_HorizontalScrollbar)) {
+				TextEditor& editor = *std::get<0>(it->second);
+				if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+					lastFocusedEditor = file;
+				}
+				const bool needsSaveAs = std::get<1>(it->second);
+				ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+
+				auto cpos = editor.GetCursorPosition();
+				ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
+					editor.IsOverwrite() ? "Ovr" : "Ins",
+					editor.CanUndo() ? "*" : " ",
+					editor.GetLanguageDefinition().mName.c_str());
+
+				editor.Render("TextEditor");
+			}
+			if (!is_opened) {
+				EditorClose(it);
+			}
+			else {
+				++it;
+			}
+			ImGui::End();
+		}
+
+		// Main menu
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
-				if (ImGui::MenuItem("New")) {
-					std::string newfilename = "New lua script ";
-					if (lua_editors.find(newfilename) != lua_editors.end()) {
-						int newnew = 1;
-						while (lua_editors.find(newfilename + std::to_string(newnew++)) != lua_editors.end());
-						newfilename += std::to_string(--newnew);
-					}
-					InsertNewLuaEditor(newfilename, true);
+				if (ImGui::MenuItem("New", "Ctrl-N")) {
+					EditorNewFile();
 				}
-				if (ImGui::MenuItem("Open")) {
-					fileDialog.Open("MultiPurposeOpen", "Open a file", "Lua script (*.lua){.lua},.*");
+				if (ImGui::MenuItem("Open", "Ctrl-O")) {
+					EditorOpenFile();
+				}
+				if (ImGui::MenuItem("Save", "Ctrl-S", nullptr, editor)) {
+					EditorSaveFile(editorit, std::get<1>(editorit->second));
+				}
+				if (ImGui::MenuItem("Save as", nullptr, nullptr, editor)) {
+					EditorSaveFile(editorit, true);
+				}
+				if (ImGui::MenuItem("Run", "Ctrl-R", nullptr, editor)) {
+					EditorRun(editorit);
+				}
+				if (ImGui::MenuItem("Quit", "Ctrl-Q", nullptr, editor)) {
+					EditorClose(editorit);
 				}
 				ImGui::EndMenu();
 			}
+			if (ImGui::BeginMenu("Edit"))
+			{
+				if (ImGui::MenuItem("Undo", "Ctrl-Z", nullptr, editor && editor->CanUndo()))
+					editor->Undo();
+				if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, editor && editor->CanRedo()))
+					editor->Redo();
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor && editor->HasSelection()))
+					editor->Copy();
+				if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, editor && editor->HasSelection()))
+					editor->Cut();
+				if (ImGui::MenuItem("Delete", "Del", nullptr, editor && editor->HasSelection()))
+					editor->Delete();
+				if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, editor && ImGui::GetClipboardText() != nullptr))
+					editor->Paste();
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Select all", nullptr, nullptr, editor))
+					editor->SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor->GetTotalLines(), 0));
+
+				ImGui::EndMenu();
+			}
+
+			//if (ImGui::BeginMenu("View"))
+			//{
+			//	if (ImGui::MenuItem("Dark palette"))
+			//		editor.SetPalette(TextEditor::GetDarkPalette());
+			//	if (ImGui::MenuItem("Light palette"))
+			//		editor.SetPalette(TextEditor::GetLightPalette());
+			//	if (ImGui::MenuItem("Retro blue palette"))
+			//		editor.SetPalette(TextEditor::GetRetroBluePalette());
+			//	ImGui::EndMenu();
+			//}
 
 			ImGui::EndMainMenuBar();
 		}
 
-		ImGui::DockSpaceOverViewport();
+		// Handle key shortcuts
+		if (ImGui::GetIO().KeyCtrl) {
+			if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_N))) {
+				EditorNewFile();
+			}
+			if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O))) {
+				EditorOpenFile();
+			}
+			if (editor) {
+				if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S))) {
+					EditorSaveFile(editorit, std::get<1>(editorit->second));
+				}
+				else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R))) {
+					EditorRun(editorit);
+				}
+				else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Q))) {
+					EditorClose(editorit);
+				}
+			}
+		}
 
+		// Answer to open file
 		if (fileDialog.IsDone("MultiPurposeOpen")) {
 			if (fileDialog.HasResult()) {
 				std::string ext = fileDialog.GetResult().extension().u8string();
 				for (auto& c : ext) { c = std::tolower(c); } //lowercase
 				if (ext == ".lua") {
 					const std::string res = fileDialog.GetStrLocalResult();
-					
+
 					if (lua_editors.find(res) == lua_editors.end()) {
 						std::cout << "Now opening " << res << std::endl;
 
@@ -456,149 +614,11 @@ int main()
 			fileDialog.Close();
 		}
 
-		//if (win_console) {
-		//	if (ImGui::Begin("Console", &win_console)) {
-			if (ImGui::Begin("Console")) {
-				if (ImGui::Button("Clear"))
-					capture.clear();
-				bool updated = capturer.flush();
-				ImGui::BeginChild("Console text");
-				ImGui::TextUnformatted(capture.begin(), capture.end());
-				if (updated)
-					ImGui::SetScrollHereY(1.0f);
-				ImGui::EndChild();
-			}
-			ImGui::End();
-		//}
-
-		auto EditorSaveFile = [&fileDialog, &editor_saving_as](TextEditor& editor, const std::string& file, bool saveas, int editor_id) {
-			if (saveas) {
-				fileDialog.Save("SaveLuaScriptAs", "Save the script", "Lua script (*.lua){.lua}");
-				std::get<0>(editor_saving_as) = file;
-				std::get<1>(editor_saving_as) = &editor;
-				std::get<2>(editor_saving_as) = editor_id;
-			}
-			else {
-				auto textToSave = editor.GetText();
-				std::ofstream t(file);
-				if (t.good()) {
-					t << textToSave;
-					return true;
-				}
-			}
-			return false;
-		};
-
-		for (auto it = lua_editors.begin(); it != lua_editors.end();) {
-			bool is_opened = true;
-			const std::string& file = it->first;
-			const int editor_id = std::get<2>(it->second);
-			if (ImGui::Begin((file + std::string("###lua_editor n") + std::to_string(editor_id)).c_str(), &is_opened, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar)) {
-				if (is_opened) {
-					TextEditor& editor = *std::get<0>(it->second);
-					const bool needsSaveAs = std::get<1>(it->second);
-					ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
-
-					if (ImGui::BeginMenuBar())
-					{
-						if (ImGui::BeginMenu("File"))
-						{
-							if (ImGui::MenuItem("Save", "Ctrl-S")) {
-								EditorSaveFile(editor, file, needsSaveAs, editor_id);
-							}
-							if (ImGui::MenuItem("Save as")) {
-								EditorSaveFile(editor, file, true, editor_id);
-							}
-							if (ImGui::MenuItem("Run", "Ctrl-R")) {
-								std::cout << "Running " << file << std::endl;
-								SafeLuaDoString(L, editor.GetText().c_str());
-							}
-							if (ImGui::MenuItem("Quit", "Ctrl-Q")) {
-								is_opened = false;
-							}
-							ImGui::EndMenu();
-						}
-						if (ImGui::BeginMenu("Edit"))
-						{
-							bool ro = editor.IsReadOnly();
-							if (ImGui::MenuItem("Read-only mode", nullptr, &ro))
-								editor.SetReadOnly(ro);
-							ImGui::Separator();
-
-							if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor.CanUndo()))
-								editor.Undo();
-							if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && editor.CanRedo()))
-								editor.Redo();
-
-							ImGui::Separator();
-
-							if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor.HasSelection()))
-								editor.Copy();
-							if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && editor.HasSelection()))
-								editor.Cut();
-							if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor.HasSelection()))
-								editor.Delete();
-							if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr))
-								editor.Paste();
-
-							ImGui::Separator();
-
-							if (ImGui::MenuItem("Select all", nullptr, nullptr))
-								editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
-
-							ImGui::EndMenu();
-						}
-
-						if (ImGui::BeginMenu("View"))
-						{
-							if (ImGui::MenuItem("Dark palette"))
-								editor.SetPalette(TextEditor::GetDarkPalette());
-							if (ImGui::MenuItem("Light palette"))
-								editor.SetPalette(TextEditor::GetLightPalette());
-							if (ImGui::MenuItem("Retro blue palette"))
-								editor.SetPalette(TextEditor::GetRetroBluePalette());
-							ImGui::EndMenu();
-						}
-
-						ImGui::EndMenuBar();
-					}
-
-					auto cpos = editor.GetCursorPosition();
-					ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
-						editor.IsOverwrite() ? "Ovr" : "Ins",
-						editor.CanUndo() ? "*" : " ",
-						editor.GetLanguageDefinition().mName.c_str());
-
-					if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::GetIO().KeyCtrl) {
-						if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S))) {
-							EditorSaveFile(editor, file, needsSaveAs, editor_id);
-						}
-						else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R))) {
-							std::cout << "Running " << file << std::endl;
-							SafeLuaDoString(L, editor.GetText().c_str());
-						}
-						else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Q))) {
-							is_opened = false;
-						}
-					}
-					editor.Render("TextEditor");
-				}
-			}
-			if (!is_opened) {
-				delete std::get<0>(it->second);
-				lua_editors_ids.erase(editor_id);
-				it = lua_editors.erase(it);
-			}
-			else {
-				++it;
-			}
-			ImGui::End();
-		}
-
+		// Answer to save file as
 		if (fileDialog.IsDone("SaveLuaScriptAs")) {
 			if (fileDialog.HasResult() && std::get<1>(editor_saving_as)) {
 				std::string res = fileDialog.GetStrLocalResult();
-				if (EditorSaveFile(*std::get<1>(editor_saving_as), res, false, std::get<2>(editor_saving_as))) {
+				if (EditorSaveFile(editorit, false)) {
 					std::cout << "Saved file \"" << res << '\"' << std::endl;
 					auto it = lua_editors.find(std::get<0>(editor_saving_as));
 					if (it != lua_editors.end()) {

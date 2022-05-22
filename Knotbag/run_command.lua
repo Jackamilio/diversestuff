@@ -1,6 +1,6 @@
 runcommand = {
 	inputvalue = "",
-	successtime = 0,
+	successtime = -9999,
 	successtotal = 0,
 	successduration = 1.0,
 	windowfunction = function()
