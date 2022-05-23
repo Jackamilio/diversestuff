@@ -188,6 +188,7 @@
     <ClCompile Include="lua\lvm.c" />
     <ClCompile Include="lua\lzio.c" />
     <ClCompile Include="TextEditor.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui_iterator.inl" />
@@ -234,6 +235,7 @@
     <ClInclude Include="lua\lzio.h" />
     <ClInclude Include="stdcapture.h" />
     <ClInclude Include="TextEditor.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

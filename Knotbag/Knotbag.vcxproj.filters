@@ -165,6 +165,9 @@
     <ClCompile Include="imgui_lua_bindings.cpp">
       <Filter>Fichiers sources\bindings</Filter>
     </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -292,6 +295,9 @@
     </ClInclude>
     <ClInclude Include="imgui_lua_bindings.h">
       <Filter>Fichiers d%27en-tête\bindings</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

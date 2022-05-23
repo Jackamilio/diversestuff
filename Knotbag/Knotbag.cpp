@@ -13,6 +13,7 @@
 #include "imgui_lua_bindings.h"
 #include "additional_bindings.h"
 #include <set>
+#include "utils.h"
 
 extern "C" int luaopen_lallegro_core(lua_State * L);
 
@@ -223,40 +224,18 @@ void ImGuiFriendlyLuaAssert(bool pass, const char* message) {
 	assert(pass && message);
 }
 
-const char* luastartupscript =
-"\
-function fileexists(name)\n\
-	local f = io.open(name, \"r\")\n\
-	if f~= nil then\n\
-		io.close(f)\n\
-		return true\n\
-	else\n\
-		return false\n\
-	end\n\
-end\n\
-\n\
-if fileexists(\"start.lua\") then\n\
-		dofile(\"start.lua\")\n\
-end\
-";
-
-const char* luaframescript =
-"\
-if knotbag and type(knotbag.framescript) == \"function\" then\n\
-	knotbag.framescript() \n\
-end\
-";
-
-bool SafeLuaDoString(lua_State* L, const char* str) {
-	bool ret = true;
+inline void SafeLuaStart(lua_State* L) {
 	currentluacontext = L;
-	if (luaL_dostring(L, str)) {
-		std::cout << lua_tostring(L, -1) << std::endl;
-		ret = false;
+}
+void SafeLuaDefaultError(int retvalue) {
+	if (retvalue) {
+		std::cout << lua_tostring(currentluacontext, -1) << std::endl;
+		lua_pop(currentluacontext, 1);
 	}
+}
+inline void SafeLuaEnd() {
 	ImGui::LuaBindings::CleanEndStack();
 	currentluacontext = nullptr;
-	return ret;
 }
 
 int main()
@@ -349,8 +328,13 @@ int main()
 	ImGui::LuaBindings::Load(L);
 	luaopen_lallegro_core(L);
 	additional_bindings(L);
-	if (luaL_dostring(L, luastartupscript)) {
-		std::cout << "Startup script error : " << lua_tostring(L, -1) << std::endl;
+	if (fileexists("start.lua")) {
+		SafeLuaStart(L);
+		SafeLuaDefaultError(luaL_dofile(L, "start.lua"));
+		SafeLuaEnd();
+	}
+	else {
+		std::cout << "start.lua doesn't exist, it's probably why you don't see much yet" << std::endl;
 	}
 
 	lua_sethook(L, lua_monitoring_hook, LUA_MASKCOUNT, 100);
@@ -378,8 +362,9 @@ int main()
 		return te;
 	};
 	auto EditorNewFile = [&lua_editors,&InsertNewLuaEditor]() {
-		std::string newfilename = "New lua script ";
+		std::string newfilename = "New lua script";
 		if (lua_editors.find(newfilename) != lua_editors.end()) {
+			newfilename.append(" ");
 			int newnew = 1;
 			while (lua_editors.find(newfilename + std::to_string(newnew++)) != lua_editors.end());
 			newfilename += std::to_string(--newnew);
@@ -410,7 +395,19 @@ int main()
 	};
 	auto EditorRun = [&L](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator& it) {
 		std::cout << "Running " << it->first << std::endl;
-		SafeLuaDoString(L, std::get<0>(it->second)->GetText().c_str());
+		SafeLuaStart(L);
+		if (luaL_dostring(L, std::get<0>(it->second)->GetText().c_str())) {
+			std::string str(lua_tostring(L, -1));
+			// replace [string ....]: error by the file name
+			size_t message_pos = str.find("\"]:"); // this should do most of cases
+			if (message_pos != std::string::npos) {
+				std::string sub = str.substr(message_pos + 2, std::string::npos);
+				str = it->first + sub;
+			}
+			std::cout << str << std::endl;
+			lua_pop(L, 1);
+		}
+		SafeLuaEnd();
 	};
 	auto EditorClose = [&lua_editors_ids, &lua_editors](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator& it) {
 		delete std::get<0>(it->second);
@@ -652,7 +649,14 @@ int main()
 		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
 		
 		// function that gets called automatically each frame, the rest is lua's code reponsibility
-		SafeLuaDoString(L, luaframescript);
+		if (lua_getglobal(L, "knotbag") == LUA_TTABLE) {
+			if (lua_getfield(L, -1, "framescript") == LUA_TFUNCTION) {
+				SafeLuaStart(L);
+				SafeLuaDefaultError(lua_pcall(L, 0, 0, 0));
+				SafeLuaEnd();
+			}
+		}
+		lua_pop(L, 1);
 
 		DearImguiIntegration::Render();
 

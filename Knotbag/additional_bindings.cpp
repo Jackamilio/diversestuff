@@ -3,6 +3,7 @@
 #include "ImFileDialog.h"
 #include "imgui.h"
 #include "imgui_lua_bindings.h"
+#include "utils.h"
 
 std::string imgui_inputtext(const char* label, std::string text) {
 	static char buf[128];
@@ -14,7 +15,9 @@ std::string imgui_inputtext(const char* label, std::string text) {
 
 void additional_bindings(lua_State* L)
 {
-	luabridge::getGlobalNamespace(L).beginNamespace("imgui")
+	luabridge::getGlobalNamespace(L)
+	.addFunction("fileexists", fileexists)
+	.beginNamespace("imgui")
 		.addFunction("CleanEndStack", ImGui::LuaBindings::CleanEndStack)
 		.addFunction("InputText", imgui_inputtext)
 		.beginClass<ImGuiIO>("IO")

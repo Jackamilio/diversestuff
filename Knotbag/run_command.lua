@@ -19,18 +19,22 @@ runcommand = {
 					if ret then
 						ret()
 					else
-						error(err)
+						return err
 					end
 				end)
-			if ret then
+			if not err then
 				runcommand.errorstring = nil
 				runcommand.successtime = os.clock()
 				runcommand.successtotal = runcommand.successtotal + 1
 			else
 				runcommand.successtime = 0
-				local errstr = string.match(err, ":[^:]*$")
-				if not errstr then errstr = ": " .. err end
-				runcommand.errorstring = "Error" .. errstr
+				local a, b = string.find(err, '"]:%d*: ')
+				if b then
+					runcommand.errorstring = "Error:" .. err:sub(b)
+				else
+					runcommand.errorstring = err
+				end
+				--runcommand.errorstring = err .. "\n" .. #errstr .. "\nError" .. errstr
 			end
 		end
 		

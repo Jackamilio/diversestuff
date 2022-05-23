@@ -60,6 +60,7 @@ knotbag = {
 						print("Warning! Script \""..v.name.."\" needed imgui stack cleaning.")
 					end
 				else
+					imgui.CleanEndStack()
 					print(ret2)
 				end
 			end
@@ -86,9 +87,15 @@ knotbag.add_script("Windows", function()
 	
 	for t,v in pairs(knotbag.windows) do
 		if v.isopen then
-			v.isopen = (v.func() == true)
-			if imgui.CleanEndStack() then
-				print("Warning! Window \""..v.name.."\" needed imgui stack cleaning.")
+			local ret, ret2 = pcall(v.func)
+			if ret then
+				v.isopen = (ret2 == true)
+				if imgui.CleanEndStack() then
+					print("Warning! Window \""..v.name.."\" needed imgui stack cleaning.")
+				end
+			else
+				imgui.CleanEndStack()
+				print(ret2)
 			end
 		end
 	end
