@@ -22,7 +22,7 @@ knotbag = {
 	windows = {},
 	add_window = function(n, f)
 		if type(n) == "string" and type(f) == "function" then
-			table.insert(knotbag.windows, {name = n, func = f, isopen = true})
+			knotbag.windows[n] = {func = f, isopen = true}
 		else
 			print("add_window error : wrong arguments")
 		end
@@ -32,13 +32,13 @@ knotbag = {
 		local tn = type(n)
 		local ts = type(s)
 		if tn == "string" and (ts == "function" or ts == "string") then
-			table.insert(knotbag.scripts, {name = n, script = s, selected = sel or false})
+			knotbag.scripts[n] = {script = s, selected = sel or false}
 		else
 			print("add_script error : wrong arguments")
 		end
 	end,
 	framescript = function()
-		for t,v in pairs(knotbag.scripts) do
+		for k,v in pairs(knotbag.scripts) do
 			local func = nil
 			local script = v.script
 			if type(script) == "function" then
@@ -57,7 +57,7 @@ knotbag = {
 				if ret then
 					v.keepme = (ret2 == true)
 					if imgui.CleanEndStack() then
-						print("Warning! Script \""..v.name.."\" needed imgui stack cleaning.")
+						print("Warning! Script \""..k.."\" needed imgui stack cleaning.")
 					end
 				else
 					imgui.CleanEndStack()
@@ -75,8 +75,8 @@ knotbag = {
 knotbag.add_script("Windows", function()
 	if imgui.BeginMainMenuBar() then
 		if imgui.BeginMenu("Windows") then
-			for t,v in pairs(knotbag.windows) do
-				if imgui.MenuItem(v.name, nil, v.isopen) then
+			for k,v in pairs(knotbag.windows) do
+				if imgui.MenuItem(k, nil, v.isopen) then
 					v.isopen = not v.isopen
 				end
 			end
@@ -85,13 +85,13 @@ knotbag.add_script("Windows", function()
 		imgui.EndMainMenuBar()
 	end
 	
-	for t,v in pairs(knotbag.windows) do
+	for k,v in pairs(knotbag.windows) do
 		if v.isopen then
 			local ret, ret2 = pcall(v.func)
 			if ret then
 				v.isopen = (ret2 == true)
 				if imgui.CleanEndStack() then
-					print("Warning! Window \""..v.name.."\" needed imgui stack cleaning.")
+					print("Warning! Window \""..k.."\" needed imgui stack cleaning.")
 				end
 			else
 				imgui.CleanEndStack()
@@ -114,10 +114,10 @@ knotbag.add_window("Scripts", function()
 		end
 		
 		local i = 0
-		for t,v in pairs(knotbag.scripts) do
+		for k,v in pairs(knotbag.scripts) do
 			imgui.PushID(i)
 			i = i + 1
-			if imgui.Selectable(v.name, v.selected) then
+			if imgui.Selectable(k, v.selected) then
 				v.selected = not v.selected
 			end
 			imgui.PopID()

@@ -227,11 +227,13 @@ void ImGuiFriendlyLuaAssert(bool pass, const char* message) {
 inline void SafeLuaStart(lua_State* L) {
 	currentluacontext = L;
 }
-void SafeLuaDefaultError(int retvalue) {
+bool SafeLuaDefaultError(int retvalue) {
 	if (retvalue) {
 		std::cout << lua_tostring(currentluacontext, -1) << std::endl;
 		lua_pop(currentluacontext, 1);
+		return false;
 	}
+	return true;
 }
 inline void SafeLuaEnd() {
 	ImGui::LuaBindings::CleanEndStack();
@@ -300,13 +302,6 @@ int main()
 	// Dear Imgui
 	DearImguiIntegration::Init(main_display);
 
-	// Console
-	ImGuiTextBuffer capture;
-	std::capture::CaptureStdout capturer([&capture](const char* buf, size_t szbuf) {
-		capture.append(buf);
-		//capture += std::string(buf, szbuf);
-		});
-
 	// File Dialog
 	ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
 		ALLEGRO_BITMAP* bmp = al_create_bitmap(w, h);
@@ -343,6 +338,30 @@ int main()
 	lua_monitoring_mutex = al_create_mutex();
 	ALLEGRO_THREAD* thread = al_create_thread(lua_monitoring, NULL);
 	al_start_thread(thread);
+
+	// Console
+	ImGuiTextBuffer capture;
+	std::capture::CaptureStdout capturer([&capture,&L](const char* buf, size_t szbuf) {
+		// give it to lua if the users wants a custom console
+		int pop = 1;
+		bool callsuccess = false;
+		if (lua_getglobal(L, "knotbag") == LUA_TTABLE) {
+			if (lua_getfield(L, -1, "console_callback") == LUA_TFUNCTION) {
+				SafeLuaStart(L);
+				lua_pushstring(L, buf);
+				callsuccess = SafeLuaDefaultError(lua_pcall(L, 1, 0, 0));
+				SafeLuaEnd();
+			}
+			else {
+				++pop;
+			}
+		}
+		lua_pop(L, pop);
+		if (!callsuccess) {
+			capture.append(buf);
+		}
+		});
+	bool win_console = true;
 
 	// Text editors
 	std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>> lua_editors;
@@ -444,9 +463,8 @@ int main()
 
 		ImGui::DockSpaceOverViewport();
 
-		//if (win_console) {
-		//	if (ImGui::Begin("Console", &win_console)) {
-			if (ImGui::Begin("Console")) {
+		if (win_console) {
+			if (ImGui::Begin("Legacy console", &win_console)) {
 				if (ImGui::Button("Clear"))
 					capture.clear();
 				bool updated = capturer.flush();
@@ -457,7 +475,7 @@ int main()
 				ImGui::EndChild();
 			}
 			ImGui::End();
-		//}
+		}
 
 		auto editorit = lua_editors.find(lastFocusedEditor);
 		TextEditor* editor = editorit == lua_editors.end() ? nullptr : std::get<0>(editorit->second);
@@ -567,6 +585,11 @@ int main()
 			//	ImGui::EndMenu();
 			//}
 
+			if (ImGui::BeginMenu("Windows")) {
+				ImGui::MenuItem("Legacy console", nullptr, &win_console);
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMainMenuBar();
 		}
 
@@ -649,26 +672,31 @@ int main()
 		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
 		
 		// function that gets called automatically each frame, the rest is lua's code reponsibility
+		int pop = 1;
 		if (lua_getglobal(L, "knotbag") == LUA_TTABLE) {
 			if (lua_getfield(L, -1, "framescript") == LUA_TFUNCTION) {
 				SafeLuaStart(L);
 				SafeLuaDefaultError(lua_pcall(L, 0, 0, 0));
 				SafeLuaEnd();
 			}
+			else {
+				++pop;
+			}
 		}
-		lua_pop(L, 1);
+		lua_pop(L, pop);
 
+		// End frame
 		DearImguiIntegration::Render();
-
 		al_flip_display();
 
+		// Clean frame
 		for (auto bmp : bitmaps_to_destroy) {
 			al_destroy_bitmap(bmp);
 		}
 		bitmaps_to_destroy.clear();
 
+		// Wait next frame
 		double elapsed = al_get_time() - time;
-
 		if (elapsed < dtTarget) {
 			al_rest(dtTarget - elapsed);
 		}
