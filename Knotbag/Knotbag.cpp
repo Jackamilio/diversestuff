@@ -463,14 +463,14 @@ int main()
 
 		ImGui::DockSpaceOverViewport();
 
+		bool console_updated = capturer.flush();
 		if (win_console) {
 			if (ImGui::Begin("Legacy console", &win_console)) {
 				if (ImGui::Button("Clear"))
 					capture.clear();
-				bool updated = capturer.flush();
 				ImGui::BeginChild("Console text");
 				ImGui::TextUnformatted(capture.begin(), capture.end());
-				if (updated)
+				if (console_updated)
 					ImGui::SetScrollHereY(1.0f);
 				ImGui::EndChild();
 			}

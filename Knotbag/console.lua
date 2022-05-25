@@ -22,17 +22,17 @@ if knotbag.console_callback == nil then
 	knotbag.console_callback = function (s)
 		table.insert(knotbag.console_string.bits, s)
 		knotbag.console_string.needsconcat = true
+		knotbag.console_string.updated = true
 	end
 	
 	knotbag.add_window("Legacy console clone", function()
-		local show, cont = imgui.Begin("Legacy console clone", true)
-		if show then
-			if imgui.Button("Clear") then
-				knotbag.console_string.clear()
-			end
-			imgui.TextUnformatted(tostring(knotbag.console_string))
+		if imgui.Button("Clear") then
+			knotbag.console_string.clear()
 		end
-		imgui.End()
-		return cont
+		imgui.TextUnformatted(tostring(knotbag.console_string))
+		if knotbag.console_string.updated then
+			knotbag.console_string.updated = false
+			imgui.SetScrollHereY(1.0)
+		end
 	end)
 end
