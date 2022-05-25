@@ -34,7 +34,7 @@ knotbag.create_script = function(f)
 			end
 		end
 		if try then
-			return {call = function()
+			return function()
 				local ret, ret2 = pcall(try)
 				if ret then
 					return ret
@@ -42,7 +42,7 @@ knotbag.create_script = function(f)
 					print(ret2)
 					return false
 				end
-			end}
+			end
 		end
 	else
 		print("knotbag.create_script error : wrong arguments")
@@ -56,7 +56,7 @@ knotbag.windows = {}
 knotbag.add_script = function(name, func)
 	local try = knotbag.create_script(func)
 	if try then
-		knotbag.scripts[name] = try
+		knotbag.scripts[name] = {call = try}
 		return true
 	end
 	return false
@@ -65,9 +65,10 @@ end
 knotbag.add_window = function(name, func, autowindow)
 	local try = knotbag.create_script(func)
 	if try then
-		try.isopen = true
-		try.autowindow = (autowindow == nil) or autowindow --default true
-		knotbag.windows[name] = try
+		knotbag.windows[name] = {
+			call = try,
+			isopen = true,
+			autowindow = (autowindow == nil) or autowindow} --default true
 		return true
 	end
 	return false
@@ -75,15 +76,15 @@ end
 
 knotbag.framescript = function()
 	for k,v in pairs(knotbag.scripts) do
-		v.keepme = v.call()
+		local keepme = v.call()
 		if imgui.CleanEndStack() then
-			print("/!\\ Aborting script \""..k.."\" because it needed imgui stack cleaning.")
-			v.keepme = false
+			print("/!\\ Aborting script \""..k.."\" /!\\ (needed imgui stack cleaning)")
+			keepme = false
+		end
+		if not keepme then
+			knotbag.scripts[k] = nil
 		end
 	end
-	ArrayRemove(knotbag.scripts, function(t,i,j)
-		return t[i].keepme
-	end)
 end
 
 -- windows script
@@ -112,33 +113,45 @@ knotbag.add_script("Windows", function()
 			if v.autowindow then
 				imgui.End()
 			end
-			if v.isopen then v.isopen = cont end
 			if imgui.CleanEndStack() then
-				print("/!\\ Closing window \""..k.."\" because it needed imgui stack cleaning.")
+				print("/!\\ Closing window \""..k.."\" /!\\ (needed imgui stack cleaning)")
 				v.isopen = false
-			end
+			elseif v.isopen then v.isopen = cont end
 		end
 	end
 	
 	return true
 end)
 
+local killselected = function(t)
+	for k,v in pairs(t) do
+		if v.selected then
+			t[k] = nil
+		end
+	end
+end
+
+local showscripts = function(n,t)
+	if imgui.CollapsingHeader(n) then
+		local i = 0
+		for k,v in pairs(t) do
+			imgui.PushID(i)
+			i = i + 1
+			if imgui.Selectable(k, v.selected) then
+				v.selected = not v.selected
+			end
+			imgui.PopID()
+		end
+	end
+end
+
 -- scripts window
 knotbag.add_window("Scripts", function()
 	if imgui.Button("Kill selected") then
-		ArrayRemove(knotbag.scripts, function(t,i,j)
-			return not t[i].selected
-		end)
+		killselected(knotbag.scripts)
+		killselected(knotbag.windows)
 	end
-	
-	local i = 0
-	for k,v in pairs(knotbag.scripts) do
-		imgui.PushID(i)
-		i = i + 1
-		if imgui.Selectable(k, v.selected) then
-			v.selected = not v.selected
-		end
-		imgui.PopID()
-	end
+		showscripts("Scripts", knotbag.scripts)
+		showscripts("Windows", knotbag.windows)
 	return true
 end)

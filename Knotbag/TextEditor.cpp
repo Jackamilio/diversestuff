@@ -1568,7 +1568,7 @@ void TextEditor::InsertText(const char * aValue, bool aSelect)
 
 	totalLines += InsertTextAt(pos, aValue);
 
-	SetSelection( std::min(u.mBefore.mSelectionStart, u.mBefore.mCursorPosition) , pos);
+	//SetSelection( std::min(u.mBefore.mSelectionStart, u.mBefore.mCursorPosition) , pos);
 	SetCursorPosition(pos);
 	Colorize(start.mLine - 1, totalLines + 2);
 
