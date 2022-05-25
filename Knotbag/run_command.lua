@@ -4,9 +4,6 @@ runcommand = {
 	successtotal = 0,
 	successduration = 1.0,
 	windowfunction = function()
-		local show, cont = imgui.Begin("Run command", true)
-		if show then
-		
 		runcommand.inputvalue = imgui.InputText("##run_command_window", runcommand.inputvalue)
 		imgui.SameLine()
 		
@@ -54,12 +51,7 @@ runcommand = {
 				runcommand.errorstring = nil
 			end
 		end
-		
-		end
-		
-		imgui.End()
-		
-		return cont
+		return true
 	end
 }
 
