@@ -138,17 +138,23 @@ knotbag.framescript = function()
 		local s = knotbag.scripts[i]
 		s.keepme = s.call()
 		if imgui.CleanEndStack() then
-			print("/!\\ Aborting script \""..w.name.."\" /!\\ (needed imgui stack cleaning)")
+			print("/!\\ Aborting script \""..s.name.."\" /!\\ (needed imgui stack cleaning)")
 			s.keepme = false
 		end
 	end
 	ArrayRemove(knotbag.scripts, function(t,i) return t[i].keepme end)
 end
 
+-- docking management
+knotbag.docking = {}
+
 -- windows script
-knotbag.set_script("Windows", function()
+knotbag.set_script("Windows menu", function()
+	local clicked_add_docking = false
 	if imgui.BeginMainMenuBar() then
 		if imgui.BeginMenu("Windows") then
+			clicked_add_docking = imgui.MenuItem("Add docking")
+	
 			local lc_enabled = knotbag.legacy_console();
 			if imgui.MenuItem("Legacy console", nil, lc_enabled) then
 				knotbag.legacy_console(not lc_enabled)
@@ -165,6 +171,43 @@ knotbag.set_script("Windows", function()
 		imgui.EndMainMenuBar()
 	end
 	
+	if clicked_add_docking then
+		imgui.OpenPopup("Add docking module")
+		knotbag.docking.inputstate = ""
+		knotbag.docking.popupstate = true
+	end
+	
+	local show, cont = imgui.BeginPopupModal("Add docking module", knotbag.docking.popupstate)
+	knotbag.docking.popupstate = cont
+	if show then
+		knotbag.docking.inputvalue = imgui.InputText("##add_docking_module", knotbag.docking.inputvalue)
+		imgui.SameLine()
+		local run = imgui.IsWindowFocused() and imgui.IsKeyPressed(imgui.constant.Key.Enter)
+		if imgui.Button("Add") or run then
+			table.insert(knotbag.docking, knotbag.docking.inputvalue)
+			imgui.CloseCurrentPopup()
+		end
+		imgui.EndPopup()
+	end
+	
+	return true
+end)
+
+knotbag.set_script("Docking windows", function()
+	for i=1,#knotbag.docking do
+		imgui.PushStyleVar_2(imgui.constant.StyleVar.WindowPadding, 0, 0)
+		local show, cont = imgui.Begin(knotbag.docking[i].."###dockspace_"..i, true)
+		imgui.DockSpace(imgui.GetID("dockspace_"..i))
+		imgui.End()
+		imgui.PopStyleVar()
+		if not cont then
+			ArrayRemove(knotbag.docking, function() return i ~= i end)
+		end
+	end
+	return true
+end)
+
+knotbag.set_script("Windows", function()
 	--purposely manually counting i
 	--so #knotbag.window is recalculated each loop
 	--because deletion can happen inside
@@ -228,5 +271,10 @@ knotbag.set_window("Scripts", function()
 	end
 		showscripts("Scripts", knotbag.scripts)
 		showscripts("Windows", knotbag.windows)
+		if imgui.CollapsingHeader("Docks") then
+			for i=1,#knotbag.docking do
+				knotbag.docking[i] = imgui.InputText("##dock_name_"..i,knotbag.docking[i])
+			end
+		end
 	return true
 end)

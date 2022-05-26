@@ -1,4 +1,8 @@
+dofile("scan_all_context.lua")
+
 dofile("knotbag.lua")
+
+tablescanning.registerwindow()
 
 dofile("run_command.lua")
 dofile("bitmap_aliases.lua")

@@ -475,7 +475,6 @@ int main()
 		ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-
 		ImGui::Begin("docktest");
 		ImGui::DockSpace(12345);
 		ImGui::End();
