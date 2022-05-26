@@ -66,7 +66,7 @@ knotbag.create_script = function(f)
 			return function()
 				local ret, ret2 = pcall(try)
 				if ret then
-					return ret
+					return ret2
 				else
 					print(ret2)
 					return false
@@ -83,22 +83,32 @@ end
 knotbag.scripts = {}
 knotbag.windows = {}
 
-knotbag.add_script = function(name, func)
+knotbag.set_script = function(name, func)
 	local try = knotbag.create_script(func)
 	if try then
-		knotbag.scripts[name] = {call = try}
+		local ref = knotbag.scripts[name]
+		if not ref then
+			ref = {name = name}
+			knotbag.scripts[name] = ref
+			table.insert(knotbag.scripts, ref)
+		end
+		ref.call = try
 		return true
 	end
 	return false
 end
 
-knotbag.add_window = function(name, func, autowindow)
+knotbag.set_window = function(name, func, autowindow)
 	local try = knotbag.create_script(func)
 	if try then
-		knotbag.windows[name] = {
-			call = try,
-			isopen = true,
-			autowindow = (autowindow == nil) or autowindow} --default true
+		local ref = knotbag.windows[name]
+		if not ref then
+			ref = { name = name, isopen = true }
+			knotbag.windows[name] = ref
+			table.insert(knotbag.windows, ref)
+		end
+		ref.autowindow = (autowindow == nil) or autowindow --defaults to true
+		ref.call = try
 		return true
 	end
 	return false
@@ -107,20 +117,19 @@ end
 -- framescript called by cpp
 -- calls everyscript inside knotbag.scripts and keeps them for next frame if it returns true
 knotbag.framescript = function()
-	for k,v in pairs(knotbag.scripts) do
-		local keepme = v.call()
+	for i=1,#knotbag.scripts do
+		local s = knotbag.scripts[i]
+		s.keepme = s.call()
 		if imgui.CleanEndStack() then
-			print("/!\\ Aborting script \""..k.."\" /!\\ (needed imgui stack cleaning)")
-			keepme = false
-		end
-		if not keepme then
-			knotbag.scripts[k] = nil
+			print("/!\\ Aborting script \""..w.name.."\" /!\\ (needed imgui stack cleaning)")
+			s.keepme = false
 		end
 	end
+	ArrayRemove(knotbag.scripts, function(t,i) return t[i].keepme end)
 end
 
 -- windows script
-knotbag.add_script("Windows", function()
+knotbag.set_script("Windows", function()
 	if imgui.BeginMainMenuBar() then
 		if imgui.BeginMenu("Windows") then
 			local lc_enabled = knotbag.legacy_console();
@@ -128,9 +137,10 @@ knotbag.add_script("Windows", function()
 				knotbag.legacy_console(not lc_enabled)
 			end
 			imgui.Separator()
-			for k,v in pairs(knotbag.windows) do
-				if imgui.MenuItem(k, nil, v.isopen) then
-					v.isopen = not v.isopen
+			for i=1,#knotbag.windows do
+				local w = knotbag.windows[i]
+				if imgui.MenuItem(w.name, nil, w.isopen) then
+					w.isopen = not w.isopen
 				end
 			end
 			imgui.EndMenu()
@@ -138,44 +148,54 @@ knotbag.add_script("Windows", function()
 		imgui.EndMainMenuBar()
 	end
 	
-	for k,v in pairs(knotbag.windows) do
-		if v.isopen then
+	--purposely manually counting i
+	--so #knotbag.window is recalculated each loop
+	--because deletion can happen inside
+	local i=1
+	while i <= #knotbag.windows do
+		local w = knotbag.windows[i]
+		if w.isopen then
 			local show, cont = true, true
-			if v.autowindow then
-				show, cont = imgui.Begin(k, true)
+			if w.autowindow then
+				show, cont = imgui.Begin(w.name, true)
 			end
 			if show then
-				v.isopen = v.call()
+				w.isopen = w.call()
 			end
-			if v.autowindow then
+			if w.autowindow then
 				imgui.End()
 			end
 			if imgui.CleanEndStack() then
-				print("/!\\ Closing window \""..k.."\" /!\\ (needed imgui stack cleaning)")
-				v.isopen = false
-			elseif v.isopen then v.isopen = cont end
+				print("/!\\ Closing window \""..w.name.."\" /!\\ (needed imgui stack cleaning)")
+				w.isopen = false
+			elseif w.isopen then
+				w.isopen = cont
+			end
 		end
+		i = i+1
 	end
 	
 	return true
 end)
 
--- utils for add_window
+-- utils for the Scripts window
 local killselected = function(t)
-	for k,v in pairs(t) do
+	for i=1,#t do
+		local v = t[i]
+		v.keepme = not v.selected
 		if v.selected then
-			t[k] = nil
+			t[v.name] = nil
 		end
 	end
+	ArrayRemove(t, function(t,i,j) return t[i].keepme end)
 end
 
 local showscripts = function(n,t)
 	if imgui.CollapsingHeader(n) then
-		local i = 0
-		for k,v in pairs(t) do
+		for i=1,#t do
+			local v = t[i]
 			imgui.PushID(i)
-			i = i + 1
-			if imgui.Selectable(k, v.selected) then
+			if imgui.Selectable(v.name, v.selected) then
 				v.selected = not v.selected
 			end
 			imgui.PopID()
@@ -184,8 +204,8 @@ local showscripts = function(n,t)
 end
 
 -- scripts window
-knotbag.add_window("Scripts", function()
-	if imgui.Button("Kill selected") then
+knotbag.set_window("Scripts", function()
+	if imgui.Button("Terminate selected") then
 		killselected(knotbag.scripts)
 		killselected(knotbag.windows)
 	end

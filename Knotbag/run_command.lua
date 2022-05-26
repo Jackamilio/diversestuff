@@ -55,4 +55,4 @@ runcommand = {
 	end
 }
 
-knotbag.add_window("Run command", runcommand.windowfunction)
+knotbag.set_window("Run command", runcommand.windowfunction)

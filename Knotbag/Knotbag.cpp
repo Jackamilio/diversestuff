@@ -325,8 +325,31 @@ int main()
 	};
 	ifd::FileDialog& fileDialog = ifd::FileDialog::Instance();
 
-	// lua
 	lua_State* L;
+	// Console
+	ImGuiTextBuffer capture;
+	std::capture::CaptureStdout capturer([&capture, &L](const char* buf, size_t szbuf) {
+		// give it to lua if the users wants a custom console
+		int pop = 1;
+		bool callsuccess = false;
+		if (lua_getglobal(L, "knotbag") == LUA_TTABLE) {
+			if (lua_getfield(L, -1, "console_callback") == LUA_TFUNCTION) {
+				SafeLuaStart(L);
+				lua_pushstring(L, buf);
+				callsuccess = SafeLuaDefaultError(lua_pcall(L, 1, 0, 0));
+				SafeLuaEnd();
+			}
+			else {
+				++pop;
+			}
+		}
+		lua_pop(L, pop);
+		if (!callsuccess) {
+			capture.append(buf);
+		}
+		});
+
+	// lua
 	L = luaL_newstate();
 	luaL_openlibs(L);
 	ImGui::LuaBindings::Load(L);
@@ -350,29 +373,6 @@ int main()
 	lua_monitoring_mutex = al_create_mutex();
 	ALLEGRO_THREAD* thread = al_create_thread(lua_monitoring, NULL);
 	al_start_thread(thread);
-
-	// Console
-	ImGuiTextBuffer capture;
-	std::capture::CaptureStdout capturer([&capture,&L](const char* buf, size_t szbuf) {
-		// give it to lua if the users wants a custom console
-		int pop = 1;
-		bool callsuccess = false;
-		if (lua_getglobal(L, "knotbag") == LUA_TTABLE) {
-			if (lua_getfield(L, -1, "console_callback") == LUA_TFUNCTION) {
-				SafeLuaStart(L);
-				lua_pushstring(L, buf);
-				callsuccess = SafeLuaDefaultError(lua_pcall(L, 1, 0, 0));
-				SafeLuaEnd();
-			}
-			else {
-				++pop;
-			}
-		}
-		lua_pop(L, pop);
-		if (!callsuccess) {
-			capture.append(buf);
-		}
-	});
 
 	// Text editors
 	std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>> lua_editors;

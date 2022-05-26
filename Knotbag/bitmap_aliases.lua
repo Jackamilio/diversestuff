@@ -31,7 +31,7 @@ if bitmaps == nil then
 	bitmaps.__editor_values__ = { current = -1, elemwidth = 100 }
 end
 
-knotbag.add_window("Bitmap aliases", function()
+knotbag.set_window("Bitmap aliases", function()
 	local fd = imgui.GetFileDialog()
 	local ed = bitmaps.__editor_values__
 	local fieldtodel = -1
