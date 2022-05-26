@@ -240,6 +240,15 @@ inline void SafeLuaEnd() {
 	currentluacontext = nullptr;
 }
 
+static bool legacyconsole_openstate = true;
+int lua_knotbag_legacyconsole(lua_State* L) {
+	if (lua_gettop(L) >= 1) {
+		legacyconsole_openstate = lua_toboolean(L, 1);
+	}
+	lua_pushboolean(L, legacyconsole_openstate);
+	return 1;
+}
+
 int main()
 {
 	CoInitialize(nullptr); // ImFileDialog needs this if we don't want the debug output complaining
@@ -323,6 +332,10 @@ int main()
 	ImGui::LuaBindings::Load(L);
 	luaopen_lallegro_core(L);
 	additional_bindings(L);
+	lua_newtable(L);
+	lua_pushcfunction(L, lua_knotbag_legacyconsole);
+	lua_setfield(L, -2, "legacy_console");
+	lua_setglobal(L, "knotbag");
 	if (fileexists("start.lua")) {
 		SafeLuaStart(L);
 		SafeLuaDefaultError(luaL_dofile(L, "start.lua"));
@@ -332,9 +345,8 @@ int main()
 		std::cout << "start.lua doesn't exist, it's probably why you don't see much yet" << std::endl;
 	}
 
+	// lua monitoring
 	lua_sethook(L, lua_monitoring_hook, LUA_MASKCOUNT, 100);
-
-	// lua monitoring thread
 	lua_monitoring_mutex = al_create_mutex();
 	ALLEGRO_THREAD* thread = al_create_thread(lua_monitoring, NULL);
 	al_start_thread(thread);
@@ -360,8 +372,7 @@ int main()
 		if (!callsuccess) {
 			capture.append(buf);
 		}
-		});
-	bool win_console = true;
+	});
 
 	// Text editors
 	std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>> lua_editors;
@@ -461,11 +472,19 @@ int main()
 
 		DearImguiIntegration::NewFrame();
 
-		ImGui::DockSpaceOverViewport();
+		ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+
+		ImGui::Begin("docktest");
+		ImGui::DockSpace(12345);
+		ImGui::End();
+
+		ImGui::PopStyleVar();
 
 		bool console_updated = capturer.flush();
-		if (win_console) {
-			if (ImGui::Begin("Legacy console", &win_console)) {
+		if (legacyconsole_openstate) {
+			if (ImGui::Begin("Legacy console", &legacyconsole_openstate)) {
 				if (ImGui::Button("Clear"))
 					capture.clear();
 				ImGui::BeginChild("Console text");
@@ -585,10 +604,10 @@ int main()
 			//	ImGui::EndMenu();
 			//}
 
-			if (ImGui::BeginMenu("Windows")) {
-				ImGui::MenuItem("Legacy console", nullptr, &win_console);
-				ImGui::EndMenu();
-			}
+			//if (ImGui::BeginMenu("Windows")) {
+			//	ImGui::MenuItem("Legacy console", nullptr, &legacyconsole_openstate);
+			//	ImGui::EndMenu();
+			//}
 
 			ImGui::EndMainMenuBar();
 		}

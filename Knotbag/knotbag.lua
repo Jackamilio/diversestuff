@@ -18,7 +18,36 @@ function ArrayRemove(t, fnKeep)
     return t;
 end
 
-knotbag = {}
+--knotbag = {} -- do not reset knotbag, the cpp code code created it and bound stuff on it
+
+--console callback
+--trying to optimize a bit
+knotbag.console_string = {
+	bits = {},
+	full = "",
+	needsconcat = false,
+	clear = function()
+		knotbag.console_string.bits = {}
+		knotbag.console_string.full = ""
+		knotbag.console_string.needsconcat = false
+	end
+}
+knotbag.console_string.clear()
+setmetatable(knotbag.console_string, {__tostring = function(v)
+	if v.needsconcat then
+		v.needsconcat = false
+		v.full = table.concat(v.bits)
+		v.bits = {v.full}
+	end
+	return v.full
+end})
+knotbag.console_callback = function (s)
+	table.insert(knotbag.console_string.bits, s)
+	knotbag.console_string.needsconcat = true
+	knotbag.console_string.updated = true
+end
+
+--function to create a safe callable script
 knotbag.create_script = function(f)
 	local tf = type(f)
 	if tf == "function" or tf == "string" then
@@ -50,6 +79,7 @@ knotbag.create_script = function(f)
 	return nil
 end		
 
+-- add function for general scripts and windows scripts
 knotbag.scripts = {}
 knotbag.windows = {}
 
@@ -74,6 +104,8 @@ knotbag.add_window = function(name, func, autowindow)
 	return false
 end
 
+-- framescript called by cpp
+-- calls everyscript inside knotbag.scripts and keeps them for next frame if it returns true
 knotbag.framescript = function()
 	for k,v in pairs(knotbag.scripts) do
 		local keepme = v.call()
@@ -91,6 +123,11 @@ end
 knotbag.add_script("Windows", function()
 	if imgui.BeginMainMenuBar() then
 		if imgui.BeginMenu("Windows") then
+			local lc_enabled = knotbag.legacy_console();
+			if imgui.MenuItem("Legacy console", nil, lc_enabled) then
+				knotbag.legacy_console(not lc_enabled)
+			end
+			imgui.Separator()
 			for k,v in pairs(knotbag.windows) do
 				if imgui.MenuItem(k, nil, v.isopen) then
 					v.isopen = not v.isopen
@@ -123,6 +160,7 @@ knotbag.add_script("Windows", function()
 	return true
 end)
 
+-- utils for add_window
 local killselected = function(t)
 	for k,v in pairs(t) do
 		if v.selected then

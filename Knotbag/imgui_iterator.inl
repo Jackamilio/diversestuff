@@ -1423,6 +1423,34 @@ IMGUI_FUNCTION(SetTabItemClosed)
 LABEL_ARG(tab_or_docked_window_label)
 CALL_FUNCTION_NO_RET(SetTabItemClosed, tab_or_docked_window_label)
 END_IMGUI_FUNC
+//    IMGUI_API ImGuiID       DockSpace(ImGuiID id, const ImVec2& size = ImVec2(0, 0), ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = NULL);
+IMGUI_FUNCTION(DockSpace)
+INT_ARG(id)
+OPTIONAL_IM_VEC_2_ARG(size, 0, 0)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DockSpace, ImGuiID, id, size, flags)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
+//    IMGUI_API ImGuiID       DockSpaceOverViewport(const ImGuiViewport* viewport = NULL, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = NULL);
+// Unsupported return type ImGuiViewport*
+//    IMGUI_API void          SetNextWindowDockID(ImGuiID dock_id, ImGuiCond cond = 0);           // set next window dock id
+IMGUI_FUNCTION(SetNextWindowDockID)
+INT_ARG(dock_id)
+OPTIONAL_INT_ARG(cond, 0)
+CALL_FUNCTION_NO_RET(SetNextWindowDockID, dock_id, cond)
+END_IMGUI_FUNC
+//    IMGUI_API void          SetNextWindowClass(const ImGuiWindowClass* window_class);           // set next window class (control docking compatibility + provide hints to platform backend via custom viewport flags and platform parent/child relationship)
+// Unsupported arg type  const ImGuiWindowClass* window_class
+//    IMGUI_API ImGuiID       GetWindowDockID();
+IMGUI_FUNCTION(GetWindowDockID)
+CALL_FUNCTION(GetWindowDockID, ImGuiID)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
+//    IMGUI_API bool          IsWindowDocked();                                                   // is current window docked into another window?
+IMGUI_FUNCTION(IsWindowDocked)
+CALL_FUNCTION(IsWindowDocked, bool)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          LogToTTY(int auto_open_depth = -1);                                 // start logging to tty (stdout)
 IMGUI_FUNCTION(LogToTTY)
 OPTIONAL_INT_ARG(auto_open_depth, -1)
