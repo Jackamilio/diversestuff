@@ -5,6 +5,6 @@ dofile("bitmap_aliases.lua")
 
 knotbag.set_window("Demo", function()
 	return imgui.ShowDemoWindow(true)
-end, false)
+end, nil, false)
 
 dofile("console.lua")

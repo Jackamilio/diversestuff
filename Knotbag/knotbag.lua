@@ -83,35 +83,52 @@ end
 knotbag.scripts = {}
 knotbag.windows = {}
 
-knotbag.set_script = function(name, func)
+local comp = function(l, r)
+	if l.priority ~=nil and r.priority ~= nil then
+		if l.priority == r.priority then
+			return l.name < r.name
+		else
+			return l.priority < r.priority
+		end
+	elseif l.priority ~= nil and r.priority == nil then
+		return true
+	elseif r.priotity == nil and r.priority ~= nil then
+		return false
+	else
+		return l.name < r.name
+	end
+end
+
+local set_script = function(t, name, func, priority)
 	local try = knotbag.create_script(func)
 	if try then
-		local ref = knotbag.scripts[name]
+		local ref = t[name]
 		if not ref then
 			ref = {name = name}
-			knotbag.scripts[name] = ref
-			table.insert(knotbag.scripts, ref)
+			t[name] = ref
+			table.insert(t, ref)
 		end
 		ref.call = try
+		ref.priority = priority
+		table.sort(t,comp)
 		return true
 	end
 	return false
 end
 
-knotbag.set_window = function(name, func, autowindow)
-	local try = knotbag.create_script(func)
-	if try then
-		local ref = knotbag.windows[name]
-		if not ref then
-			ref = { name = name, isopen = true }
-			knotbag.windows[name] = ref
-			table.insert(knotbag.windows, ref)
-		end
-		ref.autowindow = (autowindow == nil) or autowindow --defaults to true
-		ref.call = try
+knotbag.set_script = function(name, func, priority)
+	return set_script(knotbag.scripts, name, func, priority)
+end
+
+knotbag.set_window = function(name, func, priority, autowindow)
+	local ret = set_script(knotbag.windows, name, func, priority)
+	if ret then
+		knotbag.windows[name].isopen = true
+		knotbag.windows[name].autowindow = (autowindow == nil) or autowindow --defaults to true
 		return true
+	else
+		return false
 	end
-	return false
 end
 
 -- framescript called by cpp

@@ -9,4 +9,4 @@ knotbag.set_window("Console", function()
 		imgui.SetScrollHereY(1.0)
 	end
 	return true
-end)
+end, -100)
