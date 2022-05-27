@@ -47,6 +47,20 @@ knotbag.console_callback = function (s)
 	knotbag.console_string.updated = true
 end
 
+--util to load settings
+local function tryload(filename)
+	if fileexists(filename) then
+		local err = nil
+		local t, err = table.load(filename)
+		if err then
+			print(err)
+		else
+			return t
+		end
+	end
+	return nil
+end
+
 --function to create a safe callable script
 knotbag.create_script = function(f)
 	local tf = type(f)
@@ -81,7 +95,7 @@ end
 
 -- add function for general scripts and windows scripts
 knotbag.scripts = {}
-knotbag.windows = {}
+knotbag.windows = tryload("openedwindows.lua") or {}
 
 local comp = function(l, r)
 	if l.priority ~=nil and r.priority ~= nil then
@@ -123,30 +137,27 @@ end
 knotbag.set_window = function(name, func, priority, autowindow)
 	local ret = set_script(knotbag.windows, name, func, priority)
 	if ret then
-		knotbag.windows[name].isopen = true
-		knotbag.windows[name].autowindow = (autowindow == nil) or autowindow --defaults to true
+		local w = knotbag.windows[name]
+		w.isopen = (w.isopen == nil) or w.isopen --open window on first time only
+		w.autowindow = (autowindow == nil) or autowindow --defaults to true
 		return true
 	else
 		return false
 	end
 end
 
--- framescript called by cpp
--- calls everyscript inside knotbag.scripts and keeps them for next frame if it returns true
-knotbag.framescript = function()
-	for i=1,#knotbag.scripts do
-		local s = knotbag.scripts[i]
-		s.keepme = s.call()
-		if imgui.CleanEndStack() then
-			print("/!\\ Aborting script \""..s.name.."\" /!\\ (needed imgui stack cleaning)")
-			s.keepme = false
-		end
-	end
-	ArrayRemove(knotbag.scripts, function(t,i) return t[i].keepme end)
-end
-
 -- docking management
-knotbag.docking = {}
+knotbag.docking = {findfreeID = function()
+	local id=1
+	while true do
+		if knotbag.docking.docks[id] == nil then
+			return id
+		end
+		id = id + 1
+	end
+end}
+
+knotbag.docking.docks = tryload("docks.lua") or {}
 
 -- windows script
 knotbag.set_script("Windows menu", function()
@@ -177,14 +188,15 @@ knotbag.set_script("Windows menu", function()
 		knotbag.docking.popupstate = true
 	end
 	
-	local show, cont = imgui.BeginPopupModal("Add docking module", knotbag.docking.popupstate)
-	knotbag.docking.popupstate = cont
+	local dk = knotbag.docking
+	local show, cont = imgui.BeginPopupModal("Add docking module", dk.popupstate)
+	dk.popupstate = cont
 	if show then
-		knotbag.docking.inputvalue = imgui.InputText("##add_docking_module", knotbag.docking.inputvalue)
+		dk.inputvalue = imgui.InputText("##add_docking_module", dk.inputvalue)
 		imgui.SameLine()
 		local run = imgui.IsWindowFocused() and imgui.IsKeyPressed(imgui.constant.Key.Enter)
 		if imgui.Button("Add") or run then
-			table.insert(knotbag.docking, knotbag.docking.inputvalue)
+			dk.docks[dk.findfreeID()] = dk.inputvalue
 			imgui.CloseCurrentPopup()
 		end
 		imgui.EndPopup()
@@ -194,18 +206,18 @@ knotbag.set_script("Windows menu", function()
 end)
 
 knotbag.set_script("Docking windows", function()
-	for i=1,#knotbag.docking do
+	for k,v in pairs(knotbag.docking.docks) do
 		imgui.PushStyleVar_2(imgui.constant.StyleVar.WindowPadding, 0, 0)
-		local show, cont = imgui.Begin(knotbag.docking[i].."###dockspace_"..i, true)
-		imgui.DockSpace(imgui.GetID("dockspace_"..i))
+		local show, cont = imgui.Begin(v.."###dockspace_"..k, true)
+		imgui.DockSpace(k)--THIS: imgui.GetID("dockspace_no_"..k)) gave me an assert telling I can't call DockSpace twice in a frame with the same ID. wtf.
 		imgui.End()
 		imgui.PopStyleVar()
 		if not cont then
-			ArrayRemove(knotbag.docking, function() return i ~= i end)
+			knotbag.docking.docks[k] = nil
 		end
 	end
 	return true
-end)
+end, -math.huge) --docking must be done first
 
 knotbag.set_script("Windows", function()
 	--purposely manually counting i
@@ -272,9 +284,42 @@ knotbag.set_window("Scripts", function()
 		showscripts("Scripts", knotbag.scripts)
 		showscripts("Windows", knotbag.windows)
 		if imgui.CollapsingHeader("Docks") then
-			for i=1,#knotbag.docking do
-				knotbag.docking[i] = imgui.InputText("##dock_name_"..i,knotbag.docking[i])
+			local docks = knotbag.docking.docks
+			for k,v in pairs(docks) do
+				docks[k] = imgui.InputText("ID "..k,v)
 			end
 		end
 	return true
 end)
+
+
+-- CPP CALLBACKS DEFINITIONS --
+
+-- framescript called by cpp
+-- calls everyscript inside knotbag.scripts and keeps them for next frame if it returns true
+knotbag.framescript = function()
+	for i=1,#knotbag.scripts do
+		local s = knotbag.scripts[i]
+		s.keepme = s.call()
+		if imgui.CleanEndStack() then
+			print("/!\\ Aborting script \""..s.name.."\" /!\\ (needed imgui stack cleaning)")
+			s.keepme = false
+		end
+	end
+	ArrayRemove(knotbag.scripts, function(t,i) return t[i].keepme end)
+end
+
+-- saving settings on quit
+knotbag.quit = function()
+	table.save(knotbag.docking.docks, "docks.lua")
+	--save opened windows
+	local savewin = {}
+	for i=1,#knotbag.windows do
+		--only save name and open state
+		local w = knotbag.windows[i]
+		local s = {name = w.name, isopen = w.isopen}
+		savewin[i] = s
+		savewin[s.name] = s
+	end
+	table.save(savewin, "openedwindows.lua")
+end

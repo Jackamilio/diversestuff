@@ -139,7 +139,7 @@ TextEditor::Coordinates TextEditor::SanitizeCoordinates(const Coordinates & aVal
 	}
 	else
 	{
-		column = mLines.empty() ? 0 : std::min(column, GetLineMaxColumn(line));
+		column = mLines.empty() ? 0 : std::clamp(column, 0, GetLineMaxColumn(line));
 		return Coordinates(line, column);
 	}
 }

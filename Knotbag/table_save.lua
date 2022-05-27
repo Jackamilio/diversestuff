@@ -61,9 +61,9 @@ do
                file:write( charS.."{"..lookup[v].."},"..charE )
             elseif stype == "string" then
                file:write(  charS..exportstring( v )..","..charE )
-            elseif stype == "number" then
+            elseif stype == "number" or stype == "boolean" then
                file:write(  charS..tostring( v )..","..charE )
-            end
+			end
          end
 
          for i,v in pairs( t ) do
@@ -81,7 +81,7 @@ do
                   str = charS.."[{"..lookup[i].."}]="
                elseif stype == "string" then
                   str = charS.."["..exportstring( i ).."]="
-               elseif stype == "number" then
+               elseif stype == "number" or stype == "boolean" then
                   str = charS.."["..tostring( i ).."]="
                end
             
@@ -96,7 +96,7 @@ do
                      file:write( str.."{"..lookup[v].."},"..charE )
                   elseif stype == "string" then
                      file:write( str..exportstring( v )..","..charE )
-                  elseif stype == "number" then
+                  elseif stype == "number" or stype == "boolean" then
                      file:write( str..tostring( v )..","..charE )
                   end
                end

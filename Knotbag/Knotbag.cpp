@@ -249,6 +249,21 @@ int lua_knotbag_legacyconsole(lua_State* L) {
 	return 1;
 }
 
+void trigger_knotbag_callback(lua_State* L, const char* callback) {
+	int pop = 1;
+	if (lua_getglobal(L, "knotbag") == LUA_TTABLE) {
+		if (lua_getfield(L, -1, callback) == LUA_TFUNCTION) {
+			SafeLuaStart(L);
+			SafeLuaDefaultError(lua_pcall(L, 0, 0, 0));
+			SafeLuaEnd();
+		}
+		else {
+			++pop;
+		}
+	}
+	lua_pop(L, pop);
+}
+
 int main()
 {
 	CoInitialize(nullptr); // ImFileDialog needs this if we don't want the debug output complaining
@@ -470,78 +485,13 @@ int main()
 			}
 		}
 
+		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
 		DearImguiIntegration::NewFrame();
 
 		ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		ImGui::Begin("docktest");
-		ImGui::DockSpace(12345);
-		ImGui::End();
-
-		ImGui::PopStyleVar();
-
-		bool console_updated = capturer.flush();
-		if (legacyconsole_openstate) {
-			if (ImGui::Begin("Legacy console", &legacyconsole_openstate)) {
-				if (ImGui::Button("Clear"))
-					capture.clear();
-				ImGui::BeginChild("Console text");
-				ImGui::TextUnformatted(capture.begin(), capture.end());
-				if (console_updated)
-					ImGui::SetScrollHereY(1.0f);
-				ImGui::EndChild();
-			}
-			ImGui::End();
-		}
-
 		auto editorit = lua_editors.find(lastFocusedEditor);
 		TextEditor* editor = editorit == lua_editors.end() ? nullptr : std::get<0>(editorit->second);
-
-		// lua editors
-		for (auto it = lua_editors.begin(); it != lua_editors.end();) {
-			bool is_opened = true;
-			const std::string& file = it->first;
-			const int editor_id = std::get<2>(it->second);
-			TextEditor& editor = *std::get<0>(it->second);
-			if (editorNeedsFocus && it == editorit) {
-				editorNeedsFocus = false;
-				ImGui::SetNextWindowFocus();
-			}
-			ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar;
-			if (editor.IsModified()) {
-				flags |= ImGuiWindowFlags_UnsavedDocument;
-			}
-			if (ImGui::Begin((file + std::string("###lua_editor n") + std::to_string(editor_id)).c_str(), &is_opened, flags)) {
-				if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
-					lastFocusedEditor = file;
-				}
-				ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
-				editor.Render("TextEditor");
-
-				ImVec2 work_pos = ImGui::GetWindowPos();
-				ImVec2 work_size = ImGui::GetWindowSize();
-				ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove;
-				const float PAD = 20.0f;
-				ImVec2 window_pos;
-				window_pos.x = work_pos.x + work_size.x - PAD;
-				window_pos.y = work_pos.y + work_size.y - PAD;
-				ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(1.0f, 1.0f));
-				if (ImGui::BeginChild("Cursor position overlay", ImVec2(190.0f, 20.0f), false, window_flags))
-				{
-					auto cpos = editor.GetCursorPosition();
-					ImGui::Text("%6d/%-6d %6d lines", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines());
-				}
-				ImGui::EndChild();
-			}
-			if (!is_opened) {
-				EditorClose(it);
-			}
-			else {
-				++it;
-			}
-			ImGui::End();
-		}
 
 		// Main menu
 		if (ImGui::BeginMainMenuBar()) {
@@ -632,6 +582,68 @@ int main()
 			}
 		}
 
+		// function that gets called automatically each frame, the rest is lua's code reponsibility
+		trigger_knotbag_callback(L, "framescript");
+
+		bool console_updated = capturer.flush();
+		if (legacyconsole_openstate) {
+			if (ImGui::Begin("Legacy console", &legacyconsole_openstate)) {
+				if (ImGui::Button("Clear"))
+					capture.clear();
+				ImGui::BeginChild("Console text");
+				ImGui::TextUnformatted(capture.begin(), capture.end());
+				if (console_updated)
+					ImGui::SetScrollHereY(1.0f);
+				ImGui::EndChild();
+			}
+			ImGui::End();
+		}
+
+		// lua editors
+		for (auto it = lua_editors.begin(); it != lua_editors.end();) {
+			bool is_opened = true;
+			const std::string& file = it->first;
+			const int editor_id = std::get<2>(it->second);
+			TextEditor& editor = *std::get<0>(it->second);
+			if (editorNeedsFocus && it == editorit) {
+				editorNeedsFocus = false;
+				ImGui::SetNextWindowFocus();
+			}
+			ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar;
+			if (editor.IsModified()) {
+				flags |= ImGuiWindowFlags_UnsavedDocument;
+			}
+			if (ImGui::Begin((file + std::string("###lua_editor n") + std::to_string(editor_id)).c_str(), &is_opened, flags)) {
+				if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+					lastFocusedEditor = file;
+				}
+				ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+				editor.Render("TextEditor");
+
+				ImVec2 work_pos = ImGui::GetWindowPos();
+				ImVec2 work_size = ImGui::GetWindowSize();
+				ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove;
+				const float PAD = 20.0f;
+				ImVec2 window_pos;
+				window_pos.x = work_pos.x + work_size.x - PAD;
+				window_pos.y = work_pos.y + work_size.y - PAD;
+				ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(1.0f, 1.0f));
+				if (ImGui::BeginChild("Cursor position overlay", ImVec2(190.0f, 20.0f), false, window_flags))
+				{
+					auto cpos = editor.GetCursorPosition();
+					ImGui::Text("%6d/%-6d %6d lines", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines());
+				}
+				ImGui::EndChild();
+			}
+			if (!is_opened) {
+				EditorClose(it);
+			}
+			else {
+				++it;
+			}
+			ImGui::End();
+		}
+
 		// Answer to open file
 		if (fileDialog.IsDone("MultiPurposeOpen")) {
 			if (fileDialog.HasResult()) {
@@ -687,22 +699,6 @@ int main()
 			fileDialog.Close();
 		}
 
-		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
-		
-		// function that gets called automatically each frame, the rest is lua's code reponsibility
-		int pop = 1;
-		if (lua_getglobal(L, "knotbag") == LUA_TTABLE) {
-			if (lua_getfield(L, -1, "framescript") == LUA_TFUNCTION) {
-				SafeLuaStart(L);
-				SafeLuaDefaultError(lua_pcall(L, 0, 0, 0));
-				SafeLuaEnd();
-			}
-			else {
-				++pop;
-			}
-		}
-		lua_pop(L, pop);
-
 		// End frame
 		DearImguiIntegration::Render();
 		al_flip_display();
@@ -719,6 +715,9 @@ int main()
 			al_rest(dtTarget - elapsed);
 		}
 	}
+
+	// Notify quit
+	trigger_knotbag_callback(L, "quit");
 
 	// Memory leaks happen if we don't do this and the dialog is open while we close everything
 	ifd::FileDialog::Instance().Close();
