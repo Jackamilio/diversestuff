@@ -226,25 +226,33 @@ knotbag.set_script("Windows", function()
 	local i=1
 	while i <= #knotbag.windows do
 		local w = knotbag.windows[i]
-		if w.isopen then
-			local show, cont = true, true
-			if w.autowindow then
-				show, cont = imgui.Begin(w.name, true)
+		if w.call then
+			if w.isopen then
+				local show, cont = true, true
+				if w.autowindow then
+					show, cont = imgui.Begin(w.name, true)
+				end
+				if show then
+					w.isopen = w.call()
+				end
+				if w.autowindow then
+					imgui.End()
+				end
+				if imgui.CleanEndStack() then
+					print("/!\\ Closing window \""..w.name.."\" /!\\ (needed imgui stack cleaning)")
+					w.isopen = false
+				elseif w.isopen then
+					w.isopen = cont
+				end
 			end
-			if show then
-				w.isopen = w.call()
-			end
-			if w.autowindow then
-				imgui.End()
-			end
-			if imgui.CleanEndStack() then
-				print("/!\\ Closing window \""..w.name.."\" /!\\ (needed imgui stack cleaning)")
-				w.isopen = false
-			elseif w.isopen then
-				w.isopen = cont
-			end
+			i = i+1
+		else
+			-- isopen was probably saved from an earlier session
+			-- but the function was never defined again
+			-- let's remove this entry to prevent crashing this script
+			knotbag.windows[w.name] = nil
+			table.remove(knotbag.windows, i)
 		end
-		i = i+1
 	end
 	
 	return true

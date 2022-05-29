@@ -13,6 +13,10 @@ std::string imgui_inputtext(const char* label, std::string text) {
 	return text;
 }
 
+bool imgui_io_mousedown(ImGuiIO* io, int b) {
+	return io && b >= 0 && b <= 5 && io->MouseDown[b];
+}
+
 void additional_bindings(lua_State* L)
 {
 	luabridge::getGlobalNamespace(L)
@@ -21,6 +25,10 @@ void additional_bindings(lua_State* L)
 		.addFunction("CleanEndStack", ImGui::LuaBindings::CleanEndStack)
 		.addFunction("InputText", imgui_inputtext)
 		.beginClass<ImGuiIO>("IO")
+			.addProperty("MousePos", &ImGuiIO::MousePos)
+			.addFunction("MouseDown", imgui_io_mousedown)
+			.addProperty("MouseWheel", &ImGuiIO::MouseWheel)
+			.addProperty("MouseWheelH", &ImGuiIO::MouseWheelH)
 			.addProperty("KeyCtrl", &ImGuiIO::KeyCtrl)
 			.addProperty("KeyShift", &ImGuiIO::KeyShift)
 			.addProperty("KeyAlt", &ImGuiIO::KeyAlt)
