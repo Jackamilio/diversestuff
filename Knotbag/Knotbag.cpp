@@ -343,7 +343,8 @@ int main()
 	lua_State* L;
 	// Console
 	ImGuiTextBuffer capture;
-	std::capture::CaptureStdout capturer([&capture, &L](const char* buf, size_t szbuf) {
+	ImGuiTextBuffer lastcapture;
+	std::capture::CaptureStdout capturer([&capture, &lastcapture, &L](const char* buf, size_t szbuf) {
 		// give it to lua if the users wants a custom console
 		int pop = 1;
 		bool callsuccess = false;
@@ -362,6 +363,7 @@ int main()
 		if (!callsuccess) {
 			capture.append(buf);
 		}
+		lastcapture.append(buf);
 		});
 
 	// lua
@@ -585,7 +587,13 @@ int main()
 		// function that gets called automatically each frame, the rest is lua's code reponsibility
 		trigger_knotbag_callback(L, "framescript");
 
-		bool console_updated = capturer.flush();
+		bool console_updated = capturer.end();
+		if (console_updated) {
+			std::cout << lastcapture.c_str();
+			lastcapture.clear();
+		}
+		capturer.start();
+
 		if (legacyconsole_openstate) {
 			if (ImGui::Begin("Legacy console", &legacyconsole_openstate)) {
 				if (ImGui::Button("Clear"))

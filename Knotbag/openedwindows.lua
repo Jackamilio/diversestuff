@@ -8,11 +8,11 @@ return {
    {6},
    {7},
    {8},
-   ["Scripts"]={8},
-   ["Picture editor"]={6},
-   ["Bitmap aliases"]={4},
    ["Console"]={2},
+   ["Picture editor"]={6},
+   ["Scripts"]={8},
    ["Run command"]={3},
+   ["Bitmap aliases"]={4},
    ["Scanned lua context"]={7},
    ["Demo"]={5},
 },
@@ -39,7 +39,7 @@ return {
 -- Table: {6}
 {
    ["name"]="Picture editor",
-   ["isopen"]=true,
+   ["isopen"]=false,
 },
 -- Table: {7}
 {

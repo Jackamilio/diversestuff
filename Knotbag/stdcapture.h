@@ -66,8 +66,6 @@ public :
 		return ret;
 	}
 
-private :
-
 	void start() {
 		// Make output stream unbuffered, so that we don't need to flush
 		// the streams before capture and after capture (fflush can cause a deadlock)
@@ -120,6 +118,8 @@ private :
 #endif
 		return bytesRead > 0;
 	}
+
+private:
 
 	int secure_dup(int src)
 	{
