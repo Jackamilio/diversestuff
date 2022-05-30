@@ -1696,8 +1696,8 @@ PUSH_NUMBER(ret.y)
 END_IMGUI_FUNC
 //    IMGUI_API ImVec4        ColorConvertU32ToFloat4(ImU32 in);
 IMGUI_FUNCTION(ColorConvertU32ToFloat4)
-NUMBER_ARG(in)
-CALL_FUNCTION(ColorConvertU32ToFloat4, ImVec4, in)
+DNUMBER_ARG(in)
+CALL_FUNCTION(ColorConvertU32ToFloat4, ImVec4, (ImU32)in)
 PUSH_NUMBER(ret.x)
 PUSH_NUMBER(ret.y)
 PUSH_NUMBER(ret.z)

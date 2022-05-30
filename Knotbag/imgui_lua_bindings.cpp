@@ -112,50 +112,53 @@ typedef struct {
   const char * name = luaL_checklstring(L, arg++, &(i_##name##_size));
 
 #define IM_VEC_2_ARG(name)\
-  const lua_Number i_##name##_x = luaL_checknumber(L, arg++); \
-  const lua_Number i_##name##_y = luaL_checknumber(L, arg++); \
-  const ImVec2 name((double)i_##name##_x, (double)i_##name##_y);
+  const float i_##name##_x = (float)luaL_checknumber(L, arg++); \
+  const float i_##name##_y = (float)luaL_checknumber(L, arg++); \
+  const ImVec2 name((float)i_##name##_x, (float)i_##name##_y);
 
 #define OPTIONAL_IM_VEC_2_ARG(name, x, y) \
-  lua_Number i_##name##_x = x; \
-  lua_Number i_##name##_y = y; \
+  float i_##name##_x = x; \
+  float i_##name##_y = y; \
   if (arg <= max_args - 1) { \
-    i_##name##_x = luaL_checknumber(L, arg++); \
-    i_##name##_y = luaL_checknumber(L, arg++); \
+    i_##name##_x = (float)luaL_checknumber(L, arg++); \
+    i_##name##_y = (float)luaL_checknumber(L, arg++); \
   } \
-  const ImVec2 name((double)i_##name##_x, (double)i_##name##_y);
+  const ImVec2 name((float)i_##name##_x, (float)i_##name##_y);
 
 #define IM_VEC_4_ARG(name) \
-  const lua_Number i_##name##_x = luaL_checknumber(L, arg++); \
-  const lua_Number i_##name##_y = luaL_checknumber(L, arg++); \
-  const lua_Number i_##name##_z = luaL_checknumber(L, arg++); \
-  const lua_Number i_##name##_w = luaL_checknumber(L, arg++); \
-  const ImVec4 name((double)i_##name##_x, (double)i_##name##_y, (double)i_##name##_z, (double)i_##name##_w);
+  const float i_##name##_x = (float)luaL_checknumber(L, arg++); \
+  const float i_##name##_y = (float)luaL_checknumber(L, arg++); \
+  const float i_##name##_z = (float)luaL_checknumber(L, arg++); \
+  const float i_##name##_w = (float)luaL_checknumber(L, arg++); \
+  const ImVec4 name((float)i_##name##_x, (float)i_##name##_y, (float)i_##name##_z, (float)i_##name##_w);
 
 #define OPTIONAL_IM_VEC_4_ARG(name, x, y, z, w) \
-  lua_Number i_##name##_x = x; \
-  lua_Number i_##name##_y = y; \
-  lua_Number i_##name##_z = z; \
-  lua_Number i_##name##_w = w; \
+  float i_##name##_x = x; \
+  float i_##name##_y = y; \
+  float i_##name##_z = z; \
+  float i_##name##_w = w; \
   if (arg <= max_args - 1) { \
-    i_##name##_x = luaL_checknumber(L, arg++); \
-    i_##name##_y = luaL_checknumber(L, arg++); \
-    i_##name##_z = luaL_checknumber(L, arg++); \
-    i_##name##_w = luaL_checknumber(L, arg++); \
+    i_##name##_x = (float)luaL_checknumber(L, arg++); \
+    i_##name##_y = (float)luaL_checknumber(L, arg++); \
+    i_##name##_z = (float)luaL_checknumber(L, arg++); \
+    i_##name##_w = (float)luaL_checknumber(L, arg++); \
   } \
-  const ImVec4 name((double)i_##name##_x, (double)i_##name##_y, (double)i_##name##_z, (double)i_##name##_w);
+  const ImVec4 name((float)i_##name##_x, (float)i_##name##_y, (float)i_##name##_z, (float)i_##name##_w);
 
 #define NUMBER_ARG(name)\
-  lua_Number name = luaL_checknumber(L, arg++);
+  float name = (float)luaL_checknumber(L, arg++);
+
+#define DNUMBER_ARG(name)\
+  double name = luaL_checknumber(L, arg++);
 
 #define OPTIONAL_NUMBER_ARG(name, otherwise)\
-  lua_Number name = otherwise; \
+  float name = otherwise; \
   if (arg <= max_args) { \
-    name = lua_tonumber(L, arg++); \
+    name = (float)lua_tonumber(L, arg++); \
   }
 
 #define FLOAT_POINTER_ARG(name) \
-  float i_##name##_value = luaL_checknumber(L, arg++); \
+  float i_##name##_value = (float)luaL_checknumber(L, arg++); \
   float* name = &(i_##name##_value);
 
 #define END_FLOAT_POINTER(name) \
@@ -320,6 +323,8 @@ static const struct luaL_Reg imguilib [] = {
 #define OPTIONAL_IM_VEC_4_ARG(name, x, y, z, w)
 #undef NUMBER_ARG
 #define NUMBER_ARG(name)
+#undef DNUMBER_ARG
+#define DNUMBER_ARG(name)
 #undef OPTIONAL_NUMBER_ARG
 #define OPTIONAL_NUMBER_ARG(name, otherwise)
 #undef FLOAT_POINTER_ARG
