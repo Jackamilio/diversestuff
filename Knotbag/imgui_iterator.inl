@@ -799,31 +799,141 @@ END_IMGUI_FUNC
 // Unsupported arg type  const char** out_text)
 // Unsupported arg type  void* data
 //    IMGUI_API bool          DragFloat(const char* label, float* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);     // If v_min >= v_max we have no bound
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(DragFloat)
+LABEL_ARG(label)
+FLOAT_POINTER_ARG(v)
+OPTIONAL_NUMBER_ARG(v_speed, 1.0f)
+OPTIONAL_NUMBER_ARG(v_min, 0.0f)
+OPTIONAL_NUMBER_ARG(v_max, 0.0f)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DragFloat, bool, label, v, v_speed, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+END_FLOAT_POINTER(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          DragFloat2(const char* label, float v[2], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  float v[2]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(DragFloat2)
+LABEL_ARG(label)
+FLOAT_2_ARG(v)
+OPTIONAL_NUMBER_ARG(v_speed, 1.0f)
+OPTIONAL_NUMBER_ARG(v_min, 0.0f)
+OPTIONAL_NUMBER_ARG(v_max, 0.0f)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DragFloat2, bool, label, v, v_speed, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_2(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          DragFloat3(const char* label, float v[3], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  float v[3]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(DragFloat3)
+LABEL_ARG(label)
+FLOAT_3_ARG(v)
+OPTIONAL_NUMBER_ARG(v_speed, 1.0f)
+OPTIONAL_NUMBER_ARG(v_min, 0.0f)
+OPTIONAL_NUMBER_ARG(v_max, 0.0f)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DragFloat3, bool, label, v, v_speed, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_3(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          DragFloat4(const char* label, float v[4], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  float v[4]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(DragFloat4)
+LABEL_ARG(label)
+FLOAT_4_ARG(v)
+OPTIONAL_NUMBER_ARG(v_speed, 1.0f)
+OPTIONAL_NUMBER_ARG(v_min, 0.0f)
+OPTIONAL_NUMBER_ARG(v_max, 0.0f)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DragFloat4, bool, label, v, v_speed, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_4(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          DragFloatRange2(const char* label, float* v_current_min, float* v_current_max, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", const char* format_max = NULL, ImGuiSliderFlags flags = 0);
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(DragFloatRange2)
+LABEL_ARG(label)
+FLOAT_POINTER_ARG(v_current_min)
+FLOAT_POINTER_ARG(v_current_max)
+OPTIONAL_NUMBER_ARG(v_speed, 1.0f)
+OPTIONAL_NUMBER_ARG(v_min, 0.0f)
+OPTIONAL_NUMBER_ARG(v_max, 0.0f)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_STRING_ARG(format_max, NULL)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DragFloatRange2, bool, label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, flags)
+PUSH_BOOL(ret)
+END_FLOAT_POINTER(v_current_min)
+END_FLOAT_POINTER(v_current_max)
+END_IMGUI_FUNC
 //    IMGUI_API bool          DragInt(const char* label, int* v, float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);  // If v_min >= v_max we have no bound
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(DragInt)
+LABEL_ARG(label)
+INT_POINTER_ARG(v)
+OPTIONAL_NUMBER_ARG(v_speed, 1.0f)
+OPTIONAL_INT_ARG(v_min, 0)
+OPTIONAL_INT_ARG(v_max, 0)
+OPTIONAL_STRING_ARG(format, "%d")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DragInt, bool, label, v, v_speed, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+END_INT_POINTER(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          DragInt2(const char* label, int v[2], float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  int v[2]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(DragInt2)
+LABEL_ARG(label)
+INT_2_ARG(v)
+OPTIONAL_NUMBER_ARG(v_speed, 1.0f)
+OPTIONAL_INT_ARG(v_min, 0)
+OPTIONAL_INT_ARG(v_max, 0)
+OPTIONAL_STRING_ARG(format, "%d")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DragInt2, bool, label, v, v_speed, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_INT_2(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          DragInt3(const char* label, int v[3], float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  int v[3]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(DragInt3)
+LABEL_ARG(label)
+INT_3_ARG(v)
+OPTIONAL_NUMBER_ARG(v_speed, 1.0f)
+OPTIONAL_INT_ARG(v_min, 0)
+OPTIONAL_INT_ARG(v_max, 0)
+OPTIONAL_STRING_ARG(format, "%d")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DragInt3, bool, label, v, v_speed, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_INT_3(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          DragInt4(const char* label, int v[4], float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  int v[4]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(DragInt4)
+LABEL_ARG(label)
+INT_4_ARG(v)
+OPTIONAL_NUMBER_ARG(v_speed, 1.0f)
+OPTIONAL_INT_ARG(v_min, 0)
+OPTIONAL_INT_ARG(v_max, 0)
+OPTIONAL_STRING_ARG(format, "%d")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DragInt4, bool, label, v, v_speed, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_INT_4(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          DragIntRange2(const char* label, int* v_current_min, int* v_current_max, float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", const char* format_max = NULL, ImGuiSliderFlags flags = 0);
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(DragIntRange2)
+LABEL_ARG(label)
+INT_POINTER_ARG(v_current_min)
+INT_POINTER_ARG(v_current_max)
+OPTIONAL_NUMBER_ARG(v_speed, 1.0f)
+OPTIONAL_INT_ARG(v_min, 0)
+OPTIONAL_INT_ARG(v_max, 0)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_STRING_ARG(format_max, NULL)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(DragIntRange2, bool, label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, flags)
+PUSH_BOOL(ret)
+END_INT_POINTER(v_current_min)
+END_INT_POINTER(v_current_max)
+END_IMGUI_FUNC
 //    IMGUI_API bool          DragScalar(const char* label, ImGuiDataType data_type, void* p_data, float v_speed = 1.0f, const void* p_min = NULL, const void* p_max = NULL, const char* format = NULL, ImGuiSliderFlags flags = 0);
 // Unsupported arg type  ImGuiDataType data_type
 // Unsupported arg type  void* p_data
@@ -948,23 +1058,55 @@ END_IMGUI_FUNC
 // Unsupported arg type  const void* p_step = NULL
 // Unsupported arg type  const void* p_step_fast = NULL
 //    IMGUI_API bool          ColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);
-// Unsupported arg type  float col[3]
-// Unsupported arg type  ImGuiColorEditFlags flags = 0
+IMGUI_FUNCTION(ColorEdit3)
+LABEL_ARG(label)
+FLOAT_3_ARG(col)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(ColorEdit3, bool, label, col, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_3(col)
+END_IMGUI_FUNC
 //    IMGUI_API bool          ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flags = 0);
-// Unsupported arg type  float col[4]
-// Unsupported arg type  ImGuiColorEditFlags flags = 0
+IMGUI_FUNCTION(ColorEdit4)
+LABEL_ARG(label)
+FLOAT_4_ARG(col)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(ColorEdit4, bool, label, col, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_4(col)
+END_IMGUI_FUNC
 //    IMGUI_API bool          ColorPicker3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);
-// Unsupported arg type  float col[3]
-// Unsupported arg type  ImGuiColorEditFlags flags = 0
+IMGUI_FUNCTION(ColorPicker3)
+LABEL_ARG(label)
+FLOAT_3_ARG(col)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(ColorPicker3, bool, label, col, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_3(col)
+END_IMGUI_FUNC
 //    IMGUI_API bool          ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags = 0, const float* ref_col = NULL);
-// Unsupported arg type  float col[4]
-// Unsupported arg type  ImGuiColorEditFlags flags = 0
-// Unsupported arg type  const float* ref_col = NULL
+IMGUI_FUNCTION(ColorPicker4)
+LABEL_ARG(label)
+FLOAT_4_ARG(col)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(ColorPicker4, bool, label, col, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_4(col)
+END_IMGUI_FUNC
 //    IMGUI_API bool          ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFlags flags = 0, ImVec2 size = ImVec2 0  0); // display a color square/button, hover for details, return true when pressed.
-// Unsupported arg type  ImGuiColorEditFlags flags = 0
-// Unsupported arg type  ImVec2 size = ImVec2 0  0
+IMGUI_FUNCTION(ColorButton)
+LABEL_ARG(desc_id)
+IM_VEC_4_ARG(col)
+OPTIONAL_INT_ARG(flags, 0)
+OPTIONAL_IM_VEC_2_ARG(size, 0, 0)
+CALL_FUNCTION(ColorButton, bool, desc_id, col, flags, size)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetColorEditOptions(ImGuiColorEditFlags flags);                     // initialize current options (generally on application startup) if you want to select a default format, picker type, etc. User will be able to change many settings, unless you pass the _NoOptions flag to your calls.
-// Unsupported arg type ImGuiColorEditFlags flags
+IMGUI_FUNCTION(SetColorEditOptions)
+INT_ARG(flags)
+CALL_FUNCTION_NO_RET(SetColorEditOptions, flags)
+END_IMGUI_FUNC
 //    IMGUI_API bool          TreeNode(const char* label);
 IMGUI_FUNCTION(TreeNode)
 LABEL_ARG(label)

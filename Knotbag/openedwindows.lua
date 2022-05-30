@@ -8,13 +8,13 @@ return {
    {6},
    {7},
    {8},
-   ["Scanned lua context"]={7},
    ["Run command"]={3},
    ["Scripts"]={8},
-   ["Bitmap aliases"]={4},
-   ["Demo"]={5},
-   ["Picture editor"]={6},
+   ["Scanned lua context"]={7},
    ["Console"]={2},
+   ["Demo"]={5},
+   ["Bitmap aliases"]={4},
+   ["Picture editor"]={6},
 },
 -- Table: {2}
 {

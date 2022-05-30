@@ -107,6 +107,14 @@ typedef struct {
     name = NULL; \
   }
 
+#define OPTIONAL_STRING_ARG(name, otherwise) \
+  const char* name; \
+  if (arg <= max_args) { \
+    name = lua_tostring(L, arg++); \
+  } else { \
+    name = otherwise; \
+  }
+
 #define LABEL_ARG(name) \
   size_t i_##name##_size; \
   const char * name = luaL_checklstring(L, arg++, &(i_##name##_size));
@@ -144,6 +152,24 @@ typedef struct {
     i_##name##_w = (float)luaL_checknumber(L, arg++); \
   } \
   const ImVec4 name((float)i_##name##_x, (float)i_##name##_y, (float)i_##name##_z, (float)i_##name##_w);
+
+#define FLOAT_2_ARG(name) \
+  float name[2]; \
+  name[0] = (float)luaL_checknumber(L, arg++); \
+  name[1] = (float)luaL_checknumber(L, arg++);
+
+#define FLOAT_3_ARG(name) \
+  float name[3]; \
+  name[0] = (float)luaL_checknumber(L, arg++); \
+  name[1] = (float)luaL_checknumber(L, arg++); \
+  name[2] = (float)luaL_checknumber(L, arg++);
+
+#define FLOAT_4_ARG(name) \
+  float name[4]; \
+  name[0] = (float)luaL_checknumber(L, arg++); \
+  name[1] = (float)luaL_checknumber(L, arg++); \
+  name[2] = (float)luaL_checknumber(L, arg++); \
+  name[3] = (float)luaL_checknumber(L, arg++);
 
 #define NUMBER_ARG(name)\
   float name = (float)luaL_checknumber(L, arg++);
@@ -195,6 +221,24 @@ typedef struct {
     stackval++; \
   }
 
+#define INT_2_ARG(name) \
+  int name[2]; \
+  name[0] = (int)luaL_checkinteger(L, arg++); \
+  name[1] = (int)luaL_checkinteger(L, arg++);
+
+#define INT_3_ARG(name) \
+  int name[3]; \
+  name[0] = (int)luaL_checkinteger(L, arg++); \
+  name[1] = (int)luaL_checkinteger(L, arg++); \
+  name[2] = (int)luaL_checkinteger(L, arg++);
+
+#define INT_4_ARG(name) \
+  int name[4]; \
+  name[0] = (int)luaL_checkinteger(L, arg++); \
+  name[1] = (int)luaL_checkinteger(L, arg++); \
+  name[2] = (int)luaL_checkinteger(L, arg++); \
+  name[3] = (int)luaL_checkinteger(L, arg++);
+
 #define UINT_POINTER_ARG(name) \
   unsigned int i_##name##_value = (unsigned int)luaL_checkinteger(L, arg++); \
   unsigned int* name = &(i_##name##_value);
@@ -245,6 +289,46 @@ typedef struct {
 #define PUSH_NUMBER(name) \
   lua_pushnumber(L, name); \
   stackval++;
+
+#define PUSH_FLOAT_2(name) \
+  lua_pushnumber(L, name[0]); \
+  lua_pushnumber(L, name[1]); \
+  stackval += 2;
+
+#define PUSH_FLOAT_3(name) \
+  lua_pushnumber(L, name[0]); \
+  lua_pushnumber(L, name[1]); \
+  lua_pushnumber(L, name[2]); \
+  stackval += 3;
+
+#define PUSH_FLOAT_4(name) \
+  lua_pushnumber(L, name[0]); \
+  lua_pushnumber(L, name[1]); \
+  lua_pushnumber(L, name[2]); \
+  lua_pushnumber(L, name[3]); \
+  stackval += 4;
+
+#define PUSH_INT(name) \
+  lua_pushinteger(L, name); \
+  stackval++;
+
+#define PUSH_INT_2(name) \
+  lua_pushinteger(L, name[0]); \
+  lua_pushinteger(L, name[1]); \
+  stackval += 2;
+
+#define PUSH_INT_3(name) \
+  lua_pushinteger(L, name[0]); \
+  lua_pushinteger(L, name[1]); \
+  lua_pushinteger(L, name[2]); \
+  stackval += 2;
+
+#define PUSH_INT_4(name) \
+  lua_pushinteger(L, name[0]); \
+  lua_pushinteger(L, name[1]); \
+  lua_pushinteger(L, name[2]); \
+  lua_pushinteger(L, name[3]); \
+  stackval += 2;
 
 #define PUSH_BOOL(name) \
   lua_pushboolean(L, (int) name); \
@@ -311,6 +395,8 @@ static const struct luaL_Reg imguilib [] = {
 #define IM_TEXTURE_ID_ARG(name)
 #undef OPTIONAL_LABEL_ARG
 #define OPTIONAL_LABEL_ARG(name)
+#undef OPTIONAL_STRING_ARG
+#define OPTIONAL_STRING_ARG(name, otherwise)
 #undef LABEL_ARG
 #define LABEL_ARG(name)
 #undef IM_VEC_2_ARG
@@ -321,6 +407,12 @@ static const struct luaL_Reg imguilib [] = {
 #define IM_VEC_4_ARG(name)
 #undef OPTIONAL_IM_VEC_4_ARG
 #define OPTIONAL_IM_VEC_4_ARG(name, x, y, z, w)
+#undef FLOAT_2_ARG
+#define FLOAT_2_ARG(name)
+#undef FLOAT_3_ARG
+#define FLOAT_3_ARG(name)
+#undef FLOAT_4_ARG
+#define FLOAT_4_ARG(name)
 #undef NUMBER_ARG
 #define NUMBER_ARG(name)
 #undef DNUMBER_ARG
@@ -343,6 +435,12 @@ static const struct luaL_Reg imguilib [] = {
 #define INT_POINTER_ARG(name)
 #undef END_INT_POINTER
 #define END_INT_POINTER(name)
+#undef INT_2_ARG
+#define INT_2_ARG(name)
+#undef INT_3_ARG
+#define INT_3_ARG(name)
+#undef INT_4_ARG
+#define INT_4_ARG(name)
 #undef UINT_POINTER_ARG
 #define UINT_POINTER_ARG(name)
 #undef END_UINT_POINTER
@@ -367,6 +465,20 @@ static const struct luaL_Reg imguilib [] = {
 #define PUSH_STRING(name)
 #undef PUSH_NUMBER
 #define PUSH_NUMBER(name)
+#undef PUSH_FLOAT_2
+#define PUSH_FLOAT_2(name)
+#undef PUSH_FLOAT_3
+#define PUSH_FLOAT_3(name)
+#undef PUSH_FLOAT_4
+#define PUSH_FLOAT_4(name)
+#undef PUSH_INT
+#define PUSH_INT(name)
+#undef PUSH_INT_2
+#define PUSH_INT_2(name)
+#undef PUSH_INT_3
+#define PUSH_INT_3(name)
+#undef PUSH_INT_4
+#define PUSH_INT_4(name)
 #undef PUSH_BOOL
 #define PUSH_BOOL(name)
 #undef END_BOOL_POINTER
