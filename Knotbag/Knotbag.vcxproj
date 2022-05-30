@@ -154,7 +154,8 @@
     <ClCompile Include="imgui_tables.cpp" />
     <ClCompile Include="imgui_widgets.cpp" />
     <ClCompile Include="Knotbag.cpp" />
-    <ClCompile Include="lallegro.c" />
+    <ClCompile Include="lallegro_core.c" />
+    <ClCompile Include="lallegro_primitives.c" />
     <ClCompile Include="lua\lapi.c" />
     <ClCompile Include="lua\lauxlib.c" />
     <ClCompile Include="lua\lbaselib.c" />
@@ -193,6 +194,8 @@
   <ItemGroup>
     <None Include="imgui_iterator.inl" />
     <None Include="packages.config" />
+    <None Include="SWIG_footer.inl" />
+    <None Include="SWIG_header.inl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="additional_bindings.h" />
@@ -205,6 +208,7 @@
     <ClInclude Include="imstb_rectpack.h" />
     <ClInclude Include="imstb_textedit.h" />
     <ClInclude Include="imstb_truetype.h" />
+    <ClInclude Include="lallegro.h" />
     <ClInclude Include="lua\lapi.h" />
     <ClInclude Include="lua\lauxlib.h" />
     <ClInclude Include="lua\lcode.h" />

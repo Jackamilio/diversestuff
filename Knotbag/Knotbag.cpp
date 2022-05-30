@@ -14,8 +14,7 @@
 #include "additional_bindings.h"
 #include <set>
 #include "utils.h"
-
-extern "C" int luaopen_lallegro_core(lua_State * L);
+#include "lallegro.h"
 
 thread_local ImGuiContext* MyImGuiTLS;
 
@@ -371,6 +370,7 @@ int main()
 	luaL_openlibs(L);
 	ImGui::LuaBindings::Load(L);
 	luaopen_lallegro_core(L);
+	luaopen_lallegro_primitives(L);
 	additional_bindings(L);
 	lua_newtable(L);
 	lua_pushcfunction(L, lua_knotbag_legacyconsole);

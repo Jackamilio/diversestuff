@@ -1,15 +1,24 @@
-dofile("scan_all_context.lua")
-dofile("table_save.lua")
+function pdofile(filename) --WHY WOULD DESTINY GENERATE THIS NAME
+	local ret, err = pcall(dofile, filename)
+	if not ret then
+		print(err)
+	end
+end
 
-dofile("knotbag.lua")
+pdofile("allegro_init.lua")
+
+pdofile("scan_all_context.lua")
+pdofile("table_save.lua")
+
+pdofile("knotbag.lua")
 
 tablescanning.registerwindow()
 
-dofile("run_command.lua")
-dofile("bitmap_aliases.lua")
+pdofile("run_command.lua")
+pdofile("bitmap_aliases.lua")
 
 knotbag.set_window("Demo", function()
 	return imgui.ShowDemoWindow(true)
 end, nil, false)
 
-dofile("console.lua")
+pdofile("console.lua")

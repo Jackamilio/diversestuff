@@ -156,7 +156,7 @@
     <ClCompile Include="ImFileDialog.cpp">
       <Filter>Fichiers sources\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="lallegro.c">
+    <ClCompile Include="lallegro_core.c">
       <Filter>Fichiers sources\bindings</Filter>
     </ClCompile>
     <ClCompile Include="additional_bindings.cpp">
@@ -168,10 +168,19 @@
     <ClCompile Include="utils.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="lallegro_primitives.c">
+      <Filter>Fichiers sources\bindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="imgui_iterator.inl">
+      <Filter>Fichiers d%27en-tête\bindings</Filter>
+    </None>
+    <None Include="SWIG_header.inl">
+      <Filter>Fichiers d%27en-tête\bindings</Filter>
+    </None>
+    <None Include="SWIG_footer.inl">
       <Filter>Fichiers d%27en-tête\bindings</Filter>
     </None>
   </ItemGroup>
@@ -298,6 +307,9 @@
     </ClInclude>
     <ClInclude Include="utils.h">
       <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="lallegro.h">
+      <Filter>Fichiers d%27en-tête\bindings</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
