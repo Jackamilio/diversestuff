@@ -99,6 +99,13 @@ typedef struct {
   if (!lua_isuserdata(L, arg)) {lua_pushfstring(L, "Error in IM_TEXTURE_ID_ARG : Expected userdata"); lua_error(L);} \
   const ImTextureID name = (ImTextureID)((swig_lua_userdata*)lua_touserdata(L, arg++))->ptr;
 
+#define CHAR_BUFFER(name, size) \
+  char *cbuffer =(char*)_malloca(size); \
+  strcpy_s(cbuffer, size, name);
+
+#define END_CHAR_BUFFER \
+  _freea(cbuffer);
+
 #define OPTIONAL_LABEL_ARG(name) \
   const char* name; \
   if (arg <= max_args) { \
@@ -183,11 +190,27 @@ typedef struct {
     name = (float)lua_tonumber(L, arg++); \
   }
 
+#define OPTIONAL_DNUMBER_ARG(name, otherwise)\
+  double name = otherwise; \
+  if (arg <= max_args) { \
+    name = lua_tonumber(L, arg++); \
+  }
+
 #define FLOAT_POINTER_ARG(name) \
   float i_##name##_value = (float)luaL_checknumber(L, arg++); \
   float* name = &(i_##name##_value);
 
 #define END_FLOAT_POINTER(name) \
+  if (name != NULL) { \
+    lua_pushnumber(L, i_##name##_value); \
+    stackval++; \
+  }
+
+#define DOUBLE_POINTER_ARG(name) \
+  double i_##name##_value = luaL_checknumber(L, arg++); \
+  double* name = &(i_##name##_value);
+
+#define END_DOUBLE_POINTER(name) \
   if (name != NULL) { \
     lua_pushnumber(L, i_##name##_value); \
     stackval++; \
@@ -393,6 +416,10 @@ static const struct luaL_Reg imguilib [] = {
 // we can get the function names
 #undef IM_TEXTURE_ID_ARG
 #define IM_TEXTURE_ID_ARG(name)
+#undef CHAR_BUFFER
+#define CHAR_BUFFER(name, size)
+#undef END_CHAR_BUFFER
+#define END_CHAR_BUFFER
 #undef OPTIONAL_LABEL_ARG
 #define OPTIONAL_LABEL_ARG(name)
 #undef OPTIONAL_STRING_ARG
@@ -419,10 +446,16 @@ static const struct luaL_Reg imguilib [] = {
 #define DNUMBER_ARG(name)
 #undef OPTIONAL_NUMBER_ARG
 #define OPTIONAL_NUMBER_ARG(name, otherwise)
+#undef OPTIONAL_DNUMBER_ARG
+#define OPTIONAL_DNUMBER_ARG(name, otherwise)
 #undef FLOAT_POINTER_ARG
 #define FLOAT_POINTER_ARG(name)
 #undef END_FLOAT_POINTER
 #define END_FLOAT_POINTER(name)
+#undef DOUBLE_POINTER_ARG
+#define DOUBLE_POINTER_ARG(name)
+#undef END_DOUBLE_POINTER
+#define END_DOUBLE_POINTER(name)
 #undef OPTIONAL_INT_ARG
 #define OPTIONAL_INT_ARG(name, otherwise)
 #undef INT_ARG

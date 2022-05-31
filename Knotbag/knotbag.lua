@@ -294,7 +294,8 @@ knotbag.set_window("Scripts", function()
 		if imgui.CollapsingHeader("Docks") then
 			local docks = knotbag.docking.docks
 			for k,v in pairs(docks) do
-				docks[k] = imgui.InputText("ID "..k,v)
+				local change, newstr = imgui.InputText("ID "..k,v,128)
+				if change then docks[k] = newstr end
 			end
 		end
 	return true

@@ -4,7 +4,8 @@ runcommand = {
 	successtotal = 0,
 	successduration = 1.0,
 	windowfunction = function()
-		runcommand.inputvalue = imgui.InputText("##run_command_window", runcommand.inputvalue)
+		local change, newstr = imgui.InputText("##run_command_window", runcommand.inputvalue, 128)
+		if change then runcommand.inputvalue = newstr end
 		imgui.SameLine()
 		
 		local run = imgui.IsWindowFocused() and imgui.IsKeyPressed(imgui.constant.Key.Enter)

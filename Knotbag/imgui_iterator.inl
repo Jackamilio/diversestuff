@@ -947,29 +947,113 @@ END_IMGUI_FUNC
 // Unsupported arg type  const void* p_max = NULL
 // Unsupported arg type  ImGuiSliderFlags flags = 0
 //    IMGUI_API bool          SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);     // adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display.
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(SliderFloat)
+LABEL_ARG(label)
+FLOAT_POINTER_ARG(v)
+NUMBER_ARG(v_min)
+NUMBER_ARG(v_max)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(SliderFloat, bool, label, v, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+END_FLOAT_POINTER(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SliderFloat2(const char* label, float v[2], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  float v[2]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(SliderFloat2)
+LABEL_ARG(label)
+FLOAT_2_ARG(v)
+NUMBER_ARG(v_min)
+NUMBER_ARG(v_max)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(SliderFloat2, bool, label, v, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_2(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SliderFloat3(const char* label, float v[3], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  float v[3]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(SliderFloat3)
+LABEL_ARG(label)
+FLOAT_3_ARG(v)
+NUMBER_ARG(v_min)
+NUMBER_ARG(v_max)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(SliderFloat3, bool, label, v, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_3(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SliderFloat4(const char* label, float v[4], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  float v[4]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(SliderFloat4)
+LABEL_ARG(label)
+FLOAT_4_ARG(v)
+NUMBER_ARG(v_min)
+NUMBER_ARG(v_max)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(SliderFloat4, bool, label, v, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_4(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SliderAngle(const char* label, float* v_rad, float v_degrees_min = -360.0f, float v_degrees_max = +360.0f, const char* format = "%.0f deg", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(SliderAngle)
+LABEL_ARG(label)
+FLOAT_POINTER_ARG(v_rad)
+OPTIONAL_NUMBER_ARG(v_degrees_min, -360.0f)
+OPTIONAL_NUMBER_ARG(v_degrees_max, +360.0f)
+OPTIONAL_STRING_ARG(format, "%.0f deg")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(SliderAngle, bool, label, v_rad, v_degrees_min, v_degrees_max, format, flags)
+PUSH_BOOL(ret)
+END_FLOAT_POINTER(v_rad)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SliderInt(const char* label, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(SliderInt)
+LABEL_ARG(label)
+INT_POINTER_ARG(v)
+INT_ARG(v_min)
+INT_ARG(v_max)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(SliderInt, bool, label, v, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+END_FLOAT_POINTER(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SliderInt2(const char* label, int v[2], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  int v[2]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(SliderInt2)
+LABEL_ARG(label)
+INT_2_ARG(v)
+INT_ARG(v_min)
+INT_ARG(v_max)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(SliderInt2, bool, label, v, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_INT_2(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SliderInt3(const char* label, int v[3], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  int v[3]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(SliderInt3)
+LABEL_ARG(label)
+INT_3_ARG(v)
+INT_ARG(v_min)
+INT_ARG(v_max)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(SliderInt3, bool, label, v, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_INT_3(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SliderInt4(const char* label, int v[4], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  int v[4]
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(SliderInt4)
+LABEL_ARG(label)
+INT_4_ARG(v)
+INT_ARG(v_min)
+INT_ARG(v_max)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(SliderInt4, bool, label, v, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+PUSH_INT_4(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SliderScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
 // Unsupported arg type  ImGuiDataType data_type
 // Unsupported arg type  void* p_data
@@ -983,9 +1067,31 @@ END_IMGUI_FUNC
 // Unsupported arg type  const void* p_max
 // Unsupported arg type  ImGuiSliderFlags flags = 0
 //    IMGUI_API bool          VSliderFloat(const char* label, const ImVec2& size, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(VSliderFloat)
+LABEL_ARG(label)
+IM_VEC_2_ARG(size)
+FLOAT_POINTER_ARG(v)
+NUMBER_ARG(v_min)
+NUMBER_ARG(v_max)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(VSliderFloat, bool, label, size, v, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+END_FLOAT_POINTER(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          VSliderInt(const char* label, const ImVec2& size, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-// Unsupported arg type  ImGuiSliderFlags flags = 0
+IMGUI_FUNCTION(VSliderInt)
+LABEL_ARG(label)
+IM_VEC_2_ARG(size)
+INT_POINTER_ARG(v)
+INT_ARG(v_min)
+INT_ARG(v_max)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(VSliderInt, bool, label, size, v, v_min, v_max, format, flags)
+PUSH_BOOL(ret)
+END_FLOAT_POINTER(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          VSliderScalar(const char* label, const ImVec2& size, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
 // Unsupported arg type  ImGuiDataType data_type
 // Unsupported arg type  void* p_data
@@ -993,39 +1099,85 @@ END_IMGUI_FUNC
 // Unsupported arg type  const void* p_max
 // Unsupported arg type  ImGuiSliderFlags flags = 0
 //    IMGUI_API bool          InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-// Unsupported arg type  char* buf
-// Unsupported arg type  size_t buf_size
-// Unsupported arg type  ImGuiInputTextCallback callback = NULL
-// Unsupported arg type  void* user_data = NULL
+IMGUI_FUNCTION(InputText)
+LABEL_ARG(label)
+LABEL_ARG(buf)
+INT_ARG(buf_size)
+OPTIONAL_INT_ARG(flags, 0)
+CHAR_BUFFER(buf, buf_size)
+CALL_FUNCTION(InputText, bool, label, cbuffer, buf_size, flags)
+PUSH_BOOL(ret)
+PUSH_STRING(cbuffer)
+END_CHAR_BUFFER
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputTextMultiline(const char* label, char* buf, size_t buf_size, const ImVec2& size = ImVec2 0  0, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-// Unsupported arg type  char* buf
-// Unsupported arg type  size_t buf_size
-// Unsupported arg type  const ImVec2& size = ImVec2 0  0
-// Unsupported arg type  ImGuiInputTextCallback callback = NULL
-// Unsupported arg type  void* user_data = NULL
+IMGUI_FUNCTION(InputTextMultiline)
+LABEL_ARG(label)
+LABEL_ARG(buf)
+INT_ARG(buf_size)
+OPTIONAL_IM_VEC_2_ARG(size, 0, 0)
+OPTIONAL_INT_ARG(flags, 0)
+CHAR_BUFFER(buf, buf_size)
+CALL_FUNCTION(InputTextMultiline, bool, label, cbuffer, buf_size, size, flags)
+PUSH_BOOL(ret)
+PUSH_STRING(cbuffer)
+END_CHAR_BUFFER
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-// Unsupported arg type  char* buf
-// Unsupported arg type  size_t buf_size
-// Unsupported arg type  ImGuiInputTextCallback callback = NULL
-// Unsupported arg type  void* user_data = NULL
+IMGUI_FUNCTION(InputTextWithHint)
+LABEL_ARG(label)
+LABEL_ARG(hint)
+LABEL_ARG(buf)
+INT_ARG(buf_size)
+OPTIONAL_INT_ARG(flags, 0)
+CHAR_BUFFER(buf, buf_size)
+CALL_FUNCTION(InputTextWithHint, bool, label, hint, cbuffer, buf_size, flags)
+PUSH_BOOL(ret)
+PUSH_STRING(cbuffer)
+END_CHAR_BUFFER
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 IMGUI_FUNCTION(InputFloat)
 LABEL_ARG(label)
 FLOAT_POINTER_ARG(v)
 OPTIONAL_NUMBER_ARG(step, 0.0f)
 OPTIONAL_NUMBER_ARG(step_fast, 0.0f)
-LABEL_ARG(format)
+OPTIONAL_STRING_ARG(format, "%.3f")
 OPTIONAL_INT_ARG(flags, 0)
 CALL_FUNCTION(InputFloat, bool, label, v, step, step_fast, format, flags)
 PUSH_BOOL(ret)
 END_FLOAT_POINTER(v)
 END_IMGUI_FUNC
 //    IMGUI_API bool          InputFloat2(const char* label, float v[2], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  float v[2]
+IMGUI_FUNCTION(InputFloat2)
+LABEL_ARG(label)
+FLOAT_2_ARG(v)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(InputFloat2, bool, label, v, format, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_2(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputFloat3(const char* label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  float v[3]
+IMGUI_FUNCTION(InputFloat3)
+LABEL_ARG(label)
+FLOAT_3_ARG(v)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(InputFloat3, bool, label, v, format, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_3(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputFloat4(const char* label, float v[4], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  float v[4]
+IMGUI_FUNCTION(InputFloat4)
+LABEL_ARG(label)
+FLOAT_4_ARG(v)
+OPTIONAL_STRING_ARG(format, "%.3f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(InputFloat4, bool, label, v, format, flags)
+PUSH_BOOL(ret)
+PUSH_FLOAT_4(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputInt(const char* label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
 IMGUI_FUNCTION(InputInt)
 LABEL_ARG(label)
@@ -1038,15 +1190,44 @@ PUSH_BOOL(ret)
 END_INT_POINTER(v)
 END_IMGUI_FUNC
 //    IMGUI_API bool          InputInt2(const char* label, int v[2], ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  int v[2]
+IMGUI_FUNCTION(InputInt2)
+LABEL_ARG(label)
+INT_2_ARG(v)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(InputInt2, bool, label, v, flags)
+PUSH_BOOL(ret)
+PUSH_INT_2(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputInt3(const char* label, int v[3], ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  int v[3]
+IMGUI_FUNCTION(InputInt3)
+LABEL_ARG(label)
+INT_3_ARG(v)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(InputInt3, bool, label, v, flags)
+PUSH_BOOL(ret)
+PUSH_INT_3(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputInt4(const char* label, int v[4], ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  int v[4]
+IMGUI_FUNCTION(InputInt4)
+LABEL_ARG(label)
+INT_4_ARG(v)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(InputInt4, bool, label, v, flags)
+PUSH_BOOL(ret)
+PUSH_INT_4(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputDouble(const char* label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  double* v
-// Unsupported arg type  double step = 0.0
-// Unsupported arg type  double step_fast = 0.0
+IMGUI_FUNCTION(InputDouble)
+LABEL_ARG(label)
+DOUBLE_POINTER_ARG(v)
+OPTIONAL_DNUMBER_ARG(step, 0.0)
+OPTIONAL_DNUMBER_ARG(step_fast, 0.0)
+OPTIONAL_STRING_ARG(format, "%.6f")
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(InputDouble, bool, label, v, step, step_fast, format, flags)
+PUSH_BOOL(ret)
+END_DOUBLE_POINTER(v)
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 // Unsupported arg type  ImGuiDataType data_type
 // Unsupported arg type  void* p_data
@@ -1375,13 +1556,33 @@ IMGUI_FUNCTION(CloseCurrentPopup)
 CALL_FUNCTION_NO_RET(CloseCurrentPopup)
 END_IMGUI_FUNC
 //    IMGUI_API bool          BeginPopupContextItem(const char* str_id = NULL, ImGuiPopupFlags popup_flags = 1);  // open+begin popup when clicked on last item. Use str_id==NULL to associate the popup to previous item. If you want to use that on a non-interactive item such as Text() you need to pass in an explicit ID here. read comments in .cpp!
-// Unsupported arg type  ImGuiPopupFlags popup_flags = 1
+IMGUI_FUNCTION(BeginPopupContextItem)
+OPTIONAL_STRING_ARG(str_id, NULL)
+OPTIONAL_INT_ARG(popup_flags, 1)
+CALL_FUNCTION(BeginPopupContextItem, bool, str_id, popup_flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          BeginPopupContextWindow(const char* str_id = NULL, ImGuiPopupFlags popup_flags = 1);// open+begin popup when clicked on current window.
-// Unsupported arg type  ImGuiPopupFlags popup_flags = 1
+IMGUI_FUNCTION(BeginPopupContextWindow)
+OPTIONAL_STRING_ARG(str_id, NULL)
+OPTIONAL_INT_ARG(popup_flags, 1)
+CALL_FUNCTION(BeginPopupContextWindow, bool, str_id, popup_flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          BeginPopupContextVoid(const char* str_id = NULL, ImGuiPopupFlags popup_flags = 1);  // open+begin popup when clicked in void (where there are no windows).
-// Unsupported arg type  ImGuiPopupFlags popup_flags = 1
+IMGUI_FUNCTION(BeginPopupContextVoid)
+OPTIONAL_STRING_ARG(str_id, NULL)
+OPTIONAL_INT_ARG(popup_flags, 1)
+CALL_FUNCTION(BeginPopupContextVoid, bool, str_id, popup_flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          IsPopupOpen(const char* str_id, ImGuiPopupFlags flags = 0);                         // return true if the popup is open.
-// Unsupported arg type  ImGuiPopupFlags flags = 0
+IMGUI_FUNCTION(IsPopupOpen)
+LABEL_ARG(str_id)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(IsPopupOpen, bool, str_id, flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          BeginTable(const char* str_id, int column, ImGuiTableFlags flags = 0, const ImVec2& outer_size = ImVec2 0.0f  0.0f, float inner_width = 0.0f);
 IMGUI_FUNCTION(BeginTable)
 LABEL_ARG(str_id)
@@ -1793,9 +1994,15 @@ CALL_FUNCTION(IsRectVisible, bool, rect_min, rect_max)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API double        GetTime();                                                          // get global imgui time. incremented by io.DeltaTime every frame.
-// Unsupported return type double
+IMGUI_FUNCTION(GetTime)
+CALL_FUNCTION(GetTime, double)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
 //    IMGUI_API int           GetFrameCount();                                                    // get global imgui frame count. incremented by 1 every frame.
-// Unsupported return type int
+IMGUI_FUNCTION(GetFrameCount)
+CALL_FUNCTION(GetFrameCount, int)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
 //    IMGUI_API ImDrawList*   GetBackgroundDrawList();                                            // this draw list will be the first rendering one. Useful to quickly draw shapes/text behind dear imgui contents.
 // Unsupported return type ImDrawList*
 //    IMGUI_API ImDrawList*   GetForegroundDrawList();                                            // this draw list will be the last rendered one. Useful to quickly draw shapes/text over dear imgui contents.
@@ -2006,7 +2213,11 @@ LABEL_ARG(ini_filename)
 CALL_FUNCTION_NO_RET(LoadIniSettingsFromDisk, ini_filename)
 END_IMGUI_FUNC
 //    IMGUI_API void          LoadIniSettingsFromMemory(const char* ini_data, size_t ini_size=0); // call after CreateContext() and before the first call to NewFrame() to provide .ini data from your own data source.
-// Unsupported arg type  size_t ini_size=0
+IMGUI_FUNCTION(LoadIniSettingsFromMemory)
+LABEL_ARG(ini_data)
+OPTIONAL_INT_ARG(ini_size, 0)
+CALL_FUNCTION_NO_RET(LoadIniSettingsFromMemory, ini_data, ini_size)
+END_IMGUI_FUNC
 //    IMGUI_API void          SaveIniSettingsToDisk(const char* ini_filename);                    // this is automatically called (if io.IniFilename is not empty) a few seconds after any modification that should be reflected in the .ini file (and also by DestroyContext).
 IMGUI_FUNCTION(SaveIniSettingsToDisk)
 LABEL_ARG(ini_filename)
