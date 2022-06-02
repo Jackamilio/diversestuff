@@ -41,7 +41,9 @@ knotbag.set_window("Picture editor", function()
 			end
 			local ot = al.get_target_bitmap()
 			al.set_target_bitmap(pic)
-			al.draw_line(pe.lmpos.x, pe.lmpos.y, mpos.x, mpos.y, al.map_rgb(0,0,0), 3)
+			local col = al.map_rgb_f(pe.r,pe.g,pe.b)
+			al.draw_line(pe.lmpos.x, pe.lmpos.y, mpos.x, mpos.y, col, 3)
+			al.draw_filled_circle(mpos.x, mpos.y, 1.5, col)
 			al.set_target_bitmap(ot)
 		elseif pe.clicstart then
 			pe.clicstart = nil
@@ -56,7 +58,7 @@ knotbag.set_window("Picture editor", function()
 		imgui.Text("Set or load a new image")
 	end
 	
-	_,pe.r,pe.g,pe.b = imgui.ColorEdit("Color",pe.r,pe.g,pe.b)
+	_,pe.r,pe.g,pe.b = imgui.ColorEdit3("Color",pe.r,pe.g,pe.b)
 	
 	imgui.Text("Mouse: "..mpos.x..", "..mpos.y)
 	if pe.clicstart then

@@ -7,12 +7,14 @@ return {
    {5},
    {6},
    {7},
-   ["Demo"]={5},
-   ["Scripts"]={7},
-   ["Bitmap aliases"]={4},
+   {8},
    ["Console"]={2},
+   ["Scanned lua context"]={7},
+   ["Bitmap aliases"]={4},
    ["Run command"]={3},
-   ["Scanned lua context"]={6},
+   ["Demo"]={5},
+   ["Picture editor"]={6},
+   ["Scripts"]={8},
 },
 -- Table: {2}
 {
@@ -37,9 +39,14 @@ return {
 -- Table: {6}
 {
    ["isopen"]=true,
-   ["name"]="Scanned lua context",
+   ["name"]="Picture editor",
 },
 -- Table: {7}
+{
+   ["isopen"]=true,
+   ["name"]="Scanned lua context",
+},
+-- Table: {8}
 {
    ["isopen"]=true,
    ["name"]="Scripts",
