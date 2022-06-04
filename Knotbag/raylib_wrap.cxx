@@ -767,8 +767,8 @@ SWIG_UnpackDataName(const char *c, void *ptr, size_t sz, const char *name) {
 extern "C" {
 #endif
 
-#include "lua.h"
-#include "lauxlib.h"
+#include "lua/lua.h"
+#include "lua/lauxlib.h"
 #include <stdlib.h>  /* for malloc */
 #include <assert.h>  /* for a few sanity tests */
 
@@ -2755,20 +2755,18 @@ SWIG_Lua_dostring(lua_State *L, const char *str) {
 #define SWIGTYPE_p_f_p_q_const__char_p_char__bool swig_types[55]
 #define SWIGTYPE_p_f_p_q_const__char_p_unsigned_int__p_unsigned_char swig_types[56]
 #define SWIGTYPE_p_f_p_q_const__char_p_void_unsigned_int__bool swig_types[57]
-#define SWIGTYPE_p_f_p_void_unsigned_int__void swig_types[58]
-#define SWIGTYPE_p_float swig_types[59]
-#define SWIGTYPE_p_int swig_types[60]
-#define SWIGTYPE_p_p_Rectangle swig_types[61]
-#define SWIGTYPE_p_p_Transform swig_types[62]
-#define SWIGTYPE_p_p_char swig_types[63]
-#define SWIGTYPE_p_rAudioBuffer swig_types[64]
-#define SWIGTYPE_p_rAudioProcessor swig_types[65]
-#define SWIGTYPE_p_unsigned_char swig_types[66]
-#define SWIGTYPE_p_unsigned_int swig_types[67]
-#define SWIGTYPE_p_unsigned_short swig_types[68]
-#define SWIGTYPE_p_void swig_types[69]
-static swig_type_info *swig_types[71];
-static swig_module_info swig_module = {swig_types, 70, 0, 0, 0, 0};
+#define SWIGTYPE_p_float swig_types[58]
+#define SWIGTYPE_p_int swig_types[59]
+#define SWIGTYPE_p_p_Rectangle swig_types[60]
+#define SWIGTYPE_p_p_Transform swig_types[61]
+#define SWIGTYPE_p_p_char swig_types[62]
+#define SWIGTYPE_p_rAudioBuffer swig_types[63]
+#define SWIGTYPE_p_unsigned_char swig_types[64]
+#define SWIGTYPE_p_unsigned_int swig_types[65]
+#define SWIGTYPE_p_unsigned_short swig_types[66]
+#define SWIGTYPE_p_void swig_types[67]
+static swig_type_info *swig_types[69];
+static swig_module_info swig_module = {swig_types, 68, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -2783,6 +2781,9 @@ static swig_module_info swig_module = {swig_types, 70, 0, 0, 0, 0};
 namespace swig {
 typedef struct{} LANGUAGE_OBJ;
 }
+
+
+#include <raylib.h>
 
 
 SWIGINTERN int SWIG_lua_isnilstring(lua_State *L, int idx) {
@@ -11150,60 +11151,6 @@ fail:
 }
 
 
-static int _wrap_AudioStream_processor_set(lua_State* L) {
-  int SWIG_arg = 0;
-  AudioStream *arg1 = (AudioStream *) 0 ;
-  rAudioProcessor *arg2 = (rAudioProcessor *) 0 ;
-  
-  SWIG_check_num_args("AudioStream::processor",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::processor",1,"AudioStream *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("AudioStream::processor",2,"rAudioProcessor *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_AudioStream,0))){
-    SWIG_fail_ptr("AudioStream_processor_set",1,SWIGTYPE_p_AudioStream);
-  }
-  
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_rAudioProcessor,SWIG_POINTER_DISOWN))){
-    SWIG_fail_ptr("AudioStream_processor_set",2,SWIGTYPE_p_rAudioProcessor);
-  }
-  
-  if (arg1) (arg1)->processor = arg2;
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_AudioStream_processor_get(lua_State* L) {
-  int SWIG_arg = 0;
-  AudioStream *arg1 = (AudioStream *) 0 ;
-  rAudioProcessor *result = 0 ;
-  
-  SWIG_check_num_args("AudioStream::processor",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::processor",1,"AudioStream *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_AudioStream,0))){
-    SWIG_fail_ptr("AudioStream_processor_get",1,SWIGTYPE_p_AudioStream);
-  }
-  
-  result = (rAudioProcessor *) ((arg1)->processor);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_rAudioProcessor,0); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_AudioStream_sampleRate_set(lua_State* L) {
   int SWIG_arg = 0;
   AudioStream *arg1 = (AudioStream *) 0 ;
@@ -11388,7 +11335,6 @@ static int _proxy__wrap_new_AudioStream(lua_State *L) {
 }
 static swig_lua_attribute swig_AudioStream_attributes[] = {
     { "buffer", _wrap_AudioStream_buffer_get, _wrap_AudioStream_buffer_set },
-    { "processor", _wrap_AudioStream_processor_get, _wrap_AudioStream_processor_set },
     { "sampleRate", _wrap_AudioStream_sampleRate_get, _wrap_AudioStream_sampleRate_set },
     { "sampleSize", _wrap_AudioStream_sampleSize_get, _wrap_AudioStream_sampleSize_set },
     { "channels", _wrap_AudioStream_channels_get, _wrap_AudioStream_channels_set },
@@ -13478,25 +13424,6 @@ fail:
 }
 
 
-static int _wrap_SetWindowOpacity(lua_State* L) {
-  int SWIG_arg = 0;
-  float arg1 ;
-  
-  SWIG_check_num_args("SetWindowOpacity",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("SetWindowOpacity",1,"float");
-  arg1 = (float)lua_tonumber(L, 1);
-  SetWindowOpacity(arg1);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_GetWindowHandle(lua_State* L) {
   int SWIG_arg = 0;
   void *result = 0 ;
@@ -13537,40 +13464,6 @@ static int _wrap_GetScreenHeight(lua_State* L) {
   
   SWIG_check_num_args("GetScreenHeight",0,0)
   result = (int)GetScreenHeight();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_GetRenderWidth(lua_State* L) {
-  int SWIG_arg = 0;
-  int result;
-  
-  SWIG_check_num_args("GetRenderWidth",0,0)
-  result = (int)GetRenderWidth();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_GetRenderHeight(lua_State* L) {
-  int SWIG_arg = 0;
-  int result;
-  
-  SWIG_check_num_args("GetRenderHeight",0,0)
-  result = (int)GetRenderHeight();
   lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
@@ -13825,38 +13718,6 @@ static int _wrap_GetClipboardText(lua_State* L) {
   SWIG_check_num_args("GetClipboardText",0,0)
   result = (char *)GetClipboardText();
   lua_pushstring(L,(const char *)result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_EnableEventWaiting(lua_State* L) {
-  int SWIG_arg = 0;
-  
-  SWIG_check_num_args("EnableEventWaiting",0,0)
-  EnableEventWaiting();
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_DisableEventWaiting(lua_State* L) {
-  int SWIG_arg = 0;
-  
-  SWIG_check_num_args("DisableEventWaiting",0,0)
-  DisableEventWaiting();
-  
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -15393,33 +15254,6 @@ fail:
 }
 
 
-static int _wrap_ExportDataAsCode(lua_State* L) {
-  int SWIG_arg = 0;
-  char *arg1 = (char *) 0 ;
-  unsigned int arg2 ;
-  char *arg3 = (char *) 0 ;
-  bool result;
-  
-  SWIG_check_num_args("ExportDataAsCode",3,3)
-  if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("ExportDataAsCode",1,"char const *");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("ExportDataAsCode",2,"unsigned int");
-  if(!SWIG_lua_isnilstring(L,3)) SWIG_fail_arg("ExportDataAsCode",3,"char const *");
-  arg1 = (char *)lua_tostring(L, 1);
-  SWIG_contract_assert((lua_tonumber(L,2)>=0),"number must not be negative")
-  arg2 = (unsigned int)lua_tonumber(L, 2);
-  arg3 = (char *)lua_tostring(L, 3);
-  result = (bool)ExportDataAsCode((char const *)arg1,arg2,(char const *)arg3);
-  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_LoadFileText(lua_State* L) {
   int SWIG_arg = 0;
   char *arg1 = (char *) 0 ;
@@ -15545,26 +15379,6 @@ fail:
 }
 
 
-static int _wrap_GetFileLength(lua_State* L) {
-  int SWIG_arg = 0;
-  char *arg1 = (char *) 0 ;
-  int result;
-  
-  SWIG_check_num_args("GetFileLength",1,1)
-  if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("GetFileLength",1,"char const *");
-  arg1 = (char *)lua_tostring(L, 1);
-  result = (int)GetFileLength((char const *)arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_GetFileExtension(lua_State* L) {
   int SWIG_arg = 0;
   char *arg1 = (char *) 0 ;
@@ -15671,23 +15485,6 @@ static int _wrap_GetWorkingDirectory(lua_State* L) {
   
   SWIG_check_num_args("GetWorkingDirectory",0,0)
   result = (char *)GetWorkingDirectory();
-  lua_pushstring(L,(const char *)result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_GetApplicationDirectory(lua_State* L) {
-  int SWIG_arg = 0;
-  char *result = 0 ;
-  
-  SWIG_check_num_args("GetApplicationDirectory",0,0)
-  result = (char *)GetApplicationDirectory();
   lua_pushstring(L,(const char *)result); SWIG_arg++;
   return SWIG_arg;
   
@@ -15847,7 +15644,7 @@ static int _wrap_CompressData(lua_State* L) {
   unsigned char *result = 0 ;
   
   SWIG_check_num_args("CompressData",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("CompressData",1,"unsigned char const *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("CompressData",1,"unsigned char *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("CompressData",2,"int");
   if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("CompressData",3,"int *");
   
@@ -15861,7 +15658,7 @@ static int _wrap_CompressData(lua_State* L) {
     SWIG_fail_ptr("CompressData",3,SWIGTYPE_p_int);
   }
   
-  result = (unsigned char *)CompressData((unsigned char const *)arg1,arg2,arg3);
+  result = (unsigned char *)CompressData(arg1,arg2,arg3);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_unsigned_char,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -15881,7 +15678,7 @@ static int _wrap_DecompressData(lua_State* L) {
   unsigned char *result = 0 ;
   
   SWIG_check_num_args("DecompressData",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DecompressData",1,"unsigned char const *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DecompressData",1,"unsigned char *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("DecompressData",2,"int");
   if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("DecompressData",3,"int *");
   
@@ -15895,7 +15692,7 @@ static int _wrap_DecompressData(lua_State* L) {
     SWIG_fail_ptr("DecompressData",3,SWIGTYPE_p_int);
   }
   
-  result = (unsigned char *)DecompressData((unsigned char const *)arg1,arg2,arg3);
+  result = (unsigned char *)DecompressData(arg1,arg2,arg3);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_unsigned_char,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -15948,7 +15745,7 @@ static int _wrap_DecodeDataBase64(lua_State* L) {
   unsigned char *result = 0 ;
   
   SWIG_check_num_args("DecodeDataBase64",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DecodeDataBase64",1,"unsigned char const *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DecodeDataBase64",1,"unsigned char *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DecodeDataBase64",2,"int *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_unsigned_char,0))){
@@ -15960,7 +15757,7 @@ static int _wrap_DecodeDataBase64(lua_State* L) {
     SWIG_fail_ptr("DecodeDataBase64",2,SWIGTYPE_p_int);
   }
   
-  result = (unsigned char *)DecodeDataBase64((unsigned char const *)arg1,arg2);
+  result = (unsigned char *)DecodeDataBase64(arg1,arg2);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_unsigned_char,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -22604,35 +22401,6 @@ fail:
 }
 
 
-static int _wrap_ExportFontAsCode(lua_State* L) {
-  int SWIG_arg = 0;
-  Font arg1 ;
-  char *arg2 = (char *) 0 ;
-  Font *argp1 ;
-  bool result;
-  
-  SWIG_check_num_args("ExportFontAsCode",2,2)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("ExportFontAsCode",1,"Font");
-  if(!SWIG_lua_isnilstring(L,2)) SWIG_fail_arg("ExportFontAsCode",2,"char const *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&argp1,SWIGTYPE_p_Font,0))){
-    SWIG_fail_ptr("ExportFontAsCode",1,SWIGTYPE_p_Font);
-  }
-  arg1 = *argp1;
-  
-  arg2 = (char *)lua_tostring(L, 2);
-  result = (bool)ExportFontAsCode(arg1,(char const *)arg2);
-  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_DrawFPS(lua_State* L) {
   int SWIG_arg = 0;
   int arg1 ;
@@ -22846,65 +22614,6 @@ static int _wrap_DrawTextCodepoint(lua_State* L) {
   arg5 = *argp5;
   
   DrawTextCodepoint(arg1,arg2,arg3,arg4,arg5);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_DrawTextCodepoints(lua_State* L) {
-  int SWIG_arg = 0;
-  Font arg1 ;
-  int *arg2 = (int *) 0 ;
-  int arg3 ;
-  Vector2 arg4 ;
-  float arg5 ;
-  float arg6 ;
-  Color arg7 ;
-  Font *argp1 ;
-  Vector2 *argp4 ;
-  Color *argp7 ;
-  
-  SWIG_check_num_args("DrawTextCodepoints",7,7)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("DrawTextCodepoints",1,"Font");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DrawTextCodepoints",2,"int const *");
-  if(!lua_isnumber(L,3)) SWIG_fail_arg("DrawTextCodepoints",3,"int");
-  if(!lua_isuserdata(L,4)) SWIG_fail_arg("DrawTextCodepoints",4,"Vector2");
-  if(!lua_isnumber(L,5)) SWIG_fail_arg("DrawTextCodepoints",5,"float");
-  if(!lua_isnumber(L,6)) SWIG_fail_arg("DrawTextCodepoints",6,"float");
-  if(!lua_isuserdata(L,7)) SWIG_fail_arg("DrawTextCodepoints",7,"Color");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&argp1,SWIGTYPE_p_Font,0))){
-    SWIG_fail_ptr("DrawTextCodepoints",1,SWIGTYPE_p_Font);
-  }
-  arg1 = *argp1;
-  
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_int,0))){
-    SWIG_fail_ptr("DrawTextCodepoints",2,SWIGTYPE_p_int);
-  }
-  
-  arg3 = (int)lua_tonumber(L, 3);
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,4,(void**)&argp4,SWIGTYPE_p_Vector2,0))){
-    SWIG_fail_ptr("DrawTextCodepoints",4,SWIGTYPE_p_Vector2);
-  }
-  arg4 = *argp4;
-  
-  arg5 = (float)lua_tonumber(L, 5);
-  arg6 = (float)lua_tonumber(L, 6);
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,7,(void**)&argp7,SWIGTYPE_p_Color,0))){
-    SWIG_fail_ptr("DrawTextCodepoints",7,SWIGTYPE_p_Color);
-  }
-  arg7 = *argp7;
-  
-  DrawTextCodepoints(arg1,(int const *)arg2,arg3,arg4,arg5,arg6,arg7);
   
   return SWIG_arg;
   
@@ -23201,7 +22910,7 @@ static int _wrap_TextCodepointsToUTF8(lua_State* L) {
   char *result = 0 ;
   
   SWIG_check_num_args("TextCodepointsToUTF8",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("TextCodepointsToUTF8",1,"int const *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("TextCodepointsToUTF8",1,"int *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("TextCodepointsToUTF8",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_int,0))){
@@ -23209,7 +22918,7 @@ static int _wrap_TextCodepointsToUTF8(lua_State* L) {
   }
   
   arg2 = (int)lua_tonumber(L, 2);
-  result = (char *)TextCodepointsToUTF8((int const *)arg1,arg2);
+  result = (char *)TextCodepointsToUTF8(arg1,arg2);
   lua_pushstring(L,(const char *)result); SWIG_arg++;
   return SWIG_arg;
   
@@ -25133,7 +24842,7 @@ static int _wrap_UpdateMeshBuffer(lua_State* L) {
   SWIG_check_num_args("UpdateMeshBuffer",5,5)
   if(!lua_isuserdata(L,1)) SWIG_fail_arg("UpdateMeshBuffer",1,"Mesh");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("UpdateMeshBuffer",2,"int");
-  if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("UpdateMeshBuffer",3,"void const *");
+  if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("UpdateMeshBuffer",3,"void *");
   if(!lua_isnumber(L,4)) SWIG_fail_arg("UpdateMeshBuffer",4,"int");
   if(!lua_isnumber(L,5)) SWIG_fail_arg("UpdateMeshBuffer",5,"int");
   
@@ -25146,7 +24855,7 @@ static int _wrap_UpdateMeshBuffer(lua_State* L) {
   arg3=(void *)SWIG_MustGetPtr(L,3,0,0,3,"UpdateMeshBuffer");
   arg4 = (int)lua_tonumber(L, 4);
   arg5 = (int)lua_tonumber(L, 5);
-  UpdateMeshBuffer(arg1,arg2,(void const *)arg3,arg4,arg5);
+  UpdateMeshBuffer(arg1,arg2,arg3,arg4,arg5);
   
   return SWIG_arg;
   
@@ -25238,7 +24947,7 @@ static int _wrap_DrawMeshInstanced(lua_State* L) {
   SWIG_check_num_args("DrawMeshInstanced",4,4)
   if(!lua_isuserdata(L,1)) SWIG_fail_arg("DrawMeshInstanced",1,"Mesh");
   if(!lua_isuserdata(L,2)) SWIG_fail_arg("DrawMeshInstanced",2,"Material");
-  if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("DrawMeshInstanced",3,"Matrix const *");
+  if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("DrawMeshInstanced",3,"Matrix *");
   if(!lua_isnumber(L,4)) SWIG_fail_arg("DrawMeshInstanced",4,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&argp1,SWIGTYPE_p_Mesh,0))){
@@ -25258,7 +24967,7 @@ static int _wrap_DrawMeshInstanced(lua_State* L) {
   }
   
   arg4 = (int)lua_tonumber(L, 4);
-  DrawMeshInstanced(arg1,arg2,(Matrix const *)arg3,arg4);
+  DrawMeshInstanced(arg1,arg2,arg3,arg4);
   
   return SWIG_arg;
   
@@ -26197,6 +25906,44 @@ fail:
 }
 
 
+static int _wrap_GetRayCollisionModel(lua_State* L) {
+  int SWIG_arg = 0;
+  Ray arg1 ;
+  Model arg2 ;
+  Ray *argp1 ;
+  Model *argp2 ;
+  RayCollision result;
+  
+  SWIG_check_num_args("GetRayCollisionModel",2,2)
+  if(!lua_isuserdata(L,1)) SWIG_fail_arg("GetRayCollisionModel",1,"Ray");
+  if(!lua_isuserdata(L,2)) SWIG_fail_arg("GetRayCollisionModel",2,"Model");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&argp1,SWIGTYPE_p_Ray,0))){
+    SWIG_fail_ptr("GetRayCollisionModel",1,SWIGTYPE_p_Ray);
+  }
+  arg1 = *argp1;
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&argp2,SWIGTYPE_p_Model,0))){
+    SWIG_fail_ptr("GetRayCollisionModel",2,SWIGTYPE_p_Model);
+  }
+  arg2 = *argp2;
+  
+  result = GetRayCollisionModel(arg1,arg2);
+  {
+    RayCollision * resultptr = new RayCollision((const RayCollision &) result);
+    SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_RayCollision,1); SWIG_arg++;
+  }
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static int _wrap_GetRayCollisionMesh(lua_State* L) {
   int SWIG_arg = 0;
   Ray arg1 ;
@@ -26920,23 +26667,27 @@ fail:
 }
 
 
-static int _wrap_SetSoundPan(lua_State* L) {
+static int _wrap_WaveFormat(lua_State* L) {
   int SWIG_arg = 0;
-  Sound arg1 ;
-  float arg2 ;
-  Sound *argp1 ;
+  Wave *arg1 = (Wave *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
   
-  SWIG_check_num_args("SetSoundPan",2,2)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("SetSoundPan",1,"Sound");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("SetSoundPan",2,"float");
+  SWIG_check_num_args("WaveFormat",4,4)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("WaveFormat",1,"Wave *");
+  if(!lua_isnumber(L,2)) SWIG_fail_arg("WaveFormat",2,"int");
+  if(!lua_isnumber(L,3)) SWIG_fail_arg("WaveFormat",3,"int");
+  if(!lua_isnumber(L,4)) SWIG_fail_arg("WaveFormat",4,"int");
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&argp1,SWIGTYPE_p_Sound,0))){
-    SWIG_fail_ptr("SetSoundPan",1,SWIGTYPE_p_Sound);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
+    SWIG_fail_ptr("WaveFormat",1,SWIGTYPE_p_Wave);
   }
-  arg1 = *argp1;
   
-  arg2 = (float)lua_tonumber(L, 2);
-  SetSoundPan(arg1,arg2);
+  arg2 = (int)lua_tonumber(L, 2);
+  arg3 = (int)lua_tonumber(L, 3);
+  arg4 = (int)lua_tonumber(L, 4);
+  WaveFormat(arg1,arg2,arg3,arg4);
   
   return SWIG_arg;
   
@@ -26995,38 +26746,6 @@ static int _wrap_WaveCrop(lua_State* L) {
   arg2 = (int)lua_tonumber(L, 2);
   arg3 = (int)lua_tonumber(L, 3);
   WaveCrop(arg1,arg2,arg3);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_WaveFormat(lua_State* L) {
-  int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  
-  SWIG_check_num_args("WaveFormat",4,4)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("WaveFormat",1,"Wave *");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("WaveFormat",2,"int");
-  if(!lua_isnumber(L,3)) SWIG_fail_arg("WaveFormat",3,"int");
-  if(!lua_isnumber(L,4)) SWIG_fail_arg("WaveFormat",4,"int");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
-    SWIG_fail_ptr("WaveFormat",1,SWIGTYPE_p_Wave);
-  }
-  
-  arg2 = (int)lua_tonumber(L, 2);
-  arg3 = (int)lua_tonumber(L, 3);
-  arg4 = (int)lua_tonumber(L, 4);
-  WaveFormat(arg1,arg2,arg3,arg4);
   
   return SWIG_arg;
   
@@ -27119,7 +26838,7 @@ static int _wrap_LoadMusicStreamFromMemory(lua_State* L) {
   
   SWIG_check_num_args("LoadMusicStreamFromMemory",3,3)
   if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("LoadMusicStreamFromMemory",1,"char const *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("LoadMusicStreamFromMemory",2,"unsigned char const *");
+  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("LoadMusicStreamFromMemory",2,"unsigned char *");
   if(!lua_isnumber(L,3)) SWIG_fail_arg("LoadMusicStreamFromMemory",3,"int");
   arg1 = (char *)lua_tostring(L, 1);
   
@@ -27128,7 +26847,7 @@ static int _wrap_LoadMusicStreamFromMemory(lua_State* L) {
   }
   
   arg3 = (int)lua_tonumber(L, 3);
-  result = LoadMusicStreamFromMemory((char const *)arg1,(unsigned char const *)arg2,arg3);
+  result = LoadMusicStreamFromMemory((char const *)arg1,arg2,arg3);
   {
     Music * resultptr = new Music((const Music &) result);
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Music,1); SWIG_arg++;
@@ -27392,34 +27111,6 @@ static int _wrap_SetMusicPitch(lua_State* L) {
   
   arg2 = (float)lua_tonumber(L, 2);
   SetMusicPitch(arg1,arg2);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_SetMusicPan(lua_State* L) {
-  int SWIG_arg = 0;
-  Music arg1 ;
-  float arg2 ;
-  Music *argp1 ;
-  
-  SWIG_check_num_args("SetMusicPan",2,2)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("SetMusicPan",1,"Music");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("SetMusicPan",2,"float");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&argp1,SWIGTYPE_p_Music,0))){
-    SWIG_fail_ptr("SetMusicPan",1,SWIGTYPE_p_Music);
-  }
-  arg1 = *argp1;
-  
-  arg2 = (float)lua_tonumber(L, 2);
-  SetMusicPan(arg1,arg2);
   
   return SWIG_arg;
   
@@ -27779,34 +27470,6 @@ fail:
 }
 
 
-static int _wrap_SetAudioStreamPan(lua_State* L) {
-  int SWIG_arg = 0;
-  AudioStream arg1 ;
-  float arg2 ;
-  AudioStream *argp1 ;
-  
-  SWIG_check_num_args("SetAudioStreamPan",2,2)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("SetAudioStreamPan",1,"AudioStream");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("SetAudioStreamPan",2,"float");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&argp1,SWIGTYPE_p_AudioStream,0))){
-    SWIG_fail_ptr("SetAudioStreamPan",1,SWIGTYPE_p_AudioStream);
-  }
-  arg1 = *argp1;
-  
-  arg2 = (float)lua_tonumber(L, 2);
-  SetAudioStreamPan(arg1,arg2);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_SetAudioStreamBufferSizeDefault(lua_State* L) {
   int SWIG_arg = 0;
   int arg1 ;
@@ -27826,107 +27489,11 @@ fail:
 }
 
 
-static int _wrap_SetAudioStreamCallback(lua_State* L) {
-  int SWIG_arg = 0;
-  AudioStream arg1 ;
-  AudioCallback arg2 = (AudioCallback) 0 ;
-  AudioStream *argp1 ;
-  
-  SWIG_check_num_args("SetAudioStreamCallback",2,2)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("SetAudioStreamCallback",1,"AudioStream");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("SetAudioStreamCallback",2,"AudioCallback");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&argp1,SWIGTYPE_p_AudioStream,0))){
-    SWIG_fail_ptr("SetAudioStreamCallback",1,SWIGTYPE_p_AudioStream);
-  }
-  arg1 = *argp1;
-  
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_void_unsigned_int__void,0))){
-    SWIG_fail_ptr("SetAudioStreamCallback",2,SWIGTYPE_p_f_p_void_unsigned_int__void);
-  }
-  
-  SetAudioStreamCallback(arg1,arg2);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_AttachAudioStreamProcessor(lua_State* L) {
-  int SWIG_arg = 0;
-  AudioStream arg1 ;
-  AudioCallback arg2 = (AudioCallback) 0 ;
-  AudioStream *argp1 ;
-  
-  SWIG_check_num_args("AttachAudioStreamProcessor",2,2)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("AttachAudioStreamProcessor",1,"AudioStream");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("AttachAudioStreamProcessor",2,"AudioCallback");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&argp1,SWIGTYPE_p_AudioStream,0))){
-    SWIG_fail_ptr("AttachAudioStreamProcessor",1,SWIGTYPE_p_AudioStream);
-  }
-  arg1 = *argp1;
-  
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_void_unsigned_int__void,0))){
-    SWIG_fail_ptr("AttachAudioStreamProcessor",2,SWIGTYPE_p_f_p_void_unsigned_int__void);
-  }
-  
-  AttachAudioStreamProcessor(arg1,arg2);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_DetachAudioStreamProcessor(lua_State* L) {
-  int SWIG_arg = 0;
-  AudioStream arg1 ;
-  AudioCallback arg2 = (AudioCallback) 0 ;
-  AudioStream *argp1 ;
-  
-  SWIG_check_num_args("DetachAudioStreamProcessor",2,2)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("DetachAudioStreamProcessor",1,"AudioStream");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DetachAudioStreamProcessor",2,"AudioCallback");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&argp1,SWIGTYPE_p_AudioStream,0))){
-    SWIG_fail_ptr("DetachAudioStreamProcessor",1,SWIGTYPE_p_AudioStream);
-  }
-  arg1 = *argp1;
-  
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_void_unsigned_int__void,0))){
-    SWIG_fail_ptr("DetachAudioStreamProcessor",2,SWIGTYPE_p_f_p_void_unsigned_int__void);
-  }
-  
-  DetachAudioStreamProcessor(arg1,arg2);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static swig_lua_attribute swig_SwigModule_attributes[] = {
     {0,0,0}
 };
 static swig_lua_const_info swig_SwigModule_constants[]= {
-    {SWIG_LUA_CONSTTAB_STRING("RAYLIB_VERSION", "4.1-dev")},
+    {SWIG_LUA_CONSTTAB_STRING("RAYLIB_VERSION", "4.0")},
     {SWIG_LUA_CONSTTAB_FLOAT("PI", 3.14159265358979323846)},
     {SWIG_LUA_CONSTTAB_FLOAT("DEG2RAD", (3.14159265358979323846/180.0))},
     {SWIG_LUA_CONSTTAB_FLOAT("RAD2DEG", (180.0/3.14159265358979323846))},
@@ -28199,7 +27766,6 @@ static swig_lua_const_info swig_SwigModule_constants[]= {
     {SWIG_LUA_CONSTTAB_INT("BLEND_MULTIPLIED", BLEND_MULTIPLIED)},
     {SWIG_LUA_CONSTTAB_INT("BLEND_ADD_COLORS", BLEND_ADD_COLORS)},
     {SWIG_LUA_CONSTTAB_INT("BLEND_SUBTRACT_COLORS", BLEND_SUBTRACT_COLORS)},
-    {SWIG_LUA_CONSTTAB_INT("BLEND_ALPHA_PREMUL", BLEND_ALPHA_PREMUL)},
     {SWIG_LUA_CONSTTAB_INT("BLEND_CUSTOM", BLEND_CUSTOM)},
     {SWIG_LUA_CONSTTAB_INT("GESTURE_NONE", GESTURE_NONE)},
     {SWIG_LUA_CONSTTAB_INT("GESTURE_TAP", GESTURE_TAP)},
@@ -28248,12 +27814,9 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "SetWindowMonitor", _wrap_SetWindowMonitor},
     { "SetWindowMinSize", _wrap_SetWindowMinSize},
     { "SetWindowSize", _wrap_SetWindowSize},
-    { "SetWindowOpacity", _wrap_SetWindowOpacity},
     { "GetWindowHandle", _wrap_GetWindowHandle},
     { "GetScreenWidth", _wrap_GetScreenWidth},
     { "GetScreenHeight", _wrap_GetScreenHeight},
-    { "GetRenderWidth", _wrap_GetRenderWidth},
-    { "GetRenderHeight", _wrap_GetRenderHeight},
     { "GetMonitorCount", _wrap_GetMonitorCount},
     { "GetCurrentMonitor", _wrap_GetCurrentMonitor},
     { "GetMonitorPosition", _wrap_GetMonitorPosition},
@@ -28267,8 +27830,6 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "GetMonitorName", _wrap_GetMonitorName},
     { "SetClipboardText", _wrap_SetClipboardText},
     { "GetClipboardText", _wrap_GetClipboardText},
-    { "EnableEventWaiting", _wrap_EnableEventWaiting},
-    { "DisableEventWaiting", _wrap_DisableEventWaiting},
     { "SwapScreenBuffer", _wrap_SwapScreenBuffer},
     { "PollInputEvents", _wrap_PollInputEvents},
     { "WaitTime", _wrap_WaitTime},
@@ -28334,21 +27895,18 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "LoadFileData", _wrap_LoadFileData},
     { "UnloadFileData", _wrap_UnloadFileData},
     { "SaveFileData", _wrap_SaveFileData},
-    { "ExportDataAsCode", _wrap_ExportDataAsCode},
     { "LoadFileText", _wrap_LoadFileText},
     { "UnloadFileText", _wrap_UnloadFileText},
     { "SaveFileText", _wrap_SaveFileText},
     { "FileExists", _wrap_FileExists},
     { "DirectoryExists", _wrap_DirectoryExists},
     { "IsFileExtension", _wrap_IsFileExtension},
-    { "GetFileLength", _wrap_GetFileLength},
     { "GetFileExtension", _wrap_GetFileExtension},
     { "GetFileName", _wrap_GetFileName},
     { "GetFileNameWithoutExt", _wrap_GetFileNameWithoutExt},
     { "GetDirectoryPath", _wrap_GetDirectoryPath},
     { "GetPrevDirectoryPath", _wrap_GetPrevDirectoryPath},
     { "GetWorkingDirectory", _wrap_GetWorkingDirectory},
-    { "GetApplicationDirectory", _wrap_GetApplicationDirectory},
     { "GetDirectoryFiles", _wrap_GetDirectoryFiles},
     { "ClearDirectoryFiles", _wrap_ClearDirectoryFiles},
     { "ChangeDirectory", _wrap_ChangeDirectory},
@@ -28562,13 +28120,11 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "GenImageFontAtlas", _wrap_GenImageFontAtlas},
     { "UnloadFontData", _wrap_UnloadFontData},
     { "UnloadFont", _wrap_UnloadFont},
-    { "ExportFontAsCode", _wrap_ExportFontAsCode},
     { "DrawFPS", _wrap_DrawFPS},
     { "DrawText", _wrap_DrawText},
     { "DrawTextEx", _wrap_DrawTextEx},
     { "DrawTextPro", _wrap_DrawTextPro},
     { "DrawTextCodepoint", _wrap_DrawTextCodepoint},
-    { "DrawTextCodepoints", _wrap_DrawTextCodepoints},
     { "MeasureText", _wrap_MeasureText},
     { "MeasureTextEx", _wrap_MeasureTextEx},
     { "GetGlyphIndex", _wrap_GetGlyphIndex},
@@ -28664,6 +28220,7 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "CheckCollisionBoxSphere", _wrap_CheckCollisionBoxSphere},
     { "GetRayCollisionSphere", _wrap_GetRayCollisionSphere},
     { "GetRayCollisionBox", _wrap_GetRayCollisionBox},
+    { "GetRayCollisionModel", _wrap_GetRayCollisionModel},
     { "GetRayCollisionMesh", _wrap_GetRayCollisionMesh},
     { "GetRayCollisionTriangle", _wrap_GetRayCollisionTriangle},
     { "GetRayCollisionQuad", _wrap_GetRayCollisionQuad},
@@ -28690,10 +28247,9 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "IsSoundPlaying", _wrap_IsSoundPlaying},
     { "SetSoundVolume", _wrap_SetSoundVolume},
     { "SetSoundPitch", _wrap_SetSoundPitch},
-    { "SetSoundPan", _wrap_SetSoundPan},
+    { "WaveFormat", _wrap_WaveFormat},
     { "WaveCopy", _wrap_WaveCopy},
     { "WaveCrop", _wrap_WaveCrop},
-    { "WaveFormat", _wrap_WaveFormat},
     { "LoadWaveSamples", _wrap_LoadWaveSamples},
     { "UnloadWaveSamples", _wrap_UnloadWaveSamples},
     { "LoadMusicStream", _wrap_LoadMusicStream},
@@ -28708,7 +28264,6 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "SeekMusicStream", _wrap_SeekMusicStream},
     { "SetMusicVolume", _wrap_SetMusicVolume},
     { "SetMusicPitch", _wrap_SetMusicPitch},
-    { "SetMusicPan", _wrap_SetMusicPan},
     { "GetMusicTimeLength", _wrap_GetMusicTimeLength},
     { "GetMusicTimePlayed", _wrap_GetMusicTimePlayed},
     { "LoadAudioStream", _wrap_LoadAudioStream},
@@ -28722,11 +28277,7 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "StopAudioStream", _wrap_StopAudioStream},
     { "SetAudioStreamVolume", _wrap_SetAudioStreamVolume},
     { "SetAudioStreamPitch", _wrap_SetAudioStreamPitch},
-    { "SetAudioStreamPan", _wrap_SetAudioStreamPan},
     { "SetAudioStreamBufferSizeDefault", _wrap_SetAudioStreamBufferSizeDefault},
-    { "SetAudioStreamCallback", _wrap_SetAudioStreamCallback},
-    { "AttachAudioStreamProcessor", _wrap_AttachAudioStreamProcessor},
-    { "DetachAudioStreamProcessor", _wrap_DetachAudioStreamProcessor},
     {0,0}
 };
 static swig_lua_class* swig_SwigModule_classes[]= {
@@ -28839,14 +28390,12 @@ static swig_type_info _swigt__p_f_p_q_const__char__p_char = {"_p_f_p_q_const__ch
 static swig_type_info _swigt__p_f_p_q_const__char_p_char__bool = {"_p_f_p_q_const__char_p_char__bool", "bool (*)(char const *,char *)|SaveFileTextCallback", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__char_p_unsigned_int__p_unsigned_char = {"_p_f_p_q_const__char_p_unsigned_int__p_unsigned_char", "unsigned char *(*)(char const *,unsigned int *)|LoadFileDataCallback", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__char_p_void_unsigned_int__bool = {"_p_f_p_q_const__char_p_void_unsigned_int__bool", "bool (*)(char const *,void *,unsigned int)|SaveFileDataCallback", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_f_p_void_unsigned_int__void = {"_p_f_p_void_unsigned_int__void", "void (*)(void *,unsigned int)|AudioCallback", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_float = {"_p_float", "float *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_int = {"_p_int", "int *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_Rectangle = {"_p_p_Rectangle", "Rectangle **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_Transform = {"_p_p_Transform", "Transform **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_char = {"_p_p_char", "char **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_rAudioBuffer = {"_p_rAudioBuffer", "rAudioBuffer *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_rAudioProcessor = {"_p_rAudioProcessor", "rAudioProcessor *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_char = {"_p_unsigned_char", "unsigned char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_int = {"_p_unsigned_int", "unsigned int *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_short = {"_p_unsigned_short", "unsigned short *", 0, 0, (void*)0, 0};
@@ -28911,14 +28460,12 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_f_p_q_const__char_p_char__bool,
   &_swigt__p_f_p_q_const__char_p_unsigned_int__p_unsigned_char,
   &_swigt__p_f_p_q_const__char_p_void_unsigned_int__bool,
-  &_swigt__p_f_p_void_unsigned_int__void,
   &_swigt__p_float,
   &_swigt__p_int,
   &_swigt__p_p_Rectangle,
   &_swigt__p_p_Transform,
   &_swigt__p_p_char,
   &_swigt__p_rAudioBuffer,
-  &_swigt__p_rAudioProcessor,
   &_swigt__p_unsigned_char,
   &_swigt__p_unsigned_int,
   &_swigt__p_unsigned_short,
@@ -28983,14 +28530,12 @@ static swig_cast_info _swigc__p_f_p_q_const__char__p_char[] = {  {&_swigt__p_f_p
 static swig_cast_info _swigc__p_f_p_q_const__char_p_char__bool[] = {  {&_swigt__p_f_p_q_const__char_p_char__bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__char_p_unsigned_int__p_unsigned_char[] = {  {&_swigt__p_f_p_q_const__char_p_unsigned_int__p_unsigned_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__char_p_void_unsigned_int__bool[] = {  {&_swigt__p_f_p_q_const__char_p_void_unsigned_int__bool, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_f_p_void_unsigned_int__void[] = {  {&_swigt__p_f_p_void_unsigned_int__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_float[] = {  {&_swigt__p_float, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_Rectangle[] = {  {&_swigt__p_p_Rectangle, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_Transform[] = {  {&_swigt__p_p_Transform, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_char[] = {  {&_swigt__p_p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_rAudioBuffer[] = {  {&_swigt__p_rAudioBuffer, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_rAudioProcessor[] = {  {&_swigt__p_rAudioProcessor, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_char[] = {  {&_swigt__p_unsigned_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_int[] = {  {&_swigt__p_unsigned_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_short[] = {  {&_swigt__p_unsigned_short, 0, 0, 0},{0, 0, 0, 0}};
@@ -29055,14 +28600,12 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_f_p_q_const__char_p_char__bool,
   _swigc__p_f_p_q_const__char_p_unsigned_int__p_unsigned_char,
   _swigc__p_f_p_q_const__char_p_void_unsigned_int__bool,
-  _swigc__p_f_p_void_unsigned_int__void,
   _swigc__p_float,
   _swigc__p_int,
   _swigc__p_p_Rectangle,
   _swigc__p_p_Transform,
   _swigc__p_p_char,
   _swigc__p_rAudioBuffer,
-  _swigc__p_rAudioProcessor,
   _swigc__p_unsigned_char,
   _swigc__p_unsigned_int,
   _swigc__p_unsigned_short,

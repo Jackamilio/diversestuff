@@ -165,6 +165,9 @@
     <ClCompile Include="rlImGui.cpp">
       <Filter>Fichiers sources\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="raylib_wrap.cxx">
+      <Filter>Fichiers sources\bindings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui_iterator.inl">

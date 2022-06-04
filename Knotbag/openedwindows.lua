@@ -6,35 +6,42 @@ return {
    {4},
    {5},
    {6},
-   ["Scanned lua context"]={5},
-   ["Console"]={2},
+   {7},
    ["Run command"]={3},
-   ["Scripts"]={6},
+   ["Scanned lua context"]={6},
+   ["Console"]={2},
+   ["Scripts"]={7},
    ["Demo"]={4},
+   ["Raylib tests"]={5},
 },
 -- Table: {2}
 {
-   ["name"]="Console",
    ["isopen"]=true,
+   ["name"]="Console",
 },
 -- Table: {3}
 {
-   ["name"]="Run command",
    ["isopen"]=true,
+   ["name"]="Run command",
 },
 -- Table: {4}
 {
-   ["name"]="Demo",
    ["isopen"]=false,
+   ["name"]="Demo",
 },
 -- Table: {5}
 {
-   ["name"]="Scanned lua context",
-   ["isopen"]=true,
+   ["isopen"]=false,
+   ["name"]="Raylib tests",
 },
 -- Table: {6}
 {
-   ["name"]="Scripts",
    ["isopen"]=true,
+   ["name"]="Scanned lua context",
+},
+-- Table: {7}
+{
+   ["isopen"]=true,
+   ["name"]="Scripts",
 },
 }

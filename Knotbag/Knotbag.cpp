@@ -13,6 +13,8 @@
 #include "utils.h"
 #include <assert.h>
 
+extern "C" int luaopen_raylib(lua_State * L);
+
 thread_local ImGuiContext* MyImGuiTLS;
 
 static double last_loop_start = 0.0;
@@ -259,6 +261,7 @@ int main()
 	L = luaL_newstate();
 	luaL_openlibs(L);
 	ImGui::LuaBindings::Load(L);
+	luaopen_raylib(L);
 	additional_bindings(L);
 	lua_newtable(L);
 	lua_pushcfunction(L, lua_knotbag_legacyconsole);
