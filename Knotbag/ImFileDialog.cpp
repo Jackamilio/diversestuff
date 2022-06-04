@@ -10,8 +10,8 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-//#define STB_IMAGE_IMPLEMENTATION
-//#include "stb_image.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -343,7 +343,7 @@ namespace ifd {
 
 		HasIconPreview = false;
 		IconPreview = nullptr;
-		//IconPreviewData = nullptr;
+		IconPreviewData = nullptr;
 		IconPreviewHeight = 0;
 		IconPreviewWidth = 0;
 	}
@@ -846,9 +846,7 @@ namespace ifd {
 		if (m_zoom >= 5.0f) {
 			if (m_previewLoader == nullptr) {
 				m_previewLoaderRunning = true;
-				//m_previewLoader = new std::thread(&FileDialog::m_loadPreview, this);
-				m_previewLoader = al_create_thread(&FileDialog::m_loadPreviewThread, this);
-				al_start_thread(m_previewLoader);
+				m_previewLoader = new std::thread(&FileDialog::m_loadPreview, this);
 			}
 		} else
 			m_clearIconPreview();
@@ -864,10 +862,10 @@ namespace ifd {
 			data.HasIconPreview = false;
 			this->DeleteTexture(data.IconPreview);
 
-			//if (data.IconPreviewData != nullptr) {
-			//	stbi_image_free(data.IconPreviewData);
-			//	data.IconPreviewData = nullptr;
-			//}
+			if (data.IconPreviewData != nullptr) {
+				stbi_image_free(data.IconPreviewData);
+				data.IconPreviewData = nullptr;
+			}
 		}
 	}
 	void FileDialog::m_stopPreviewLoader()
@@ -875,12 +873,10 @@ namespace ifd {
 		if (m_previewLoader != nullptr) {
 			m_previewLoaderRunning = false;
 
-			//if (m_previewLoader && m_previewLoader->joinable())
-			//	m_previewLoader->join();
-			al_join_thread(m_previewLoader, nullptr);
+			if (m_previewLoader && m_previewLoader->joinable())
+				m_previewLoader->join();
 
-			//delete m_previewLoader;
-			al_destroy_thread(m_previewLoader);
+			delete m_previewLoader;
 			m_previewLoader = nullptr;
 		}
 	}
@@ -895,18 +891,14 @@ namespace ifd {
 			if (data.Path.has_extension()) {
 				std::string ext = data.Path.extension().u8string();
 				if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga") {
-					//int width, height, nrChannels;
-					//unsigned char* image = stbi_load(data.Path.u8string().c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
-					ALLEGRO_BITMAP* image = al_load_bitmap(data.Path.u8string().c_str());
-					int width = image ? al_get_bitmap_width(image) : 0;
-					int height = image ? al_get_bitmap_width(image) : 0;
+					int width, height, nrChannels;
+					unsigned char* image = stbi_load(data.Path.u8string().c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
 
 					if (image == nullptr || width == 0 || height == 0)
 						continue;
 
 					data.HasIconPreview = true;
-					//data.IconPreviewData = image;
-					data.IconPreview = image;
+					data.IconPreviewData = image;
 					data.IconPreviewWidth = width;
 					data.IconPreviewHeight = height;
 				}
@@ -914,11 +906,6 @@ namespace ifd {
 		}
 
 		m_previewLoaderRunning = false;
-	}
-	void* FileDialog::m_loadPreviewThread(ALLEGRO_THREAD* thread, void* arg)
-	{
-		((FileDialog*)arg)->m_loadPreview();
-		return 0;
 	}
 	void FileDialog::m_clearTree(FileTreeNode* node)
 	{
@@ -1183,11 +1170,11 @@ namespace ifd {
 			// content
 			int fileId = 0;
 			for (auto& entry : m_content) {
-				//if (entry.HasIconPreview && entry.IconPreviewData != nullptr) {
-				//	entry.IconPreview = this->CreateTexture(entry.IconPreviewData, entry.IconPreviewWidth, entry.IconPreviewHeight, 1);
-				//	stbi_image_free(entry.IconPreviewData);
-				//	entry.IconPreviewData = nullptr;
-				//}
+				if (entry.HasIconPreview && entry.IconPreviewData != nullptr) {
+					entry.IconPreview = this->CreateTexture(entry.IconPreviewData, entry.IconPreviewWidth, entry.IconPreviewHeight, 1);
+					stbi_image_free(entry.IconPreviewData);
+					entry.IconPreviewData = nullptr;
+				}
 
 				std::string filename = entry.Path.filename().u8string();
 				if (filename.size() == 0)

@@ -1,78 +1,26 @@
 #include <iostream>
-#include <allegro5/allegro5.h>
-#include <allegro5/allegro_image.h>
-#include "imgui_impl_allegro5.h"
-#include <allegro5/allegro_primitives.h>
+#include <raylib.h>
+#include "rlImGui.h"
 #include "lua/lua.hpp"
 #include "TextEditor.h"
 #include <fstream>
 #include <sstream>
 #include "stdcapture.h"
 #include "ImFileDialog.h"
-#include <objbase.h>
 #include "imgui_lua_bindings.h"
 #include "additional_bindings.h"
 #include <set>
 #include "utils.h"
-#include "lallegro.h"
+#include <assert.h>
 
 thread_local ImGuiContext* MyImGuiTLS;
 
 static double last_loop_start = 0.0;
 static bool kill_lua = false;
-static ALLEGRO_MUTEX* lua_monitoring_mutex;
 
-static ALLEGRO_DISPLAY* main_display = nullptr;
 
-namespace DearImguiIntegration {
-	void Init(ALLEGRO_DISPLAY* display) {
-		// Setup Dear ImGui context
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-
-		ImGuiIO& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-
-		// Setup Dear ImGui style
-		ImGui::StyleColorsDark();
-		//ImGui::StyleColorsClassic();
-
-		// Setup Platform/Renderer backends
-		ImGui_ImplAllegro5_Init(display);
-	}
-
-	bool Event(ALLEGRO_EVENT& event) {
-		ImGui_ImplAllegro5_ProcessEvent(&event);
-
-		if (event.type == ALLEGRO_EVENT_DISPLAY_RESIZE)
-		{
-			ImGui_ImplAllegro5_InvalidateDeviceObjects();
-			//al_acknowledge_resize(display);
-			ImGui_ImplAllegro5_CreateDeviceObjects();
-		}
-
-		ImGuiIO& io = ImGui::GetIO();
-		return io.WantCaptureKeyboard || io.WantCaptureMouse;
-	}
-
-	void NewFrame() {
-		// Start the Dear ImGui frame
-		ImGui_ImplAllegro5_NewFrame();
-		ImGui::NewFrame();
-	}
-
-	void Render() {
-		ImGui::Render();
-		ImGui_ImplAllegro5_RenderDrawData(ImGui::GetDrawData());
-	}
-
-	void Destroy() {
-		ImGui_ImplAllegro5_Shutdown();
-		ImGui::DestroyContext();
-	}
-}
-
+/*
+TODO
 static void* lua_monitoring(ALLEGRO_THREAD* thread, void* arg) {
 	//ALLEGRO_DISPLAY* display = al_create_display(280, 420);
 	//if (!display) {
@@ -191,18 +139,18 @@ static void* lua_monitoring(ALLEGRO_THREAD* thread, void* arg) {
 	if (eventQueue) { al_destroy_event_queue(eventQueue); }
 
 	return nullptr;
-}
+}*/
 
 void lua_monitoring_hook(lua_State* L, lua_Debug* ar) {
-	al_lock_mutex(lua_monitoring_mutex);
+	//al_lock_mutex(lua_monitoring_mutex);
 	if (kill_lua) {
 		kill_lua = false;
-		al_unlock_mutex(lua_monitoring_mutex);
+		//al_unlock_mutex(lua_monitoring_mutex);
 		lua_pushfstring(L, "Lua script killed from debugger");
 		lua_error(L); // never returns
 		return; // I'm explicit about this anyway
 	}
-	al_unlock_mutex(lua_monitoring_mutex);
+	//al_unlock_mutex(lua_monitoring_mutex);
 }
 
 static thread_local lua_State* currentluacontext = nullptr;
@@ -265,77 +213,19 @@ void trigger_knotbag_callback(lua_State* L, const char* callback) {
 
 int main()
 {
-	CoInitialize(nullptr); // ImFileDialog needs this if we don't want the debug output complaining
-
-	// Init allegro
-	if (!al_install_system(ALLEGRO_VERSION_INT, nullptr)) {
-		fprintf(stderr, "failed to initialize allegro!\n");
-		return false;
-	}
-
-	if (!al_install_keyboard()) {
-		fprintf(stderr, "failed to install keyboard!\n");
-		return false;
-	}
-
-	if (!al_install_mouse()) {
-		fprintf(stderr, "failed to install mouse!\n");
-		return false;
-	}
-
-	if (!al_init_primitives_addon()) {
-		fprintf(stderr, "failed to load primitives addon!\n");
-		return false;
-	}
-
-	if (!al_init_image_addon()) {
-		fprintf(stderr, "failed to load image addon!\n");
-		return false;
-	}
-
-//	if (!al_init_font_addon()) {
-//		fprintf(stderr, "failed to load font addon!\n");
-//		return false;
-//	}
-
-//	if (!al_init_native_dialog_addon()) {
-//		fprintf(stderr, "failed to load native dialog addon!\n");
-//		return false;
-//	}
-
-	al_set_new_display_flags(ALLEGRO_RESIZABLE);
-//	al_set_new_display_option(ALLEGRO_DEPTH_SIZE, 16, ALLEGRO_SUGGEST);
-
-	main_display = al_create_display(1280, 720);
-	if (!main_display) {
-		fprintf(stderr, "failed to create display!\n");
-		return false;
-	}
-
-	ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
-	if (!eventQueue) {
-		fprintf(stderr, "failed to create event queue!\n");
-		return false;
-	};
-
-	al_register_event_source(eventQueue, al_get_display_event_source(main_display));
-	al_register_event_source(eventQueue, al_get_keyboard_event_source());
-	al_register_event_source(eventQueue, al_get_mouse_event_source());
-
-	// Dear Imgui
-	DearImguiIntegration::Init(main_display);
+	// Init raylib and ImGui
+	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
+	InitWindow(1280, 800, "KNOTBAG");
+	SetTargetFPS(60);
+	rlImGuiSetup(true);
 
 	// File Dialog
 	ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
-		ALLEGRO_BITMAP* bmp = al_create_bitmap(w, h);
-		ALLEGRO_LOCKED_REGION* lr = al_lock_bitmap(bmp, (fmt == 0) ? ALLEGRO_PIXEL_FORMAT_ARGB_8888 : ALLEGRO_PIXEL_FORMAT_ABGR_8888, ALLEGRO_LOCK_WRITEONLY);
-		memcpy(lr->data, data, w * h * lr->pixel_size); // I mostly ignore lr, will it work?
-		al_unlock_bitmap(bmp);
-		return (void*)bmp;
+		// TODO
+		return nullptr;
 	};
-	std::vector<ALLEGRO_BITMAP*> bitmaps_to_destroy;
-	ifd::FileDialog::Instance().DeleteTexture = [&bitmaps_to_destroy](void* tex) {
-		bitmaps_to_destroy.push_back((ALLEGRO_BITMAP*)tex);
+	ifd::FileDialog::Instance().DeleteTexture = [](void* tex) {
+		// TODO
 	};
 	ifd::FileDialog& fileDialog = ifd::FileDialog::Instance();
 
@@ -369,8 +259,6 @@ int main()
 	L = luaL_newstate();
 	luaL_openlibs(L);
 	ImGui::LuaBindings::Load(L);
-	luaopen_lallegro_core(L);
-	luaopen_lallegro_primitives(L);
 	additional_bindings(L);
 	lua_newtable(L);
 	lua_pushcfunction(L, lua_knotbag_legacyconsole);
@@ -387,9 +275,7 @@ int main()
 
 	// lua monitoring
 	lua_sethook(L, lua_monitoring_hook, LUA_MASKCOUNT, 100);
-	lua_monitoring_mutex = al_create_mutex();
-	ALLEGRO_THREAD* thread = al_create_thread(lua_monitoring, NULL);
-	al_start_thread(thread);
+	//TODO CALL MONITORING THREAD
 
 	// Text editors
 	std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>> lua_editors;
@@ -462,33 +348,12 @@ int main()
 		it = lua_editors.erase(it);
 	};
 
-	// time management
-	double lastTime = al_get_time();
-	double dtTarget = 1.0 / 60.0;
-
 	bool stayOpen = true;
-	while (stayOpen) {
-		double time = al_get_time();
+	while (stayOpen && !WindowShouldClose()) {
 
-		al_lock_mutex(lua_monitoring_mutex);
-		last_loop_start = time;
-		al_unlock_mutex(lua_monitoring_mutex);
-
-		ALLEGRO_EVENT event;
-		while (al_get_next_event(eventQueue, &event)) {
-			if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-				stayOpen = false;
-			}
-			else if (event.type == ALLEGRO_EVENT_DISPLAY_RESIZE) {
-				al_acknowledge_resize(main_display);
-			}
-			else if (!DearImguiIntegration::Event(event)) {
-				// other events
-			}
-		}
-
-		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
-		DearImguiIntegration::NewFrame();
+		BeginDrawing();
+		ClearBackground(DARKGRAY);
+		rlImGuiBegin();
 
 		ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
 
@@ -708,39 +573,19 @@ int main()
 		}
 
 		// End frame
-		DearImguiIntegration::Render();
-		al_flip_display();
-
-		// Clean frame
-		for (auto bmp : bitmaps_to_destroy) {
-			al_destroy_bitmap(bmp);
-		}
-		bitmaps_to_destroy.clear();
-
-		// Wait next frame
-		double elapsed = al_get_time() - time;
-		if (elapsed < dtTarget) {
-			al_rest(dtTarget - elapsed);
-		}
+		rlImGuiEnd();
+		EndDrawing();
 	}
 
 	// Notify quit
 	trigger_knotbag_callback(L, "quit");
 
+	capturer.end();
+	lua_close(L);
+
 	// Memory leaks happen if we don't do this and the dialog is open while we close everything
 	ifd::FileDialog::Instance().Close();
 
-	al_join_thread(thread, nullptr);
-	al_destroy_thread(thread);
-	al_destroy_mutex(lua_monitoring_mutex);
-
-	lua_close(L);
-
-	DearImguiIntegration::Destroy();
-
-	if (main_display) { al_destroy_display(main_display); }
-	if (eventQueue) { al_destroy_event_queue(eventQueue); }
-
-	al_uninstall_system();
-	CoUninitialize(); // see CoInitialize at the top of main
+	rlImGuiShutdown();
+	CloseWindow();
 }

@@ -6,42 +6,35 @@ return {
    {4},
    {5},
    {6},
-   {7},
-   ["Demo"]={5},
-   ["Scripts"]={7},
-   ["Bitmap aliases"]={4},
+   ["Scanned lua context"]={5},
    ["Console"]={2},
    ["Run command"]={3},
-   ["Scanned lua context"]={6},
+   ["Scripts"]={6},
+   ["Demo"]={4},
 },
 -- Table: {2}
 {
-   ["isopen"]=true,
    ["name"]="Console",
+   ["isopen"]=true,
 },
 -- Table: {3}
 {
-   ["isopen"]=true,
    ["name"]="Run command",
+   ["isopen"]=true,
 },
 -- Table: {4}
 {
+   ["name"]="Demo",
    ["isopen"]=false,
-   ["name"]="Bitmap aliases",
 },
 -- Table: {5}
 {
-   ["isopen"]=false,
-   ["name"]="Demo",
+   ["name"]="Scanned lua context",
+   ["isopen"]=true,
 },
 -- Table: {6}
 {
-   ["isopen"]=true,
-   ["name"]="Scanned lua context",
-},
--- Table: {7}
-{
-   ["isopen"]=true,
    ["name"]="Scripts",
+   ["isopen"]=true,
 },
 }

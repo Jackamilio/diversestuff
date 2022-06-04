@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <chrono>
 #include <thread>
+#include <assert.h>
 
 #ifndef STD_OUT_FD 
 #define STD_OUT_FD (fileno(stdout)) 
@@ -50,14 +51,16 @@ class CaptureOutput
 public :
 
 	CaptureOutput(FILE* stream_, int fd_, std::function<void(const char*, size_t)> callback_) :
-		stream(stream_), fd(fd_), callback(callback_)
+		stream(stream_), fd(fd_), callback(callback_), pipes{0, 0}, streamOld(0)
 	{
 		start();
 	}
 
 	~CaptureOutput()
 	{
-		end();
+		if (streamOld != 0) {
+			end();
+		}
 	}
 
 	bool flush() {
@@ -67,6 +70,7 @@ public :
 	}
 
 	void start() {
+		assert(streamOld == 0 && "Can't start capture twice.");
 		// Make output stream unbuffered, so that we don't need to flush
 		// the streams before capture and after capture (fflush can cause a deadlock)
 		setvbuf(stream, NULL, _IONBF, 0);
@@ -81,6 +85,7 @@ public :
 	}
 
 	bool end() {
+		assert(streamOld != 0 && "Can't end capture without starting first.");
 		// End capturing.
 		secure_dup2(streamOld, fd);
 
@@ -116,6 +121,7 @@ public :
 #ifdef _MSC_VER
 		secure_close(pipes[WRITE]);
 #endif
+		streamOld = 0;
 		return bytesRead > 0;
 	}
 
