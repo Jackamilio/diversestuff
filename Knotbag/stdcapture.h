@@ -46,9 +46,8 @@ class CaptureOutput
 	int pipes[2];
 	int streamOld;
 
+public:
 	std::function<void(const char*, size_t)> callback;
-
-public :
 
 	CaptureOutput(FILE* stream_, int fd_, std::function<void(const char*, size_t)> callback_) :
 		stream(stream_), fd(fd_), callback(callback_), pipes{0, 0}, streamOld(0)
@@ -196,7 +195,7 @@ class CaptureStdout : public CaptureOutput
 {
 public :
 
-	CaptureStdout(std::function<void(const char*, size_t)> callback) :
+	CaptureStdout(std::function<void(const char*, size_t)> callback = {}) :
 		CaptureOutput(stdout, STD_OUT_FD, callback) { }
 };
 
@@ -204,7 +203,7 @@ class CaptureStderr : public CaptureOutput
 {
 public :
 
-	CaptureStderr(std::function<void(const char*, size_t)> callback) :
+	CaptureStderr(std::function<void(const char*, size_t)> callback = {}) :
 		CaptureOutput(stderr, STD_ERR_FD, callback) { }
 };
 

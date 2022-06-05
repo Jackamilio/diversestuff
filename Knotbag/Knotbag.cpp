@@ -20,26 +20,53 @@ ImGuiContext* lua_fail_imgui_context = nullptr;
 static double last_loop_start = 0.0;
 static bool lua_is_failing = false;
 static double last_lua_fail_frame = 0.0;
+static Color lua_fail_fade_color;
+
+std::capture::CaptureStdout logcapture;
+Texture screenshot;
+
+void UnloadScreenshot() {
+	if (screenshot.id != 0) {
+		UnloadTexture(screenshot);
+		screenshot.id = 0;
+	}
+}
+
+void TakeScreenshot(bool late = false) {
+	UnloadScreenshot();
+	if (late) SwapScreenBuffer();
+	Image img = LoadImageFromScreen();
+	if (late) SwapScreenBuffer();
+	screenshot = LoadTextureFromImage(img);
+	UnloadImage(img);
+}
 
 void lua_monitoring_hook(lua_State* L, lua_Debug* ar) {
 	bool needs_taking_over = (GetTime() - last_loop_start) > 1.0;
 
 	if (needs_taking_over && !lua_is_failing) {
 		// started taking over
-
+		TakeScreenshot(true);
+		lua_fail_fade_color = WHITE;
 	}
 	else if (!needs_taking_over && lua_is_failing) {
 		// stopped taking over
-
+		UnloadScreenshot();
 	}
 
 	lua_is_failing = needs_taking_over;
 	bool kill_lua = false;
 
 	if (lua_is_failing && GetTime() - last_lua_fail_frame > 1.0 / 60.0) {
+		logcapture.flush();
 		last_lua_fail_frame = GetTime();
 		BeginDrawing();
-		ClearBackground(DARKGRAY);
+		if (lua_fail_fade_color.r > 64) {
+			lua_fail_fade_color.r -= 2;
+			lua_fail_fade_color.g -= 2;
+			lua_fail_fade_color.b -= 2;
+		}
+		DrawTexture(screenshot, 0, 0, lua_fail_fade_color);
 		ImGuiContext* truecontext = ImGui::GetCurrentContext();
 		ImGui::SetCurrentContext(lua_fail_imgui_context);
 		rlImGuiBegin();
@@ -167,10 +194,11 @@ int main()
 		img.height = h;
 		img.mipmaps = 1;
 		img.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-		Texture2D tex = LoadTextureFromImage(img);
-		GenTextureMipmaps(&tex);
-		SetTextureWrap(tex, TEXTURE_WRAP_CLAMP);
-		return (void*)new Texture2D{tex};
+		Texture2D* tex = new Texture2D;
+		*tex = LoadTextureFromImage(img);
+		GenTextureMipmaps(tex);
+		SetTextureWrap(*tex, TEXTURE_WRAP_CLAMP);
+		return tex;
 	};
 	fileDialog.DeleteTexture = [](void* voidtex) {
 		Texture2D* tex = (Texture2D*)voidtex;
@@ -182,7 +210,7 @@ int main()
 	// Console
 	ImGuiTextBuffer capture;
 	ImGuiTextBuffer lastcapture;
-	std::capture::CaptureStdout capturer([&capture, &lastcapture, &L](const char* buf, size_t szbuf) {
+	logcapture.callback = [&capture, &lastcapture, &L](const char* buf, size_t szbuf) {
 		// give it to lua if the users wants a custom console
 		int pop = 1;
 		bool callsuccess = false;
@@ -202,7 +230,7 @@ int main()
 			capture.append(buf);
 		}
 		lastcapture.append(buf);
-		});
+		};
 
 	// lua
 	L = luaL_newstate();
@@ -410,12 +438,12 @@ int main()
 		// function that gets called automatically each frame, the rest is lua's code reponsibility
 		trigger_knotbag_callback(L, "framescript");
 
-		bool console_updated = capturer.end();
+		bool console_updated = logcapture.end();
 		if (console_updated) {
 			std::cout << lastcapture.c_str();
 			lastcapture.clear();
 		}
-		capturer.start();
+		logcapture.start();
 
 		if (legacyconsole_openstate) {
 			if (ImGui::Begin("Legacy console", &legacyconsole_openstate)) {
@@ -538,7 +566,7 @@ int main()
 	// Notify quit
 	trigger_knotbag_callback(L, "quit");
 
-	capturer.end();
+	logcapture.end();
 
 	lua_close(L);
 
@@ -547,5 +575,7 @@ int main()
 
 	ImGui::DestroyContext(lua_fail_imgui_context);
 	rlImGuiShutdown();
+
+	UnloadScreenshot();
 	CloseWindow();
 }

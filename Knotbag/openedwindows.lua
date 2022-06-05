@@ -7,10 +7,10 @@ return {
    {5},
    {6},
    ["Scripts"]={6},
-   ["Run command"]={3},
-   ["Scanned lua context"]={5},
    ["Demo"]={4},
+   ["Run command"]={3},
    ["Console"]={2},
+   ["Scanned lua context"]={5},
 },
 -- Table: {2}
 {
