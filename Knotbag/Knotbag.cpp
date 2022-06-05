@@ -310,24 +310,29 @@ int main()
 	auto EditorOpenFile = [&fileDialog]() {
 		fileDialog.Open("MultiPurposeOpen", "Open a file", "Lua script (*.lua){.lua},.*");
 	};
-	auto EditorSaveFile = [&fileDialog, &editor_saving_as](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator it, bool saveas) {
-		if (saveas) {
-			fileDialog.Save("SaveLuaScriptAs", "Save the script", "Lua script (*.lua){.lua}");
-			std::get<0>(editor_saving_as) = it->first;
-			std::get<1>(editor_saving_as) = std::get<0>(it->second);
-			std::get<2>(editor_saving_as) = std::get<2>(it->second);
-		}
-		else {
-			TextEditor& editor = *std::get<0>(it->second);
-			auto textToSave = editor.GetText();
-			std::ofstream t(it->first);
-			if (t.good()) {
-				t << textToSave;
-				editor.MarkSaved();
-				return true;
-			}
+	auto EditorSave = [](const std::string& file, std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator it) {
+		TextEditor& editor = *std::get<0>(it->second);
+		std::ofstream t(file);
+		if (t.good()) {
+			t << editor.GetText();
+			editor.MarkSaved();
+			return true;
 		}
 		return false;
+	};
+	auto EditorSaveAs = [&fileDialog, &editor_saving_as](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator it) {
+		fileDialog.Save("SaveLuaScriptAs", "Save the script", "Lua script (*.lua){.lua}");
+		std::get<0>(editor_saving_as) = it->first;
+		std::get<1>(editor_saving_as) = std::get<0>(it->second);
+		std::get<2>(editor_saving_as) = std::get<2>(it->second);
+	};
+	auto EditorTrySave = [&fileDialog, &editor_saving_as, &EditorSave, &EditorSaveAs](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator it) {
+		if (std::get<1>(it->second)) {
+			EditorSaveAs(it);
+		}
+		else {
+			EditorSave(it->first, it);
+		}
 	};
 	auto EditorRun = [&L](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator& it) {
 		std::cout << "Running " << it->first << std::endl;
@@ -373,10 +378,10 @@ int main()
 					EditorOpenFile();
 				}
 				if (ImGui::MenuItem("Save", "Ctrl-S", nullptr, editor)) {
-					EditorSaveFile(editorit, std::get<1>(editorit->second));
+					EditorTrySave(editorit);
 				}
 				if (ImGui::MenuItem("Save as", nullptr, nullptr, editor)) {
-					EditorSaveFile(editorit, true);
+					EditorSaveAs(editorit);
 				}
 				if (ImGui::MenuItem("Run", "Ctrl-R", nullptr, editor)) {
 					EditorRun(editorit);
@@ -441,7 +446,7 @@ int main()
 			}
 			if (editor) {
 				if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S))) {
-					EditorSaveFile(editorit, std::get<1>(editorit->second));
+					EditorTrySave(editorit);
 				}
 				else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R))) {
 					EditorRun(editorit);
@@ -557,7 +562,7 @@ int main()
 		if (fileDialog.IsDone("SaveLuaScriptAs")) {
 			if (fileDialog.HasResult() && std::get<1>(editor_saving_as)) {
 				std::string res = fileDialog.GetStrLocalResult();
-				if (EditorSaveFile(editorit, false)) {
+				if (EditorSave(res, editorit)) {
 					std::cout << "Saved file \"" << res << '\"' << std::endl;
 					auto it = lua_editors.find(std::get<0>(editor_saving_as));
 					if (it != lua_editors.end()) {
