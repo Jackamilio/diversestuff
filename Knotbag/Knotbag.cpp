@@ -1,5 +1,6 @@
 #include <iostream>
 #include <raylib.h>
+#include <rlgl.h>
 #include "rlImGui.h"
 #include "lua/lua.hpp"
 #include "TextEditor.h"
@@ -15,144 +16,59 @@
 
 extern "C" int luaopen_raylib(lua_State * L);
 
-thread_local ImGuiContext* MyImGuiTLS;
-
+ImGuiContext* lua_fail_imgui_context = nullptr;
 static double last_loop_start = 0.0;
-static bool kill_lua = false;
-
-
-/*
-TODO
-static void* lua_monitoring(ALLEGRO_THREAD* thread, void* arg) {
-	//ALLEGRO_DISPLAY* display = al_create_display(280, 420);
-	//if (!display) {
-	//	fprintf(stderr, "failed to create display!\n");
-	//	return (void*)1;
-	//}
-
-	al_set_target_backbuffer(main_display);
-
-	ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
-	if (!eventQueue) {
-		fprintf(stderr, "failed to create event queue!\n");
-		return (void*)1;
-	};
-
-	al_register_event_source(eventQueue, al_get_display_event_source(main_display));
-	al_register_event_source(eventQueue, al_get_keyboard_event_source());
-	al_register_event_source(eventQueue, al_get_mouse_event_source());
-
-	// Dear Imgui
-	DearImguiIntegration::Init(main_display);
-
-	// time management
-	double lastTime = al_get_time();
-	double dtTarget = 1.0 / 10.0;
-
-	// taking over stuff
-	bool taking_over = false;
-	// screenshot doesn't work because it takes the current buffer where nothing was drawn yet
-	//ALLEGRO_BITMAP* screenshot = nullptr;
-
-	bool stayOpen = true;
-	while (stayOpen) {
-		double time = al_get_time();
-
-		al_lock_mutex(lua_monitoring_mutex);
-		bool needs_taking_over = (al_get_time() - last_loop_start) > 1.0;
-		al_unlock_mutex(lua_monitoring_mutex);
-
-		if (needs_taking_over && !taking_over) {
-			// started taking over
-			dtTarget = 1.0 / 60.0;
-			//if (screenshot) {
-			//	al_destroy_bitmap(screenshot);
-			//}
-			//ALLEGRO_BITMAP* bb = al_get_backbuffer(main_display);
-			//screenshot = al_create_bitmap(al_get_bitmap_width(bb), al_get_bitmap_height(bb));
-			//al_set_target_bitmap(screenshot);
-			//al_draw_bitmap(bb, 0.0f, 0.0f, 0);
-			//al_set_target_bitmap(bb);
-		}
-		else if (!needs_taking_over && taking_over) {
-			// stopped taking over
-			dtTarget = 1.0 / 10.0;
-			//if (screenshot) {
-			//	al_destroy_bitmap(screenshot);
-			//	screenshot = nullptr;
-			//}
-		}
-
-		taking_over = needs_taking_over;
-
-		if (taking_over) {
-			ALLEGRO_EVENT event;
-			while (al_get_next_event(eventQueue, &event)) {
-				if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-					stayOpen = false;
-				}
-				else if (!DearImguiIntegration::Event(event)) {
-					// other events
-				}
-			}
-
-			DearImguiIntegration::NewFrame();
-
-			ImGui::Begin("Debug");
-
-			ImGui::Text("Infinite loop detected!");
-			if (ImGui::Button("Kill current lua script")) {
-				al_lock_mutex(lua_monitoring_mutex);
-				kill_lua = true;
-				al_unlock_mutex(lua_monitoring_mutex);
-			}
-
-			ImGui::End();
-
-			//if (screenshot) {
-			//	al_draw_bitmap(screenshot, 0.0f, 0.0f, 0);
-			//}
-			//else {
-				al_clear_to_color(al_map_rgb(0,0,0));
-			//}
-
-			DearImguiIntegration::Render();
-
-			al_flip_display();
-		}
-		else {
-			al_flush_event_queue(eventQueue);
-		}
-
-		double elapsed = al_get_time() - time;
-
-		if (al_get_thread_should_stop(thread)) {
-			stayOpen = false;
-		}
-
-		if (elapsed < dtTarget) {
-			al_rest(dtTarget - elapsed);
-		}
-	}
-
-	DearImguiIntegration::Destroy();
-
-	//if (display) { al_destroy_display(display); }
-	if (eventQueue) { al_destroy_event_queue(eventQueue); }
-
-	return nullptr;
-}*/
+static bool lua_is_failing = false;
+static double last_lua_fail_frame = 0.0;
 
 void lua_monitoring_hook(lua_State* L, lua_Debug* ar) {
-	//al_lock_mutex(lua_monitoring_mutex);
+	bool needs_taking_over = (GetTime() - last_loop_start) > 1.0;
+
+	if (needs_taking_over && !lua_is_failing) {
+		// started taking over
+
+	}
+	else if (!needs_taking_over && lua_is_failing) {
+		// stopped taking over
+
+	}
+
+	lua_is_failing = needs_taking_over;
+	bool kill_lua = false;
+
+	if (lua_is_failing && GetTime() - last_lua_fail_frame > 1.0 / 60.0) {
+		last_lua_fail_frame = GetTime();
+		BeginDrawing();
+		ClearBackground(DARKGRAY);
+		ImGuiContext* truecontext = ImGui::GetCurrentContext();
+		ImGui::SetCurrentContext(lua_fail_imgui_context);
+		rlImGuiBegin();
+
+		ImGui::Begin("Debug");
+
+		ImGui::Text("Infinite loop detected!");
+		if (ImGui::Button("Kill current lua script")) {
+			kill_lua = true;
+		}
+
+		ImGui::End();
+
+		rlImGuiEnd();
+		ImGui::SetCurrentContext(truecontext);
+
+		// This the main stuff done inside EndDrawing, but without time management
+		rlDrawRenderBatchActive();
+		SwapScreenBuffer();
+		PollInputEvents();
+	}
+
+	//lua_monitoring_mutex.lock();
 	if (kill_lua) {
 		kill_lua = false;
-		//al_unlock_mutex(lua_monitoring_mutex);
 		lua_pushfstring(L, "Lua script killed from debugger");
 		lua_error(L); // never returns
 		return; // I'm explicit about this anyway
 	}
-	//al_unlock_mutex(lua_monitoring_mutex);
 }
 
 static thread_local lua_State* currentluacontext = nullptr;
@@ -220,6 +136,7 @@ int main()
 	InitWindow(1280, 800, "KNOTBAG");
 	SetTargetFPS(60);
 	rlImGuiSetup(true);
+	lua_fail_imgui_context = ImGui::CreateContext(ImGui::GetIO().Fonts);
 
 	// File Dialog
 	ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
@@ -278,7 +195,6 @@ int main()
 
 	// lua monitoring
 	lua_sethook(L, lua_monitoring_hook, LUA_MASKCOUNT, 100);
-	//TODO CALL MONITORING THREAD
 
 	// Text editors
 	std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>> lua_editors;
@@ -358,6 +274,10 @@ int main()
 
 	bool stayOpen = true;
 	while (stayOpen && !WindowShouldClose()) {
+
+		//lua_monitoring_mutex.lock();
+		last_loop_start = GetTime();
+		//lua_monitoring_mutex.unlock();
 
 		BeginDrawing();
 		ClearBackground(DARKGRAY);
@@ -589,11 +509,13 @@ int main()
 	trigger_knotbag_callback(L, "quit");
 
 	capturer.end();
+
 	lua_close(L);
 
 	// Memory leaks happen if we don't do this and the dialog is open while we close everything
 	ifd::FileDialog::Instance().Close();
 
+	ImGui::DestroyContext(lua_fail_imgui_context);
 	rlImGuiShutdown();
 	CloseWindow();
 }

@@ -123,8 +123,8 @@ namespace ImGui
 }
 */
 
-struct ImGuiContext;
-extern thread_local ImGuiContext* MyImGuiTLS;
-#define GImGui MyImGuiTLS
+//struct ImGuiContext;
+//extern thread_local ImGuiContext* MyImGuiTLS;
+//#define GImGui MyImGuiTLS
 
 void ImGuiFriendlyLuaAssert(bool pass, const char* message);

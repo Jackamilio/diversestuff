@@ -451,6 +451,8 @@ void rlImGuiShutdown()
 
     UnloadTexture(FontTexture);
     LoadedTextures.clear();
+
+    ImGui::DestroyContext(ImGui::GetCurrentContext());
 }
 
 void rlImGuiImage(const Texture *image)

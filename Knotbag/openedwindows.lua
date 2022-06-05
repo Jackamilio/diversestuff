@@ -6,13 +6,11 @@ return {
    {4},
    {5},
    {6},
-   {7},
-   ["Run command"]={3},
-   ["Scanned lua context"]={6},
+   ["Scanned lua context"]={5},
    ["Console"]={2},
-   ["Scripts"]={7},
+   ["Run command"]={3},
    ["Demo"]={4},
-   ["Raylib tests"]={5},
+   ["Scripts"]={6},
 },
 -- Table: {2}
 {
@@ -31,15 +29,10 @@ return {
 },
 -- Table: {5}
 {
-   ["isopen"]=false,
-   ["name"]="Raylib tests",
-},
--- Table: {6}
-{
    ["isopen"]=true,
    ["name"]="Scanned lua context",
 },
--- Table: {7}
+-- Table: {6}
 {
    ["isopen"]=true,
    ["name"]="Scripts",
