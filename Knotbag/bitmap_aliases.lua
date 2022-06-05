@@ -21,7 +21,15 @@ if bitmaps == nil then
 				end
 			end
 			if key == "errortexture" then
-				error("The errortexture must be a valid file!")
+				if not rawget(tb, "__generated_error_texture__") then
+					local gen = raylib.GenImageChecked(256,256,32,32,raylib.GetColor(0xFFFF00FF),raylib.GetColor(0x111111FF))
+					raylib.ImageDrawText(gen, "NOT", 60, 70, 50, raylib.GetColor(0xFFFFFFFF))
+					raylib.ImageDrawText(gen, "FOUND", 2, 140, 50, raylib.GetColor(0xFFFFFFFF))
+					local newtex = raylib.Load.Texture(gen)
+					rawset(tb, "__generated_error_texture__", newtex)
+					raylib.UnloadImage(gen)
+				end
+				return tb.__generated_error_texture__
 			end
 			return tb.errortexture
 		end
@@ -39,7 +47,7 @@ knotbag.set_window("Bitmap aliases", function()
 		for t, v in pairs(bitmaps) do
 			if type(t) == "number" then
 				imgui.TableNextColumn()
-				if ed.current == t and v.name ~= "errortexture" then
+				if ed.current == t then --and v.name ~= "errortexture" then
 					if imgui.SmallButton("X") then
 						fieldtodel = t
 					end

@@ -339,7 +339,7 @@ int main()
 		//lua_monitoring_mutex.unlock();
 
 		BeginDrawing();
-		ClearBackground(DARKGRAY);
+		ClearBackground(LIGHTGRAY);
 		rlImGuiBegin();
 
 		ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
