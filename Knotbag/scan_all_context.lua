@@ -48,7 +48,7 @@ if tablescanning == nil then
 	end
 	
 	tablescanning.result = {}
-	tablescanning.doit(imgui, tablescanning.result)
+	tablescanning.doit(raylib, tablescanning.result)
 	
 	tablescanning.registerwindow = function()
 		knotbag.set_window("Scanned lua context", function()

@@ -12,7 +12,7 @@ if bitmaps == nil then
 		if type(key) == "string" then
 			for t, v in pairs(tb) do
 				if type(t) == "number" and v.name == key then
-					local bmp = al.bitmap.load(v.file)
+					local bmp = raylib.Load.Texture(v.file)
 					if bmp then
 						rawset(tb, key, bmp)
 						return bmp
@@ -68,8 +68,8 @@ knotbag.set_window("Bitmap aliases", function()
 	imgui.Separator()
 	local curbmp = bitmaps[ed.current]
 	if curbmp ~= nil then
-		local newname = imgui.InputText("Name", curbmp.name)
-		if newname ~= curbmp.name then
+		local change, newname = imgui.InputText("Name", curbmp.name, 128)
+		if change then
 			local oldbmp = bitmaps[curbmp.name]
 			bitmaps[curbmp.name] = nil
 			bitmaps[newname] = oldbmp
@@ -81,17 +81,17 @@ knotbag.set_window("Bitmap aliases", function()
 			fd:Open("LoadTextureForAlias", "Open a file", "Image (*.bmp,*.png){.bmp,.png},.*")
 		end
 		
-		local bmp = bitmaps[curbmp.name]
-		if bmp then
-			bmp = bmp.bmp
-			local w = al.get_bitmap_width(bmp)
-			local h = al.get_bitmap_height(bmp)
+		local tex = bitmaps[curbmp.name]
+		if tex then
+			tex = tex.tex
+			local w = tex.width
+			local h = tex.height
 			local ww = imgui.GetWindowWidth() - 20
 			if w > ww then
 				h = h * ww / w
 				w = ww
 			end
-			imgui.Image(bmp, w, h)
+			imgui.Image(tex, w, h)
 		end
 	
 		if fd:IsDone("LoadTextureForAlias") then

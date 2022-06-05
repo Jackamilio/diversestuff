@@ -1,20 +1,16 @@
-if al.bitmap == nil then
-	al.bitmap = {
-		load = function(filename)
-			local try = al.load_bitmap(filename)
-			if try then
-				return setmetatable({bmp = try}, {
-					__gc = function (bmp)
-						al.destroy_bitmap(bmp.bmp)
+if raylib.Load == nil then
+	raylib.Load = {
+		Texture = function(filename)
+			local try = raylib.LoadTexture(filename)
+			if try.id ~= 0.0 then
+				return setmetatable({tex = try}, {
+					__gc = function (tex)
+						raylib.UnloadTexture(tex.tex)
 					end
 				})
 			else
 				return nil
 			end
-		end,
-	
-		draw = function(bmp, x, y, flag)
-			al.draw_bitmap(bmp.bmp,x,y,flag or 0)
 		end
 	}
 end
