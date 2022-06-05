@@ -239,7 +239,6 @@
     <ClInclude Include="lua\lzio.h" />
     <ClInclude Include="rlImGui.h" />
     <ClInclude Include="rlImGuiColors.h" />
-    <ClInclude Include="stb_image.h" />
     <ClInclude Include="stdcapture.h" />
     <ClInclude Include="TextEditor.h" />
     <ClInclude Include="utils.h" />

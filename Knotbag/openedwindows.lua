@@ -6,35 +6,35 @@ return {
    {4},
    {5},
    {6},
-   ["Scanned lua context"]={5},
-   ["Console"]={2},
-   ["Run command"]={3},
-   ["Demo"]={4},
    ["Scripts"]={6},
+   ["Run command"]={3},
+   ["Scanned lua context"]={5},
+   ["Demo"]={4},
+   ["Console"]={2},
 },
 -- Table: {2}
 {
-   ["isopen"]=true,
    ["name"]="Console",
+   ["isopen"]=true,
 },
 -- Table: {3}
 {
-   ["isopen"]=true,
    ["name"]="Run command",
+   ["isopen"]=true,
 },
 -- Table: {4}
 {
-   ["isopen"]=false,
    ["name"]="Demo",
+   ["isopen"]=false,
 },
 -- Table: {5}
 {
-   ["isopen"]=true,
    ["name"]="Scanned lua context",
+   ["isopen"]=true,
 },
 -- Table: {6}
 {
-   ["isopen"]=true,
    ["name"]="Scripts",
+   ["isopen"]=true,
 },
 }

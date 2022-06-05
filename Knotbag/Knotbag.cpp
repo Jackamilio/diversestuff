@@ -139,14 +139,44 @@ int main()
 	lua_fail_imgui_context = ImGui::CreateContext(ImGui::GetIO().Fonts);
 
 	// File Dialog
-	ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
-		// TODO
-		return nullptr;
-	};
-	ifd::FileDialog::Instance().DeleteTexture = [](void* tex) {
-		// TODO
-	};
 	ifd::FileDialog& fileDialog = ifd::FileDialog::Instance();
+	fileDialog.CreateImage = [](const char* file, int& w, int& h) -> uint8_t* {
+		Image img = LoadImage(file);
+		ImageFormat(&img, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+		w = img.width;
+		h = img.height;
+		size_t s = w * h * 4;
+		uint8_t* ret = new uint8_t[s];
+		memcpy(ret, img.data, s);
+		UnloadImage(img);
+		return ret;
+	};
+	fileDialog.DeleteImage = [](uint8_t* data) {
+		delete[] data;
+	};
+	fileDialog.CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
+		if (!fmt) {
+			// convert from BGRA to RGBA = swap B and R
+			for (int i = 0; i < w * h * 4; i += 4) {
+				std::swap(data[i], data[i + 2]);
+			}
+		}
+		Image img;
+		img.data = data;
+		img.width = w;
+		img.height = h;
+		img.mipmaps = 1;
+		img.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+		Texture2D tex = LoadTextureFromImage(img);
+		GenTextureMipmaps(&tex);
+		SetTextureWrap(tex, TEXTURE_WRAP_CLAMP);
+		return (void*)new Texture2D{tex};
+	};
+	fileDialog.DeleteTexture = [](void* voidtex) {
+		Texture2D* tex = (Texture2D*)voidtex;
+		UnloadTexture(*tex);
+		delete tex;
+	};
 
 	lua_State* L;
 	// Console

@@ -307,8 +307,5 @@
     <ClInclude Include="rlImGuiColors.h">
       <Filter>Fichiers d%27en-tête\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="stb_image.h">
-      <Filter>Fichiers d%27en-tête\imgui</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

@@ -10,9 +10,6 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 #ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
@@ -863,7 +860,7 @@ namespace ifd {
 			this->DeleteTexture(data.IconPreview);
 
 			if (data.IconPreviewData != nullptr) {
-				stbi_image_free(data.IconPreviewData);
+				DeleteImage(data.IconPreviewData);
 				data.IconPreviewData = nullptr;
 			}
 		}
@@ -891,8 +888,8 @@ namespace ifd {
 			if (data.Path.has_extension()) {
 				std::string ext = data.Path.extension().u8string();
 				if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga") {
-					int width, height, nrChannels;
-					unsigned char* image = stbi_load(data.Path.u8string().c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+					int width, height;
+					unsigned char* image = CreateImage(data.Path.u8string().c_str(), width, height);
 
 					if (image == nullptr || width == 0 || height == 0)
 						continue;
@@ -1172,7 +1169,7 @@ namespace ifd {
 			for (auto& entry : m_content) {
 				if (entry.HasIconPreview && entry.IconPreviewData != nullptr) {
 					entry.IconPreview = this->CreateTexture(entry.IconPreviewData, entry.IconPreviewWidth, entry.IconPreviewHeight, 1);
-					stbi_image_free(entry.IconPreviewData);
+					DeleteImage(entry.IconPreviewData);
 					entry.IconPreviewData = nullptr;
 				}
 
