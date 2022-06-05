@@ -159,6 +159,7 @@ void trigger_knotbag_callback(lua_State* L, const char* callback) {
 int main()
 {
 	// Init raylib and ImGui
+	SetTraceLogLevel(LOG_WARNING);
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
 	InitWindow(1280, 800, "KNOTBAG");
 	SetTargetFPS(60);
