@@ -1,14 +1,14 @@
-dofile("bitmap_manager.lua")
+dofile("texture_manager.lua")
 
-if bitmaps == nil then
-	bitmaps = {
+if textures == nil then
+	textures = {
 		{name = "errortexture", file = "errortexture.png"},
 		{name = "failtex", file = "nofileherelol.png"},
 		{name = "banana", file = "banana.png"},
 		{name = "monkey", file = "cutemonkey.png"}
 	}
 
-	setmetatable(bitmaps, { __index = function(tb,key)
+	setmetatable(textures, { __index = function(tb,key)
 		if type(key) == "string" then
 			for t, v in pairs(tb) do
 				if type(t) == "number" and v.name == key then
@@ -36,15 +36,15 @@ if bitmaps == nil then
 		return nil
 	end})
 
-	bitmaps.__editor_values__ = { current = -1, elemwidth = 100 }
+	textures.__editor_values__ = { current = -1, elemwidth = 100 }
 end
 
-knotbag.set_window("Bitmap aliases", function()
+knotbag.set_window("Texture aliases", function()
 	local fd = imgui.GetFileDialog()
-	local ed = bitmaps.__editor_values__
+	local ed = textures.__editor_values__
 	local fieldtodel = -1
-	if imgui.BeginTable("Bitmaps table", math.max(imgui.GetWindowWidth() / ed.elemwidth, 1), imgui.constant.WindowFlags.NoSavedSettings) then
-		for t, v in pairs(bitmaps) do
+	if imgui.BeginTable("Textures table", math.max(imgui.GetWindowWidth() / ed.elemwidth, 1), imgui.constant.WindowFlags.NoSavedSettings) then
+		for t, v in pairs(textures) do
 			if type(t) == "number" then
 				imgui.TableNextColumn()
 				if ed.current == t then --and v.name ~= "errortexture" then
@@ -65,31 +65,31 @@ knotbag.set_window("Bitmap aliases", function()
 	end
 
 	if fieldtodel >= 0 then
-		bitmaps[bitmaps[fieldtodel].name] = nil
-		table.remove(bitmaps, fieldtodel)
+		textures[textures[fieldtodel].name] = nil
+		table.remove(textures, fieldtodel)
 	end
 
 	if (imgui.Button("New alias")) then
-		table.insert(bitmaps, {name = "new texture", file = "no file yet"})
+		table.insert(textures, {name = "new texture", file = "no file yet"})
 	end
 
 	imgui.Separator()
-	local curbmp = bitmaps[ed.current]
-	if curbmp ~= nil then
-		local change, newname = imgui.InputText("Name", curbmp.name, 128)
+	local curtex = textures[ed.current]
+	if curtex ~= nil then
+		local change, newname = imgui.InputText("Name", curtex.name, 128)
 		if change then
-			local oldbmp = bitmaps[curbmp.name]
-			bitmaps[curbmp.name] = nil
-			bitmaps[newname] = oldbmp
-			curbmp.name = newname
+			local oldtex = textures[curtex.name]
+			textures[curtex.name] = nil
+			textures[newname] = oldtex
+			curtex.name = newname
 		end
-		imgui.Text(curbmp.file)
+		imgui.Text(curtex.file)
 		imgui.SameLine()
 		if imgui.Button("...") then
 			fd:Open("LoadTextureForAlias", "Open a file", "Image (*.bmp,*.png){.bmp,.png},.*")
 		end
 		
-		local tex = bitmaps[curbmp.name]
+		local tex = textures[curtex.name]
 		if tex then
 			tex = tex.tex
 			local w = tex.width
@@ -105,9 +105,9 @@ knotbag.set_window("Bitmap aliases", function()
 		if fd:IsDone("LoadTextureForAlias") then
 			if fd:HasResult() then
 				local newfile = fd:GetResult()
-				if curbmp.file ~= newfile then
-					curbmp.file = newfile
-					bitmaps[curbmp.name] = nil --force reload
+				if curtex.file ~= newfile then
+					curtex.file = newfile
+					textures[curtex.name] = nil --force reload
 				end
 			end
 			fd:Close()

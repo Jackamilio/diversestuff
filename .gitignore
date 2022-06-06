@@ -27,3 +27,5 @@
 /Knotbag/.vs
 /Knotbag/packages
 Knotbag/allegro.log
+Knotbag/imgui.ini
+Knotbag/openedwindows.lua
