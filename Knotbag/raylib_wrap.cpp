@@ -2765,6 +2765,14 @@ SWIGINTERN int SWIG_lua_isnilstring(lua_State *L, int idx) {
 }
 
 
+#define ARRAYAT(type) type* arrayat(type* ar, int at) { return &ar[at]; }
+
+ARRAYAT(Mesh)
+ARRAYAT(Material)
+ARRAYAT(MaterialMap)
+ARRAYAT(Color)
+
+
 #define PARSE_COLORS(X) \
 X(LIGHTGRAY) \
 X(GRAY) \
@@ -27673,6 +27681,208 @@ fail:
 }
 
 
+static int _wrap_arrayat__SWIG_0(lua_State* L) {
+  int SWIG_arg = 0;
+  Mesh *arg1 = (Mesh *) 0 ;
+  int arg2 ;
+  Mesh *result = 0 ;
+  
+  SWIG_check_num_args("arrayat",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("arrayat",1,"Mesh *");
+  if(!lua_isnumber(L,2)) SWIG_fail_arg("arrayat",2,"int");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
+    SWIG_fail_ptr("arrayat",1,SWIGTYPE_p_Mesh);
+  }
+  
+  arg2 = (int)lua_tonumber(L, 2);
+  result = (Mesh *)arrayat(arg1,arg2);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Mesh,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_arrayat__SWIG_1(lua_State* L) {
+  int SWIG_arg = 0;
+  Material *arg1 = (Material *) 0 ;
+  int arg2 ;
+  Material *result = 0 ;
+  
+  SWIG_check_num_args("arrayat",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("arrayat",1,"Material *");
+  if(!lua_isnumber(L,2)) SWIG_fail_arg("arrayat",2,"int");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Material,0))){
+    SWIG_fail_ptr("arrayat",1,SWIGTYPE_p_Material);
+  }
+  
+  arg2 = (int)lua_tonumber(L, 2);
+  result = (Material *)arrayat(arg1,arg2);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Material,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_arrayat__SWIG_2(lua_State* L) {
+  int SWIG_arg = 0;
+  MaterialMap *arg1 = (MaterialMap *) 0 ;
+  int arg2 ;
+  MaterialMap *result = 0 ;
+  
+  SWIG_check_num_args("arrayat",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("arrayat",1,"MaterialMap *");
+  if(!lua_isnumber(L,2)) SWIG_fail_arg("arrayat",2,"int");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_MaterialMap,0))){
+    SWIG_fail_ptr("arrayat",1,SWIGTYPE_p_MaterialMap);
+  }
+  
+  arg2 = (int)lua_tonumber(L, 2);
+  result = (MaterialMap *)arrayat(arg1,arg2);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_MaterialMap,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_arrayat__SWIG_3(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *arg1 = (Color *) 0 ;
+  int arg2 ;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("arrayat",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("arrayat",1,"Color *");
+  if(!lua_isnumber(L,2)) SWIG_fail_arg("arrayat",2,"int");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Color,0))){
+    SWIG_fail_ptr("arrayat",1,SWIGTYPE_p_Color);
+  }
+  
+  arg2 = (int)lua_tonumber(L, 2);
+  result = (Color *)arrayat(arg1,arg2);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_arrayat(lua_State* L) {
+  int argc;
+  int argv[3]={
+    1,2,3
+  };
+  
+  argc = lua_gettop(L);
+  if (argc == 2) {
+    int _v;
+    {
+      void *ptr;
+      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_Mesh, 0)) {
+        _v = 0;
+      } else {
+        _v = 1;
+      }
+    }
+    if (_v) {
+      {
+        _v = lua_isnumber(L,argv[1]);
+      }
+      if (_v) {
+        return _wrap_arrayat__SWIG_0(L);
+      }
+    }
+  }
+  if (argc == 2) {
+    int _v;
+    {
+      void *ptr;
+      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_Material, 0)) {
+        _v = 0;
+      } else {
+        _v = 1;
+      }
+    }
+    if (_v) {
+      {
+        _v = lua_isnumber(L,argv[1]);
+      }
+      if (_v) {
+        return _wrap_arrayat__SWIG_1(L);
+      }
+    }
+  }
+  if (argc == 2) {
+    int _v;
+    {
+      void *ptr;
+      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_MaterialMap, 0)) {
+        _v = 0;
+      } else {
+        _v = 1;
+      }
+    }
+    if (_v) {
+      {
+        _v = lua_isnumber(L,argv[1]);
+      }
+      if (_v) {
+        return _wrap_arrayat__SWIG_2(L);
+      }
+    }
+  }
+  if (argc == 2) {
+    int _v;
+    {
+      void *ptr;
+      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_Color, 0)) {
+        _v = 0;
+      } else {
+        _v = 1;
+      }
+    }
+    if (_v) {
+      {
+        _v = lua_isnumber(L,argv[1]);
+      }
+      if (_v) {
+        return _wrap_arrayat__SWIG_3(L);
+      }
+    }
+  }
+  
+  SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'arrayat'\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    arrayat(Mesh *,int)\n"
+    "    arrayat(Material *,int)\n"
+    "    arrayat(MaterialMap *,int)\n"
+    "    arrayat(Color *,int)\n");
+  lua_error(L);return 0;
+}
+
+
 static int _wrap_LIGHTGRAY_get(lua_State* L) {
   int SWIG_arg = 0;
   Color *result = 0 ;
@@ -28930,6 +29140,7 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "SetAudioStreamVolume", _wrap_SetAudioStreamVolume},
     { "SetAudioStreamPitch", _wrap_SetAudioStreamPitch},
     { "SetAudioStreamBufferSizeDefault", _wrap_SetAudioStreamBufferSizeDefault},
+    { "arrayat", _wrap_arrayat},
     {0,0}
 };
 static swig_lua_class* swig_SwigModule_classes[]= {

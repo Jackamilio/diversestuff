@@ -5,7 +5,22 @@
 #include <raylib.h>
 %}
 
+//%include "carrays.i"
+//%array_functions(Mesh, MeshArray)
+//%array_functions(Material, MaterialArray)
+//%array_functions(MaterialMap, MaterialMapArray)
+//%array_functions(Color, ColorArray)
+
 %include <raylib.h>
+
+%inline %{
+#define ARRAYAT(type) type* arrayat(type* ar, int at) { return &ar[at]; }
+
+ARRAYAT(Mesh)
+ARRAYAT(Material)
+ARRAYAT(MaterialMap)
+ARRAYAT(Color)
+%}
 
 %rename("%(strip:[SWIG_])s") "";
 
