@@ -22,9 +22,9 @@ if bitmaps == nil then
 			end
 			if key == "errortexture" then
 				if not rawget(tb, "__generated_error_texture__") then
-					local gen = raylib.GenImageChecked(256,256,32,32,raylib.GetColor(0xFFFF00FF),raylib.GetColor(0x111111FF))
-					raylib.ImageDrawText(gen, "NOT", 60, 70, 50, raylib.GetColor(0xFFFFFFFF))
-					raylib.ImageDrawText(gen, "FOUND", 2, 140, 50, raylib.GetColor(0xFFFFFFFF))
+					local gen = raylib.GenImageChecked(256,256,32,32,raylib.YELLOW,raylib.DARKGRAY)
+					raylib.ImageDrawText(gen, "NOT", 60, 70, 50, raylib.WHITE)
+					raylib.ImageDrawText(gen, "FOUND", 2, 140, 50, raylib.WHITE)
 					local newtex = raylib.Load.Texture(gen)
 					rawset(tb, "__generated_error_texture__", newtex)
 					raylib.UnloadImage(gen)

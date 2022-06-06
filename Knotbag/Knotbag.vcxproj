@@ -189,7 +189,7 @@
     <ClCompile Include="lua\lutf8lib.c" />
     <ClCompile Include="lua\lvm.c" />
     <ClCompile Include="lua\lzio.c" />
-    <ClCompile Include="raylib_wrap.cxx" />
+    <ClCompile Include="raylib_wrap.cpp" />
     <ClCompile Include="rlImGui.cpp" />
     <ClCompile Include="TextEditor.cpp" />
     <ClCompile Include="utils.cpp" />

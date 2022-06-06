@@ -16,30 +16,6 @@
 #define SWIG_LUA_TARGET SWIG_LUA_FLAVOR_LUA
 #define SWIG_LUA_MODULE_GLOBAL
 
-
-#ifdef __cplusplus
-/* SwigValueWrapper is described in swig.swg */
-template<typename T> class SwigValueWrapper {
-  struct SwigMovePointer {
-    T *ptr;
-    SwigMovePointer(T *p) : ptr(p) { }
-    ~SwigMovePointer() { delete ptr; }
-    SwigMovePointer& operator=(SwigMovePointer& rhs) { T* oldptr = ptr; ptr = 0; delete oldptr; ptr = rhs.ptr; rhs.ptr = 0; return *this; }
-  } pointer;
-  SwigValueWrapper& operator=(const SwigValueWrapper<T>& rhs);
-  SwigValueWrapper(const SwigValueWrapper<T>& rhs);
-public:
-  SwigValueWrapper() : pointer(0) { }
-  SwigValueWrapper& operator=(const T& t) { SwigMovePointer tmp(new T(t)); pointer = tmp; return *this; }
-  operator T&() const { return *pointer.ptr; }
-  T *operator&() { return pointer.ptr; }
-};
-
-template <typename T> T SwigValueInit() {
-  return T();
-}
-#endif
-
 /* -----------------------------------------------------------------------------
  *  This section contains generic SWIG labels for method/variable
  *  declarations/attributes, and other compiler dependent labels.
@@ -2778,11 +2754,6 @@ static swig_module_info swig_module = {swig_types, 68, 0, 0, 0, 0};
 
 #define SWIG_LUACODE   luaopen_raylib_luacode
 
-namespace swig {
-typedef struct{} LANGUAGE_OBJ;
-}
-
-
 #include <raylib.h>
 
 
@@ -2793,16 +2764,49 @@ SWIGINTERN int SWIG_lua_isnilstring(lua_State *L, int idx) {
   return ret;
 }
 
+
+#define PARSE_COLORS(X) \
+X(LIGHTGRAY) \
+X(GRAY) \
+X(DARKGRAY) \
+X(YELLOW) \
+X(GOLD) \
+X(ORANGE) \
+X(PINK) \
+X(RED) \
+X(MAROON) \
+X(GREEN) \
+X(LIME) \
+X(DARKGREEN) \
+X(SKYBLUE) \
+X(BLUE) \
+X(DARKBLUE) \
+X(PURPLE) \
+X(VIOLET) \
+X(DARKPURPLE) \
+X(BEIGE) \
+X(BROWN) \
+X(DARKBROWN) \
+X(WHITE) \
+X(BLACK) \
+X(BLANK) \
+X(MAGENTA) \
+X(RAYWHITE)
+
+#define CONST_COLOR(val) const Color SWIG_##val = val;
+
+PARSE_COLORS(CONST_COLOR)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 static int _wrap_Vector2_x_set(lua_State* L) {
   int SWIG_arg = 0;
-  Vector2 *arg1 = (Vector2 *) 0 ;
+  struct Vector2 *arg1 = (struct Vector2 *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Vector2::x",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector2::x",1,"Vector2 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector2::x",1,"struct Vector2 *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Vector2::x",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector2,0))){
@@ -2824,11 +2828,11 @@ fail:
 
 static int _wrap_Vector2_x_get(lua_State* L) {
   int SWIG_arg = 0;
-  Vector2 *arg1 = (Vector2 *) 0 ;
+  struct Vector2 *arg1 = (struct Vector2 *) 0 ;
   float result;
   
   SWIG_check_num_args("Vector2::x",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector2::x",1,"Vector2 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector2::x",1,"struct Vector2 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector2,0))){
     SWIG_fail_ptr("Vector2_x_get",1,SWIGTYPE_p_Vector2);
@@ -2848,11 +2852,11 @@ fail:
 
 static int _wrap_Vector2_y_set(lua_State* L) {
   int SWIG_arg = 0;
-  Vector2 *arg1 = (Vector2 *) 0 ;
+  struct Vector2 *arg1 = (struct Vector2 *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Vector2::y",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector2::y",1,"Vector2 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector2::y",1,"struct Vector2 *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Vector2::y",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector2,0))){
@@ -2874,11 +2878,11 @@ fail:
 
 static int _wrap_Vector2_y_get(lua_State* L) {
   int SWIG_arg = 0;
-  Vector2 *arg1 = (Vector2 *) 0 ;
+  struct Vector2 *arg1 = (struct Vector2 *) 0 ;
   float result;
   
   SWIG_check_num_args("Vector2::y",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector2::y",1,"Vector2 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector2::y",1,"struct Vector2 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector2,0))){
     SWIG_fail_ptr("Vector2_y_get",1,SWIGTYPE_p_Vector2);
@@ -2898,10 +2902,10 @@ fail:
 
 static int _wrap_new_Vector2(lua_State* L) {
   int SWIG_arg = 0;
-  Vector2 *result = 0 ;
+  struct Vector2 *result = 0 ;
   
   SWIG_check_num_args("Vector2::Vector2",0,0)
-  result = (Vector2 *)new Vector2();
+  result = (struct Vector2 *)calloc(1, sizeof(struct Vector2));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Vector2,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -2914,8 +2918,8 @@ fail:
 
 
 static void swig_delete_Vector2(void *obj) {
-Vector2 *arg1 = (Vector2 *) obj;
-delete arg1;
+struct Vector2 *arg1 = (struct Vector2 *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Vector2(lua_State *L) {
     assert(lua_istable(L,1));
@@ -2964,11 +2968,11 @@ static swig_lua_class _wrap_class_Vector2 = { "Vector2", "Vector2", &SWIGTYPE_p_
 
 static int _wrap_Vector3_x_set(lua_State* L) {
   int SWIG_arg = 0;
-  Vector3 *arg1 = (Vector3 *) 0 ;
+  struct Vector3 *arg1 = (struct Vector3 *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Vector3::x",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::x",1,"Vector3 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::x",1,"struct Vector3 *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Vector3::x",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector3,0))){
@@ -2990,11 +2994,11 @@ fail:
 
 static int _wrap_Vector3_x_get(lua_State* L) {
   int SWIG_arg = 0;
-  Vector3 *arg1 = (Vector3 *) 0 ;
+  struct Vector3 *arg1 = (struct Vector3 *) 0 ;
   float result;
   
   SWIG_check_num_args("Vector3::x",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::x",1,"Vector3 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::x",1,"struct Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector3,0))){
     SWIG_fail_ptr("Vector3_x_get",1,SWIGTYPE_p_Vector3);
@@ -3014,11 +3018,11 @@ fail:
 
 static int _wrap_Vector3_y_set(lua_State* L) {
   int SWIG_arg = 0;
-  Vector3 *arg1 = (Vector3 *) 0 ;
+  struct Vector3 *arg1 = (struct Vector3 *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Vector3::y",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::y",1,"Vector3 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::y",1,"struct Vector3 *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Vector3::y",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector3,0))){
@@ -3040,11 +3044,11 @@ fail:
 
 static int _wrap_Vector3_y_get(lua_State* L) {
   int SWIG_arg = 0;
-  Vector3 *arg1 = (Vector3 *) 0 ;
+  struct Vector3 *arg1 = (struct Vector3 *) 0 ;
   float result;
   
   SWIG_check_num_args("Vector3::y",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::y",1,"Vector3 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::y",1,"struct Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector3,0))){
     SWIG_fail_ptr("Vector3_y_get",1,SWIGTYPE_p_Vector3);
@@ -3064,11 +3068,11 @@ fail:
 
 static int _wrap_Vector3_z_set(lua_State* L) {
   int SWIG_arg = 0;
-  Vector3 *arg1 = (Vector3 *) 0 ;
+  struct Vector3 *arg1 = (struct Vector3 *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Vector3::z",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::z",1,"Vector3 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::z",1,"struct Vector3 *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Vector3::z",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector3,0))){
@@ -3090,11 +3094,11 @@ fail:
 
 static int _wrap_Vector3_z_get(lua_State* L) {
   int SWIG_arg = 0;
-  Vector3 *arg1 = (Vector3 *) 0 ;
+  struct Vector3 *arg1 = (struct Vector3 *) 0 ;
   float result;
   
   SWIG_check_num_args("Vector3::z",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::z",1,"Vector3 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector3::z",1,"struct Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector3,0))){
     SWIG_fail_ptr("Vector3_z_get",1,SWIGTYPE_p_Vector3);
@@ -3114,10 +3118,10 @@ fail:
 
 static int _wrap_new_Vector3(lua_State* L) {
   int SWIG_arg = 0;
-  Vector3 *result = 0 ;
+  struct Vector3 *result = 0 ;
   
   SWIG_check_num_args("Vector3::Vector3",0,0)
-  result = (Vector3 *)new Vector3();
+  result = (struct Vector3 *)calloc(1, sizeof(struct Vector3));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Vector3,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -3130,8 +3134,8 @@ fail:
 
 
 static void swig_delete_Vector3(void *obj) {
-Vector3 *arg1 = (Vector3 *) obj;
-delete arg1;
+struct Vector3 *arg1 = (struct Vector3 *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Vector3(lua_State *L) {
     assert(lua_istable(L,1));
@@ -3181,11 +3185,11 @@ static swig_lua_class _wrap_class_Vector3 = { "Vector3", "Vector3", &SWIGTYPE_p_
 
 static int _wrap_Vector4_x_set(lua_State* L) {
   int SWIG_arg = 0;
-  Vector4 *arg1 = (Vector4 *) 0 ;
+  struct Vector4 *arg1 = (struct Vector4 *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Vector4::x",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::x",1,"Vector4 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::x",1,"struct Vector4 *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Vector4::x",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector4,0))){
@@ -3207,11 +3211,11 @@ fail:
 
 static int _wrap_Vector4_x_get(lua_State* L) {
   int SWIG_arg = 0;
-  Vector4 *arg1 = (Vector4 *) 0 ;
+  struct Vector4 *arg1 = (struct Vector4 *) 0 ;
   float result;
   
   SWIG_check_num_args("Vector4::x",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::x",1,"Vector4 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::x",1,"struct Vector4 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector4,0))){
     SWIG_fail_ptr("Vector4_x_get",1,SWIGTYPE_p_Vector4);
@@ -3231,11 +3235,11 @@ fail:
 
 static int _wrap_Vector4_y_set(lua_State* L) {
   int SWIG_arg = 0;
-  Vector4 *arg1 = (Vector4 *) 0 ;
+  struct Vector4 *arg1 = (struct Vector4 *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Vector4::y",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::y",1,"Vector4 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::y",1,"struct Vector4 *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Vector4::y",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector4,0))){
@@ -3257,11 +3261,11 @@ fail:
 
 static int _wrap_Vector4_y_get(lua_State* L) {
   int SWIG_arg = 0;
-  Vector4 *arg1 = (Vector4 *) 0 ;
+  struct Vector4 *arg1 = (struct Vector4 *) 0 ;
   float result;
   
   SWIG_check_num_args("Vector4::y",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::y",1,"Vector4 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::y",1,"struct Vector4 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector4,0))){
     SWIG_fail_ptr("Vector4_y_get",1,SWIGTYPE_p_Vector4);
@@ -3281,11 +3285,11 @@ fail:
 
 static int _wrap_Vector4_z_set(lua_State* L) {
   int SWIG_arg = 0;
-  Vector4 *arg1 = (Vector4 *) 0 ;
+  struct Vector4 *arg1 = (struct Vector4 *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Vector4::z",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::z",1,"Vector4 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::z",1,"struct Vector4 *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Vector4::z",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector4,0))){
@@ -3307,11 +3311,11 @@ fail:
 
 static int _wrap_Vector4_z_get(lua_State* L) {
   int SWIG_arg = 0;
-  Vector4 *arg1 = (Vector4 *) 0 ;
+  struct Vector4 *arg1 = (struct Vector4 *) 0 ;
   float result;
   
   SWIG_check_num_args("Vector4::z",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::z",1,"Vector4 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::z",1,"struct Vector4 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector4,0))){
     SWIG_fail_ptr("Vector4_z_get",1,SWIGTYPE_p_Vector4);
@@ -3331,11 +3335,11 @@ fail:
 
 static int _wrap_Vector4_w_set(lua_State* L) {
   int SWIG_arg = 0;
-  Vector4 *arg1 = (Vector4 *) 0 ;
+  struct Vector4 *arg1 = (struct Vector4 *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Vector4::w",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::w",1,"Vector4 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::w",1,"struct Vector4 *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Vector4::w",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector4,0))){
@@ -3357,11 +3361,11 @@ fail:
 
 static int _wrap_Vector4_w_get(lua_State* L) {
   int SWIG_arg = 0;
-  Vector4 *arg1 = (Vector4 *) 0 ;
+  struct Vector4 *arg1 = (struct Vector4 *) 0 ;
   float result;
   
   SWIG_check_num_args("Vector4::w",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::w",1,"Vector4 *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vector4::w",1,"struct Vector4 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vector4,0))){
     SWIG_fail_ptr("Vector4_w_get",1,SWIGTYPE_p_Vector4);
@@ -3381,10 +3385,10 @@ fail:
 
 static int _wrap_new_Vector4(lua_State* L) {
   int SWIG_arg = 0;
-  Vector4 *result = 0 ;
+  struct Vector4 *result = 0 ;
   
   SWIG_check_num_args("Vector4::Vector4",0,0)
-  result = (Vector4 *)new Vector4();
+  result = (struct Vector4 *)calloc(1, sizeof(struct Vector4));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Vector4,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -3397,8 +3401,8 @@ fail:
 
 
 static void swig_delete_Vector4(void *obj) {
-Vector4 *arg1 = (Vector4 *) obj;
-delete arg1;
+struct Vector4 *arg1 = (struct Vector4 *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Vector4(lua_State *L) {
     assert(lua_istable(L,1));
@@ -3449,11 +3453,11 @@ static swig_lua_class _wrap_class_Vector4 = { "Vector4", "Vector4", &SWIGTYPE_p_
 
 static int _wrap_Matrix_m0_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m0",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m0",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m0",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m0",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3475,11 +3479,11 @@ fail:
 
 static int _wrap_Matrix_m0_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m0",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m0",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m0",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m0_get",1,SWIGTYPE_p_Matrix);
@@ -3499,11 +3503,11 @@ fail:
 
 static int _wrap_Matrix_m4_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m4",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m4",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m4",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m4",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3525,11 +3529,11 @@ fail:
 
 static int _wrap_Matrix_m4_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m4",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m4",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m4",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m4_get",1,SWIGTYPE_p_Matrix);
@@ -3549,11 +3553,11 @@ fail:
 
 static int _wrap_Matrix_m8_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m8",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m8",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m8",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m8",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3575,11 +3579,11 @@ fail:
 
 static int _wrap_Matrix_m8_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m8",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m8",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m8",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m8_get",1,SWIGTYPE_p_Matrix);
@@ -3599,11 +3603,11 @@ fail:
 
 static int _wrap_Matrix_m12_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m12",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m12",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m12",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m12",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3625,11 +3629,11 @@ fail:
 
 static int _wrap_Matrix_m12_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m12",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m12",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m12",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m12_get",1,SWIGTYPE_p_Matrix);
@@ -3649,11 +3653,11 @@ fail:
 
 static int _wrap_Matrix_m1_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m1",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m1",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m1",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m1",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3675,11 +3679,11 @@ fail:
 
 static int _wrap_Matrix_m1_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m1",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m1",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m1",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m1_get",1,SWIGTYPE_p_Matrix);
@@ -3699,11 +3703,11 @@ fail:
 
 static int _wrap_Matrix_m5_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m5",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m5",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m5",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m5",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3725,11 +3729,11 @@ fail:
 
 static int _wrap_Matrix_m5_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m5",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m5",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m5",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m5_get",1,SWIGTYPE_p_Matrix);
@@ -3749,11 +3753,11 @@ fail:
 
 static int _wrap_Matrix_m9_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m9",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m9",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m9",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m9",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3775,11 +3779,11 @@ fail:
 
 static int _wrap_Matrix_m9_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m9",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m9",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m9",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m9_get",1,SWIGTYPE_p_Matrix);
@@ -3799,11 +3803,11 @@ fail:
 
 static int _wrap_Matrix_m13_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m13",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m13",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m13",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m13",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3825,11 +3829,11 @@ fail:
 
 static int _wrap_Matrix_m13_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m13",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m13",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m13",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m13_get",1,SWIGTYPE_p_Matrix);
@@ -3849,11 +3853,11 @@ fail:
 
 static int _wrap_Matrix_m2_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m2",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m2",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m2",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m2",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3875,11 +3879,11 @@ fail:
 
 static int _wrap_Matrix_m2_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m2",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m2",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m2",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m2_get",1,SWIGTYPE_p_Matrix);
@@ -3899,11 +3903,11 @@ fail:
 
 static int _wrap_Matrix_m6_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m6",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m6",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m6",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m6",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3925,11 +3929,11 @@ fail:
 
 static int _wrap_Matrix_m6_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m6",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m6",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m6",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m6_get",1,SWIGTYPE_p_Matrix);
@@ -3949,11 +3953,11 @@ fail:
 
 static int _wrap_Matrix_m10_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m10",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m10",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m10",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m10",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -3975,11 +3979,11 @@ fail:
 
 static int _wrap_Matrix_m10_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m10",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m10",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m10",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m10_get",1,SWIGTYPE_p_Matrix);
@@ -3999,11 +4003,11 @@ fail:
 
 static int _wrap_Matrix_m14_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m14",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m14",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m14",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m14",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -4025,11 +4029,11 @@ fail:
 
 static int _wrap_Matrix_m14_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m14",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m14",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m14",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m14_get",1,SWIGTYPE_p_Matrix);
@@ -4049,11 +4053,11 @@ fail:
 
 static int _wrap_Matrix_m3_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m3",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m3",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m3",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m3",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -4075,11 +4079,11 @@ fail:
 
 static int _wrap_Matrix_m3_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m3",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m3",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m3",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m3_get",1,SWIGTYPE_p_Matrix);
@@ -4099,11 +4103,11 @@ fail:
 
 static int _wrap_Matrix_m7_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m7",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m7",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m7",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m7",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -4125,11 +4129,11 @@ fail:
 
 static int _wrap_Matrix_m7_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m7",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m7",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m7",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m7_get",1,SWIGTYPE_p_Matrix);
@@ -4149,11 +4153,11 @@ fail:
 
 static int _wrap_Matrix_m11_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m11",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m11",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m11",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m11",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -4175,11 +4179,11 @@ fail:
 
 static int _wrap_Matrix_m11_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m11",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m11",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m11",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m11_get",1,SWIGTYPE_p_Matrix);
@@ -4199,11 +4203,11 @@ fail:
 
 static int _wrap_Matrix_m15_set(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Matrix::m15",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m15",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m15",1,"struct Matrix *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Matrix::m15",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
@@ -4225,11 +4229,11 @@ fail:
 
 static int _wrap_Matrix_m15_get(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *arg1 = (Matrix *) 0 ;
+  struct Matrix *arg1 = (struct Matrix *) 0 ;
   float result;
   
   SWIG_check_num_args("Matrix::m15",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m15",1,"Matrix *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Matrix::m15",1,"struct Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Matrix,0))){
     SWIG_fail_ptr("Matrix_m15_get",1,SWIGTYPE_p_Matrix);
@@ -4249,10 +4253,10 @@ fail:
 
 static int _wrap_new_Matrix(lua_State* L) {
   int SWIG_arg = 0;
-  Matrix *result = 0 ;
+  struct Matrix *result = 0 ;
   
   SWIG_check_num_args("Matrix::Matrix",0,0)
-  result = (Matrix *)new Matrix();
+  result = (struct Matrix *)calloc(1, sizeof(struct Matrix));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Matrix,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -4265,8 +4269,8 @@ fail:
 
 
 static void swig_delete_Matrix(void *obj) {
-Matrix *arg1 = (Matrix *) obj;
-delete arg1;
+struct Matrix *arg1 = (struct Matrix *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Matrix(lua_State *L) {
     assert(lua_istable(L,1));
@@ -4329,11 +4333,11 @@ static swig_lua_class _wrap_class_Matrix = { "Matrix", "Matrix", &SWIGTYPE_p_Mat
 
 static int _wrap_Color_r_set(lua_State* L) {
   int SWIG_arg = 0;
-  Color *arg1 = (Color *) 0 ;
+  struct Color *arg1 = (struct Color *) 0 ;
   unsigned char arg2 ;
   
   SWIG_check_num_args("Color::r",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::r",1,"Color *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::r",1,"struct Color *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Color::r",2,"unsigned char");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Color,0))){
@@ -4356,11 +4360,11 @@ fail:
 
 static int _wrap_Color_r_get(lua_State* L) {
   int SWIG_arg = 0;
-  Color *arg1 = (Color *) 0 ;
+  struct Color *arg1 = (struct Color *) 0 ;
   unsigned char result;
   
   SWIG_check_num_args("Color::r",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::r",1,"Color *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::r",1,"struct Color *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Color,0))){
     SWIG_fail_ptr("Color_r_get",1,SWIGTYPE_p_Color);
@@ -4380,11 +4384,11 @@ fail:
 
 static int _wrap_Color_g_set(lua_State* L) {
   int SWIG_arg = 0;
-  Color *arg1 = (Color *) 0 ;
+  struct Color *arg1 = (struct Color *) 0 ;
   unsigned char arg2 ;
   
   SWIG_check_num_args("Color::g",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::g",1,"Color *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::g",1,"struct Color *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Color::g",2,"unsigned char");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Color,0))){
@@ -4407,11 +4411,11 @@ fail:
 
 static int _wrap_Color_g_get(lua_State* L) {
   int SWIG_arg = 0;
-  Color *arg1 = (Color *) 0 ;
+  struct Color *arg1 = (struct Color *) 0 ;
   unsigned char result;
   
   SWIG_check_num_args("Color::g",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::g",1,"Color *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::g",1,"struct Color *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Color,0))){
     SWIG_fail_ptr("Color_g_get",1,SWIGTYPE_p_Color);
@@ -4431,11 +4435,11 @@ fail:
 
 static int _wrap_Color_b_set(lua_State* L) {
   int SWIG_arg = 0;
-  Color *arg1 = (Color *) 0 ;
+  struct Color *arg1 = (struct Color *) 0 ;
   unsigned char arg2 ;
   
   SWIG_check_num_args("Color::b",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::b",1,"Color *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::b",1,"struct Color *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Color::b",2,"unsigned char");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Color,0))){
@@ -4458,11 +4462,11 @@ fail:
 
 static int _wrap_Color_b_get(lua_State* L) {
   int SWIG_arg = 0;
-  Color *arg1 = (Color *) 0 ;
+  struct Color *arg1 = (struct Color *) 0 ;
   unsigned char result;
   
   SWIG_check_num_args("Color::b",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::b",1,"Color *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::b",1,"struct Color *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Color,0))){
     SWIG_fail_ptr("Color_b_get",1,SWIGTYPE_p_Color);
@@ -4482,11 +4486,11 @@ fail:
 
 static int _wrap_Color_a_set(lua_State* L) {
   int SWIG_arg = 0;
-  Color *arg1 = (Color *) 0 ;
+  struct Color *arg1 = (struct Color *) 0 ;
   unsigned char arg2 ;
   
   SWIG_check_num_args("Color::a",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::a",1,"Color *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::a",1,"struct Color *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Color::a",2,"unsigned char");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Color,0))){
@@ -4509,11 +4513,11 @@ fail:
 
 static int _wrap_Color_a_get(lua_State* L) {
   int SWIG_arg = 0;
-  Color *arg1 = (Color *) 0 ;
+  struct Color *arg1 = (struct Color *) 0 ;
   unsigned char result;
   
   SWIG_check_num_args("Color::a",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::a",1,"Color *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Color::a",1,"struct Color *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Color,0))){
     SWIG_fail_ptr("Color_a_get",1,SWIGTYPE_p_Color);
@@ -4533,10 +4537,10 @@ fail:
 
 static int _wrap_new_Color(lua_State* L) {
   int SWIG_arg = 0;
-  Color *result = 0 ;
+  struct Color *result = 0 ;
   
   SWIG_check_num_args("Color::Color",0,0)
-  result = (Color *)new Color();
+  result = (struct Color *)calloc(1, sizeof(struct Color));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -4549,8 +4553,8 @@ fail:
 
 
 static void swig_delete_Color(void *obj) {
-Color *arg1 = (Color *) obj;
-delete arg1;
+struct Color *arg1 = (struct Color *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Color(lua_State *L) {
     assert(lua_istable(L,1));
@@ -4601,11 +4605,11 @@ static swig_lua_class _wrap_class_Color = { "Color", "Color", &SWIGTYPE_p_Color,
 
 static int _wrap_Rectangle_x_set(lua_State* L) {
   int SWIG_arg = 0;
-  Rectangle *arg1 = (Rectangle *) 0 ;
+  struct Rectangle *arg1 = (struct Rectangle *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Rectangle::x",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::x",1,"Rectangle *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::x",1,"struct Rectangle *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Rectangle::x",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Rectangle,0))){
@@ -4627,11 +4631,11 @@ fail:
 
 static int _wrap_Rectangle_x_get(lua_State* L) {
   int SWIG_arg = 0;
-  Rectangle *arg1 = (Rectangle *) 0 ;
+  struct Rectangle *arg1 = (struct Rectangle *) 0 ;
   float result;
   
   SWIG_check_num_args("Rectangle::x",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::x",1,"Rectangle *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::x",1,"struct Rectangle *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Rectangle,0))){
     SWIG_fail_ptr("Rectangle_x_get",1,SWIGTYPE_p_Rectangle);
@@ -4651,11 +4655,11 @@ fail:
 
 static int _wrap_Rectangle_y_set(lua_State* L) {
   int SWIG_arg = 0;
-  Rectangle *arg1 = (Rectangle *) 0 ;
+  struct Rectangle *arg1 = (struct Rectangle *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Rectangle::y",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::y",1,"Rectangle *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::y",1,"struct Rectangle *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Rectangle::y",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Rectangle,0))){
@@ -4677,11 +4681,11 @@ fail:
 
 static int _wrap_Rectangle_y_get(lua_State* L) {
   int SWIG_arg = 0;
-  Rectangle *arg1 = (Rectangle *) 0 ;
+  struct Rectangle *arg1 = (struct Rectangle *) 0 ;
   float result;
   
   SWIG_check_num_args("Rectangle::y",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::y",1,"Rectangle *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::y",1,"struct Rectangle *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Rectangle,0))){
     SWIG_fail_ptr("Rectangle_y_get",1,SWIGTYPE_p_Rectangle);
@@ -4701,11 +4705,11 @@ fail:
 
 static int _wrap_Rectangle_width_set(lua_State* L) {
   int SWIG_arg = 0;
-  Rectangle *arg1 = (Rectangle *) 0 ;
+  struct Rectangle *arg1 = (struct Rectangle *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Rectangle::width",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::width",1,"Rectangle *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::width",1,"struct Rectangle *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Rectangle::width",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Rectangle,0))){
@@ -4727,11 +4731,11 @@ fail:
 
 static int _wrap_Rectangle_width_get(lua_State* L) {
   int SWIG_arg = 0;
-  Rectangle *arg1 = (Rectangle *) 0 ;
+  struct Rectangle *arg1 = (struct Rectangle *) 0 ;
   float result;
   
   SWIG_check_num_args("Rectangle::width",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::width",1,"Rectangle *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::width",1,"struct Rectangle *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Rectangle,0))){
     SWIG_fail_ptr("Rectangle_width_get",1,SWIGTYPE_p_Rectangle);
@@ -4751,11 +4755,11 @@ fail:
 
 static int _wrap_Rectangle_height_set(lua_State* L) {
   int SWIG_arg = 0;
-  Rectangle *arg1 = (Rectangle *) 0 ;
+  struct Rectangle *arg1 = (struct Rectangle *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Rectangle::height",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::height",1,"Rectangle *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::height",1,"struct Rectangle *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Rectangle::height",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Rectangle,0))){
@@ -4777,11 +4781,11 @@ fail:
 
 static int _wrap_Rectangle_height_get(lua_State* L) {
   int SWIG_arg = 0;
-  Rectangle *arg1 = (Rectangle *) 0 ;
+  struct Rectangle *arg1 = (struct Rectangle *) 0 ;
   float result;
   
   SWIG_check_num_args("Rectangle::height",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::height",1,"Rectangle *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Rectangle::height",1,"struct Rectangle *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Rectangle,0))){
     SWIG_fail_ptr("Rectangle_height_get",1,SWIGTYPE_p_Rectangle);
@@ -4801,10 +4805,10 @@ fail:
 
 static int _wrap_new_Rectangle(lua_State* L) {
   int SWIG_arg = 0;
-  Rectangle *result = 0 ;
+  struct Rectangle *result = 0 ;
   
   SWIG_check_num_args("Rectangle::Rectangle",0,0)
-  result = (Rectangle *)new Rectangle();
+  result = (struct Rectangle *)calloc(1, sizeof(struct Rectangle));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Rectangle,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -4817,8 +4821,8 @@ fail:
 
 
 static void swig_delete_Rectangle(void *obj) {
-Rectangle *arg1 = (Rectangle *) obj;
-delete arg1;
+struct Rectangle *arg1 = (struct Rectangle *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Rectangle(lua_State *L) {
     assert(lua_istable(L,1));
@@ -4869,11 +4873,11 @@ static swig_lua_class _wrap_class_Rectangle = { "Rectangle", "Rectangle", &SWIGT
 
 static int _wrap_Image_data_set(lua_State* L) {
   int SWIG_arg = 0;
-  Image *arg1 = (Image *) 0 ;
+  struct Image *arg1 = (struct Image *) 0 ;
   void *arg2 = (void *) 0 ;
   
   SWIG_check_num_args("Image::data",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::data",1,"Image *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::data",1,"struct Image *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Image::data",2,"void *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Image,0))){
@@ -4895,11 +4899,11 @@ fail:
 
 static int _wrap_Image_data_get(lua_State* L) {
   int SWIG_arg = 0;
-  Image *arg1 = (Image *) 0 ;
+  struct Image *arg1 = (struct Image *) 0 ;
   void *result = 0 ;
   
   SWIG_check_num_args("Image::data",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::data",1,"Image *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::data",1,"struct Image *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Image,0))){
     SWIG_fail_ptr("Image_data_get",1,SWIGTYPE_p_Image);
@@ -4919,11 +4923,11 @@ fail:
 
 static int _wrap_Image_width_set(lua_State* L) {
   int SWIG_arg = 0;
-  Image *arg1 = (Image *) 0 ;
+  struct Image *arg1 = (struct Image *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Image::width",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::width",1,"Image *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::width",1,"struct Image *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Image::width",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Image,0))){
@@ -4945,11 +4949,11 @@ fail:
 
 static int _wrap_Image_width_get(lua_State* L) {
   int SWIG_arg = 0;
-  Image *arg1 = (Image *) 0 ;
+  struct Image *arg1 = (struct Image *) 0 ;
   int result;
   
   SWIG_check_num_args("Image::width",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::width",1,"Image *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::width",1,"struct Image *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Image,0))){
     SWIG_fail_ptr("Image_width_get",1,SWIGTYPE_p_Image);
@@ -4969,11 +4973,11 @@ fail:
 
 static int _wrap_Image_height_set(lua_State* L) {
   int SWIG_arg = 0;
-  Image *arg1 = (Image *) 0 ;
+  struct Image *arg1 = (struct Image *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Image::height",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::height",1,"Image *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::height",1,"struct Image *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Image::height",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Image,0))){
@@ -4995,11 +4999,11 @@ fail:
 
 static int _wrap_Image_height_get(lua_State* L) {
   int SWIG_arg = 0;
-  Image *arg1 = (Image *) 0 ;
+  struct Image *arg1 = (struct Image *) 0 ;
   int result;
   
   SWIG_check_num_args("Image::height",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::height",1,"Image *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::height",1,"struct Image *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Image,0))){
     SWIG_fail_ptr("Image_height_get",1,SWIGTYPE_p_Image);
@@ -5019,11 +5023,11 @@ fail:
 
 static int _wrap_Image_mipmaps_set(lua_State* L) {
   int SWIG_arg = 0;
-  Image *arg1 = (Image *) 0 ;
+  struct Image *arg1 = (struct Image *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Image::mipmaps",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::mipmaps",1,"Image *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::mipmaps",1,"struct Image *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Image::mipmaps",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Image,0))){
@@ -5045,11 +5049,11 @@ fail:
 
 static int _wrap_Image_mipmaps_get(lua_State* L) {
   int SWIG_arg = 0;
-  Image *arg1 = (Image *) 0 ;
+  struct Image *arg1 = (struct Image *) 0 ;
   int result;
   
   SWIG_check_num_args("Image::mipmaps",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::mipmaps",1,"Image *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::mipmaps",1,"struct Image *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Image,0))){
     SWIG_fail_ptr("Image_mipmaps_get",1,SWIGTYPE_p_Image);
@@ -5069,11 +5073,11 @@ fail:
 
 static int _wrap_Image_format_set(lua_State* L) {
   int SWIG_arg = 0;
-  Image *arg1 = (Image *) 0 ;
+  struct Image *arg1 = (struct Image *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Image::format",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::format",1,"Image *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::format",1,"struct Image *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Image::format",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Image,0))){
@@ -5095,11 +5099,11 @@ fail:
 
 static int _wrap_Image_format_get(lua_State* L) {
   int SWIG_arg = 0;
-  Image *arg1 = (Image *) 0 ;
+  struct Image *arg1 = (struct Image *) 0 ;
   int result;
   
   SWIG_check_num_args("Image::format",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::format",1,"Image *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Image::format",1,"struct Image *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Image,0))){
     SWIG_fail_ptr("Image_format_get",1,SWIGTYPE_p_Image);
@@ -5119,10 +5123,10 @@ fail:
 
 static int _wrap_new_Image(lua_State* L) {
   int SWIG_arg = 0;
-  Image *result = 0 ;
+  struct Image *result = 0 ;
   
   SWIG_check_num_args("Image::Image",0,0)
-  result = (Image *)new Image();
+  result = (struct Image *)calloc(1, sizeof(struct Image));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Image,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -5135,8 +5139,8 @@ fail:
 
 
 static void swig_delete_Image(void *obj) {
-Image *arg1 = (Image *) obj;
-delete arg1;
+struct Image *arg1 = (struct Image *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Image(lua_State *L) {
     assert(lua_istable(L,1));
@@ -5188,11 +5192,11 @@ static swig_lua_class _wrap_class_Image = { "Image", "Image", &SWIGTYPE_p_Image,
 
 static int _wrap_Texture_id_set(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *arg1 = (Texture *) 0 ;
+  struct Texture *arg1 = (struct Texture *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("Texture::id",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::id",1,"Texture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::id",1,"struct Texture *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Texture::id",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Texture,0))){
@@ -5215,11 +5219,11 @@ fail:
 
 static int _wrap_Texture_id_get(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *arg1 = (Texture *) 0 ;
+  struct Texture *arg1 = (struct Texture *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("Texture::id",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::id",1,"Texture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::id",1,"struct Texture *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Texture,0))){
     SWIG_fail_ptr("Texture_id_get",1,SWIGTYPE_p_Texture);
@@ -5239,11 +5243,11 @@ fail:
 
 static int _wrap_Texture_width_set(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *arg1 = (Texture *) 0 ;
+  struct Texture *arg1 = (struct Texture *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Texture::width",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::width",1,"Texture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::width",1,"struct Texture *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Texture::width",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Texture,0))){
@@ -5265,11 +5269,11 @@ fail:
 
 static int _wrap_Texture_width_get(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *arg1 = (Texture *) 0 ;
+  struct Texture *arg1 = (struct Texture *) 0 ;
   int result;
   
   SWIG_check_num_args("Texture::width",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::width",1,"Texture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::width",1,"struct Texture *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Texture,0))){
     SWIG_fail_ptr("Texture_width_get",1,SWIGTYPE_p_Texture);
@@ -5289,11 +5293,11 @@ fail:
 
 static int _wrap_Texture_height_set(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *arg1 = (Texture *) 0 ;
+  struct Texture *arg1 = (struct Texture *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Texture::height",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::height",1,"Texture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::height",1,"struct Texture *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Texture::height",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Texture,0))){
@@ -5315,11 +5319,11 @@ fail:
 
 static int _wrap_Texture_height_get(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *arg1 = (Texture *) 0 ;
+  struct Texture *arg1 = (struct Texture *) 0 ;
   int result;
   
   SWIG_check_num_args("Texture::height",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::height",1,"Texture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::height",1,"struct Texture *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Texture,0))){
     SWIG_fail_ptr("Texture_height_get",1,SWIGTYPE_p_Texture);
@@ -5339,11 +5343,11 @@ fail:
 
 static int _wrap_Texture_mipmaps_set(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *arg1 = (Texture *) 0 ;
+  struct Texture *arg1 = (struct Texture *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Texture::mipmaps",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::mipmaps",1,"Texture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::mipmaps",1,"struct Texture *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Texture::mipmaps",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Texture,0))){
@@ -5365,11 +5369,11 @@ fail:
 
 static int _wrap_Texture_mipmaps_get(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *arg1 = (Texture *) 0 ;
+  struct Texture *arg1 = (struct Texture *) 0 ;
   int result;
   
   SWIG_check_num_args("Texture::mipmaps",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::mipmaps",1,"Texture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::mipmaps",1,"struct Texture *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Texture,0))){
     SWIG_fail_ptr("Texture_mipmaps_get",1,SWIGTYPE_p_Texture);
@@ -5389,11 +5393,11 @@ fail:
 
 static int _wrap_Texture_format_set(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *arg1 = (Texture *) 0 ;
+  struct Texture *arg1 = (struct Texture *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Texture::format",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::format",1,"Texture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::format",1,"struct Texture *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Texture::format",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Texture,0))){
@@ -5415,11 +5419,11 @@ fail:
 
 static int _wrap_Texture_format_get(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *arg1 = (Texture *) 0 ;
+  struct Texture *arg1 = (struct Texture *) 0 ;
   int result;
   
   SWIG_check_num_args("Texture::format",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::format",1,"Texture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Texture::format",1,"struct Texture *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Texture,0))){
     SWIG_fail_ptr("Texture_format_get",1,SWIGTYPE_p_Texture);
@@ -5439,10 +5443,10 @@ fail:
 
 static int _wrap_new_Texture(lua_State* L) {
   int SWIG_arg = 0;
-  Texture *result = 0 ;
+  struct Texture *result = 0 ;
   
   SWIG_check_num_args("Texture::Texture",0,0)
-  result = (Texture *)new Texture();
+  result = (struct Texture *)calloc(1, sizeof(struct Texture));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Texture,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -5455,8 +5459,8 @@ fail:
 
 
 static void swig_delete_Texture(void *obj) {
-Texture *arg1 = (Texture *) obj;
-delete arg1;
+struct Texture *arg1 = (struct Texture *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Texture(lua_State *L) {
     assert(lua_istable(L,1));
@@ -5508,11 +5512,11 @@ static swig_lua_class _wrap_class_Texture = { "Texture", "Texture", &SWIGTYPE_p_
 
 static int _wrap_RenderTexture_id_set(lua_State* L) {
   int SWIG_arg = 0;
-  RenderTexture *arg1 = (RenderTexture *) 0 ;
+  struct RenderTexture *arg1 = (struct RenderTexture *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("RenderTexture::id",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::id",1,"RenderTexture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::id",1,"struct RenderTexture *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("RenderTexture::id",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RenderTexture,0))){
@@ -5535,11 +5539,11 @@ fail:
 
 static int _wrap_RenderTexture_id_get(lua_State* L) {
   int SWIG_arg = 0;
-  RenderTexture *arg1 = (RenderTexture *) 0 ;
+  struct RenderTexture *arg1 = (struct RenderTexture *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("RenderTexture::id",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::id",1,"RenderTexture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::id",1,"struct RenderTexture *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RenderTexture,0))){
     SWIG_fail_ptr("RenderTexture_id_get",1,SWIGTYPE_p_RenderTexture);
@@ -5559,11 +5563,11 @@ fail:
 
 static int _wrap_RenderTexture_texture_set(lua_State* L) {
   int SWIG_arg = 0;
-  RenderTexture *arg1 = (RenderTexture *) 0 ;
+  struct RenderTexture *arg1 = (struct RenderTexture *) 0 ;
   Texture *arg2 = (Texture *) 0 ;
   
   SWIG_check_num_args("RenderTexture::texture",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::texture",1,"RenderTexture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::texture",1,"struct RenderTexture *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("RenderTexture::texture",2,"Texture *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RenderTexture,0))){
@@ -5589,11 +5593,11 @@ fail:
 
 static int _wrap_RenderTexture_texture_get(lua_State* L) {
   int SWIG_arg = 0;
-  RenderTexture *arg1 = (RenderTexture *) 0 ;
+  struct RenderTexture *arg1 = (struct RenderTexture *) 0 ;
   Texture *result = 0 ;
   
   SWIG_check_num_args("RenderTexture::texture",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::texture",1,"RenderTexture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::texture",1,"struct RenderTexture *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RenderTexture,0))){
     SWIG_fail_ptr("RenderTexture_texture_get",1,SWIGTYPE_p_RenderTexture);
@@ -5613,11 +5617,11 @@ fail:
 
 static int _wrap_RenderTexture_depth_set(lua_State* L) {
   int SWIG_arg = 0;
-  RenderTexture *arg1 = (RenderTexture *) 0 ;
+  struct RenderTexture *arg1 = (struct RenderTexture *) 0 ;
   Texture *arg2 = (Texture *) 0 ;
   
   SWIG_check_num_args("RenderTexture::depth",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::depth",1,"RenderTexture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::depth",1,"struct RenderTexture *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("RenderTexture::depth",2,"Texture *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RenderTexture,0))){
@@ -5643,11 +5647,11 @@ fail:
 
 static int _wrap_RenderTexture_depth_get(lua_State* L) {
   int SWIG_arg = 0;
-  RenderTexture *arg1 = (RenderTexture *) 0 ;
+  struct RenderTexture *arg1 = (struct RenderTexture *) 0 ;
   Texture *result = 0 ;
   
   SWIG_check_num_args("RenderTexture::depth",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::depth",1,"RenderTexture *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RenderTexture::depth",1,"struct RenderTexture *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RenderTexture,0))){
     SWIG_fail_ptr("RenderTexture_depth_get",1,SWIGTYPE_p_RenderTexture);
@@ -5667,10 +5671,10 @@ fail:
 
 static int _wrap_new_RenderTexture(lua_State* L) {
   int SWIG_arg = 0;
-  RenderTexture *result = 0 ;
+  struct RenderTexture *result = 0 ;
   
   SWIG_check_num_args("RenderTexture::RenderTexture",0,0)
-  result = (RenderTexture *)new RenderTexture();
+  result = (struct RenderTexture *)calloc(1, sizeof(struct RenderTexture));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_RenderTexture,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -5683,8 +5687,8 @@ fail:
 
 
 static void swig_delete_RenderTexture(void *obj) {
-RenderTexture *arg1 = (RenderTexture *) obj;
-delete arg1;
+struct RenderTexture *arg1 = (struct RenderTexture *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_RenderTexture(lua_State *L) {
     assert(lua_istable(L,1));
@@ -5734,11 +5738,11 @@ static swig_lua_class _wrap_class_RenderTexture = { "RenderTexture", "RenderText
 
 static int _wrap_NPatchInfo_source_set(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   Rectangle *arg2 = (Rectangle *) 0 ;
   
   SWIG_check_num_args("NPatchInfo::source",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::source",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::source",1,"struct NPatchInfo *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("NPatchInfo::source",2,"Rectangle *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
@@ -5764,11 +5768,11 @@ fail:
 
 static int _wrap_NPatchInfo_source_get(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   Rectangle *result = 0 ;
   
   SWIG_check_num_args("NPatchInfo::source",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::source",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::source",1,"struct NPatchInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
     SWIG_fail_ptr("NPatchInfo_source_get",1,SWIGTYPE_p_NPatchInfo);
@@ -5788,11 +5792,11 @@ fail:
 
 static int _wrap_NPatchInfo_left_set(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("NPatchInfo::left",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::left",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::left",1,"struct NPatchInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("NPatchInfo::left",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
@@ -5814,11 +5818,11 @@ fail:
 
 static int _wrap_NPatchInfo_left_get(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("NPatchInfo::left",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::left",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::left",1,"struct NPatchInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
     SWIG_fail_ptr("NPatchInfo_left_get",1,SWIGTYPE_p_NPatchInfo);
@@ -5838,11 +5842,11 @@ fail:
 
 static int _wrap_NPatchInfo_top_set(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("NPatchInfo::top",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::top",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::top",1,"struct NPatchInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("NPatchInfo::top",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
@@ -5864,11 +5868,11 @@ fail:
 
 static int _wrap_NPatchInfo_top_get(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("NPatchInfo::top",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::top",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::top",1,"struct NPatchInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
     SWIG_fail_ptr("NPatchInfo_top_get",1,SWIGTYPE_p_NPatchInfo);
@@ -5888,11 +5892,11 @@ fail:
 
 static int _wrap_NPatchInfo_right_set(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("NPatchInfo::right",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::right",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::right",1,"struct NPatchInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("NPatchInfo::right",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
@@ -5914,11 +5918,11 @@ fail:
 
 static int _wrap_NPatchInfo_right_get(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("NPatchInfo::right",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::right",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::right",1,"struct NPatchInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
     SWIG_fail_ptr("NPatchInfo_right_get",1,SWIGTYPE_p_NPatchInfo);
@@ -5938,11 +5942,11 @@ fail:
 
 static int _wrap_NPatchInfo_bottom_set(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("NPatchInfo::bottom",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::bottom",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::bottom",1,"struct NPatchInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("NPatchInfo::bottom",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
@@ -5964,11 +5968,11 @@ fail:
 
 static int _wrap_NPatchInfo_bottom_get(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("NPatchInfo::bottom",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::bottom",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::bottom",1,"struct NPatchInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
     SWIG_fail_ptr("NPatchInfo_bottom_get",1,SWIGTYPE_p_NPatchInfo);
@@ -5988,11 +5992,11 @@ fail:
 
 static int _wrap_NPatchInfo_layout_set(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("NPatchInfo::layout",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::layout",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::layout",1,"struct NPatchInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("NPatchInfo::layout",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
@@ -6014,11 +6018,11 @@ fail:
 
 static int _wrap_NPatchInfo_layout_get(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *arg1 = (NPatchInfo *) 0 ;
+  struct NPatchInfo *arg1 = (struct NPatchInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("NPatchInfo::layout",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::layout",1,"NPatchInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("NPatchInfo::layout",1,"struct NPatchInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_NPatchInfo,0))){
     SWIG_fail_ptr("NPatchInfo_layout_get",1,SWIGTYPE_p_NPatchInfo);
@@ -6038,10 +6042,10 @@ fail:
 
 static int _wrap_new_NPatchInfo(lua_State* L) {
   int SWIG_arg = 0;
-  NPatchInfo *result = 0 ;
+  struct NPatchInfo *result = 0 ;
   
   SWIG_check_num_args("NPatchInfo::NPatchInfo",0,0)
-  result = (NPatchInfo *)new NPatchInfo();
+  result = (struct NPatchInfo *)calloc(1, sizeof(struct NPatchInfo));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_NPatchInfo,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -6054,8 +6058,8 @@ fail:
 
 
 static void swig_delete_NPatchInfo(void *obj) {
-NPatchInfo *arg1 = (NPatchInfo *) obj;
-delete arg1;
+struct NPatchInfo *arg1 = (struct NPatchInfo *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_NPatchInfo(lua_State *L) {
     assert(lua_istable(L,1));
@@ -6108,11 +6112,11 @@ static swig_lua_class _wrap_class_NPatchInfo = { "NPatchInfo", "NPatchInfo", &SW
 
 static int _wrap_GlyphInfo_value_set(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *arg1 = (GlyphInfo *) 0 ;
+  struct GlyphInfo *arg1 = (struct GlyphInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("GlyphInfo::value",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::value",1,"GlyphInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::value",1,"struct GlyphInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("GlyphInfo::value",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_GlyphInfo,0))){
@@ -6134,11 +6138,11 @@ fail:
 
 static int _wrap_GlyphInfo_value_get(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *arg1 = (GlyphInfo *) 0 ;
+  struct GlyphInfo *arg1 = (struct GlyphInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("GlyphInfo::value",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::value",1,"GlyphInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::value",1,"struct GlyphInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_GlyphInfo,0))){
     SWIG_fail_ptr("GlyphInfo_value_get",1,SWIGTYPE_p_GlyphInfo);
@@ -6158,11 +6162,11 @@ fail:
 
 static int _wrap_GlyphInfo_offsetX_set(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *arg1 = (GlyphInfo *) 0 ;
+  struct GlyphInfo *arg1 = (struct GlyphInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("GlyphInfo::offsetX",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::offsetX",1,"GlyphInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::offsetX",1,"struct GlyphInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("GlyphInfo::offsetX",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_GlyphInfo,0))){
@@ -6184,11 +6188,11 @@ fail:
 
 static int _wrap_GlyphInfo_offsetX_get(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *arg1 = (GlyphInfo *) 0 ;
+  struct GlyphInfo *arg1 = (struct GlyphInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("GlyphInfo::offsetX",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::offsetX",1,"GlyphInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::offsetX",1,"struct GlyphInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_GlyphInfo,0))){
     SWIG_fail_ptr("GlyphInfo_offsetX_get",1,SWIGTYPE_p_GlyphInfo);
@@ -6208,11 +6212,11 @@ fail:
 
 static int _wrap_GlyphInfo_offsetY_set(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *arg1 = (GlyphInfo *) 0 ;
+  struct GlyphInfo *arg1 = (struct GlyphInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("GlyphInfo::offsetY",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::offsetY",1,"GlyphInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::offsetY",1,"struct GlyphInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("GlyphInfo::offsetY",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_GlyphInfo,0))){
@@ -6234,11 +6238,11 @@ fail:
 
 static int _wrap_GlyphInfo_offsetY_get(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *arg1 = (GlyphInfo *) 0 ;
+  struct GlyphInfo *arg1 = (struct GlyphInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("GlyphInfo::offsetY",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::offsetY",1,"GlyphInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::offsetY",1,"struct GlyphInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_GlyphInfo,0))){
     SWIG_fail_ptr("GlyphInfo_offsetY_get",1,SWIGTYPE_p_GlyphInfo);
@@ -6258,11 +6262,11 @@ fail:
 
 static int _wrap_GlyphInfo_advanceX_set(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *arg1 = (GlyphInfo *) 0 ;
+  struct GlyphInfo *arg1 = (struct GlyphInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("GlyphInfo::advanceX",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::advanceX",1,"GlyphInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::advanceX",1,"struct GlyphInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("GlyphInfo::advanceX",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_GlyphInfo,0))){
@@ -6284,11 +6288,11 @@ fail:
 
 static int _wrap_GlyphInfo_advanceX_get(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *arg1 = (GlyphInfo *) 0 ;
+  struct GlyphInfo *arg1 = (struct GlyphInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("GlyphInfo::advanceX",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::advanceX",1,"GlyphInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::advanceX",1,"struct GlyphInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_GlyphInfo,0))){
     SWIG_fail_ptr("GlyphInfo_advanceX_get",1,SWIGTYPE_p_GlyphInfo);
@@ -6308,11 +6312,11 @@ fail:
 
 static int _wrap_GlyphInfo_image_set(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *arg1 = (GlyphInfo *) 0 ;
+  struct GlyphInfo *arg1 = (struct GlyphInfo *) 0 ;
   Image *arg2 = (Image *) 0 ;
   
   SWIG_check_num_args("GlyphInfo::image",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::image",1,"GlyphInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::image",1,"struct GlyphInfo *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("GlyphInfo::image",2,"Image *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_GlyphInfo,0))){
@@ -6338,11 +6342,11 @@ fail:
 
 static int _wrap_GlyphInfo_image_get(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *arg1 = (GlyphInfo *) 0 ;
+  struct GlyphInfo *arg1 = (struct GlyphInfo *) 0 ;
   Image *result = 0 ;
   
   SWIG_check_num_args("GlyphInfo::image",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::image",1,"GlyphInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("GlyphInfo::image",1,"struct GlyphInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_GlyphInfo,0))){
     SWIG_fail_ptr("GlyphInfo_image_get",1,SWIGTYPE_p_GlyphInfo);
@@ -6362,10 +6366,10 @@ fail:
 
 static int _wrap_new_GlyphInfo(lua_State* L) {
   int SWIG_arg = 0;
-  GlyphInfo *result = 0 ;
+  struct GlyphInfo *result = 0 ;
   
   SWIG_check_num_args("GlyphInfo::GlyphInfo",0,0)
-  result = (GlyphInfo *)new GlyphInfo();
+  result = (struct GlyphInfo *)calloc(1, sizeof(struct GlyphInfo));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_GlyphInfo,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -6378,8 +6382,8 @@ fail:
 
 
 static void swig_delete_GlyphInfo(void *obj) {
-GlyphInfo *arg1 = (GlyphInfo *) obj;
-delete arg1;
+struct GlyphInfo *arg1 = (struct GlyphInfo *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_GlyphInfo(lua_State *L) {
     assert(lua_istable(L,1));
@@ -6431,11 +6435,11 @@ static swig_lua_class _wrap_class_GlyphInfo = { "GlyphInfo", "GlyphInfo", &SWIGT
 
 static int _wrap_Font_baseSize_set(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Font::baseSize",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::baseSize",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::baseSize",1,"struct Font *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Font::baseSize",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
@@ -6457,11 +6461,11 @@ fail:
 
 static int _wrap_Font_baseSize_get(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   int result;
   
   SWIG_check_num_args("Font::baseSize",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::baseSize",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::baseSize",1,"struct Font *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
     SWIG_fail_ptr("Font_baseSize_get",1,SWIGTYPE_p_Font);
@@ -6481,11 +6485,11 @@ fail:
 
 static int _wrap_Font_glyphCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Font::glyphCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphCount",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphCount",1,"struct Font *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Font::glyphCount",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
@@ -6507,11 +6511,11 @@ fail:
 
 static int _wrap_Font_glyphCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   int result;
   
   SWIG_check_num_args("Font::glyphCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphCount",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphCount",1,"struct Font *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
     SWIG_fail_ptr("Font_glyphCount_get",1,SWIGTYPE_p_Font);
@@ -6531,11 +6535,11 @@ fail:
 
 static int _wrap_Font_glyphPadding_set(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Font::glyphPadding",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphPadding",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphPadding",1,"struct Font *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Font::glyphPadding",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
@@ -6557,11 +6561,11 @@ fail:
 
 static int _wrap_Font_glyphPadding_get(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   int result;
   
   SWIG_check_num_args("Font::glyphPadding",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphPadding",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphPadding",1,"struct Font *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
     SWIG_fail_ptr("Font_glyphPadding_get",1,SWIGTYPE_p_Font);
@@ -6581,11 +6585,11 @@ fail:
 
 static int _wrap_Font_texture_set(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   Texture2D *arg2 = (Texture2D *) 0 ;
   
   SWIG_check_num_args("Font::texture",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::texture",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::texture",1,"struct Font *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Font::texture",2,"Texture2D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
@@ -6611,11 +6615,11 @@ fail:
 
 static int _wrap_Font_texture_get(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   Texture2D *result = 0 ;
   
   SWIG_check_num_args("Font::texture",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::texture",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::texture",1,"struct Font *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
     SWIG_fail_ptr("Font_texture_get",1,SWIGTYPE_p_Font);
@@ -6635,11 +6639,11 @@ fail:
 
 static int _wrap_Font_recs_set(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   Rectangle *arg2 = (Rectangle *) 0 ;
   
   SWIG_check_num_args("Font::recs",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::recs",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::recs",1,"struct Font *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Font::recs",2,"Rectangle *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
@@ -6665,11 +6669,11 @@ fail:
 
 static int _wrap_Font_recs_get(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   Rectangle *result = 0 ;
   
   SWIG_check_num_args("Font::recs",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::recs",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::recs",1,"struct Font *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
     SWIG_fail_ptr("Font_recs_get",1,SWIGTYPE_p_Font);
@@ -6689,11 +6693,11 @@ fail:
 
 static int _wrap_Font_glyphs_set(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   GlyphInfo *arg2 = (GlyphInfo *) 0 ;
   
   SWIG_check_num_args("Font::glyphs",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphs",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphs",1,"struct Font *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Font::glyphs",2,"GlyphInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
@@ -6719,11 +6723,11 @@ fail:
 
 static int _wrap_Font_glyphs_get(lua_State* L) {
   int SWIG_arg = 0;
-  Font *arg1 = (Font *) 0 ;
+  struct Font *arg1 = (struct Font *) 0 ;
   GlyphInfo *result = 0 ;
   
   SWIG_check_num_args("Font::glyphs",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphs",1,"Font *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Font::glyphs",1,"struct Font *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Font,0))){
     SWIG_fail_ptr("Font_glyphs_get",1,SWIGTYPE_p_Font);
@@ -6743,10 +6747,10 @@ fail:
 
 static int _wrap_new_Font(lua_State* L) {
   int SWIG_arg = 0;
-  Font *result = 0 ;
+  struct Font *result = 0 ;
   
   SWIG_check_num_args("Font::Font",0,0)
-  result = (Font *)new Font();
+  result = (struct Font *)calloc(1, sizeof(struct Font));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Font,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -6759,8 +6763,8 @@ fail:
 
 
 static void swig_delete_Font(void *obj) {
-Font *arg1 = (Font *) obj;
-delete arg1;
+struct Font *arg1 = (struct Font *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Font(lua_State *L) {
     assert(lua_istable(L,1));
@@ -6813,11 +6817,11 @@ static swig_lua_class _wrap_class_Font = { "Font", "Font", &SWIGTYPE_p_Font,_pro
 
 static int _wrap_Camera3D_position_set(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *arg1 = (Camera3D *) 0 ;
+  struct Camera3D *arg1 = (struct Camera3D *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("Camera3D::position",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::position",1,"Camera3D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::position",1,"struct Camera3D *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Camera3D::position",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera3D,0))){
@@ -6843,11 +6847,11 @@ fail:
 
 static int _wrap_Camera3D_position_get(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *arg1 = (Camera3D *) 0 ;
+  struct Camera3D *arg1 = (struct Camera3D *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("Camera3D::position",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::position",1,"Camera3D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::position",1,"struct Camera3D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera3D,0))){
     SWIG_fail_ptr("Camera3D_position_get",1,SWIGTYPE_p_Camera3D);
@@ -6867,11 +6871,11 @@ fail:
 
 static int _wrap_Camera3D_target_set(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *arg1 = (Camera3D *) 0 ;
+  struct Camera3D *arg1 = (struct Camera3D *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("Camera3D::target",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::target",1,"Camera3D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::target",1,"struct Camera3D *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Camera3D::target",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera3D,0))){
@@ -6897,11 +6901,11 @@ fail:
 
 static int _wrap_Camera3D_target_get(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *arg1 = (Camera3D *) 0 ;
+  struct Camera3D *arg1 = (struct Camera3D *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("Camera3D::target",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::target",1,"Camera3D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::target",1,"struct Camera3D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera3D,0))){
     SWIG_fail_ptr("Camera3D_target_get",1,SWIGTYPE_p_Camera3D);
@@ -6921,11 +6925,11 @@ fail:
 
 static int _wrap_Camera3D_up_set(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *arg1 = (Camera3D *) 0 ;
+  struct Camera3D *arg1 = (struct Camera3D *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("Camera3D::up",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::up",1,"Camera3D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::up",1,"struct Camera3D *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Camera3D::up",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera3D,0))){
@@ -6951,11 +6955,11 @@ fail:
 
 static int _wrap_Camera3D_up_get(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *arg1 = (Camera3D *) 0 ;
+  struct Camera3D *arg1 = (struct Camera3D *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("Camera3D::up",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::up",1,"Camera3D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::up",1,"struct Camera3D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera3D,0))){
     SWIG_fail_ptr("Camera3D_up_get",1,SWIGTYPE_p_Camera3D);
@@ -6975,11 +6979,11 @@ fail:
 
 static int _wrap_Camera3D_fovy_set(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *arg1 = (Camera3D *) 0 ;
+  struct Camera3D *arg1 = (struct Camera3D *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Camera3D::fovy",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::fovy",1,"Camera3D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::fovy",1,"struct Camera3D *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Camera3D::fovy",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera3D,0))){
@@ -7001,11 +7005,11 @@ fail:
 
 static int _wrap_Camera3D_fovy_get(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *arg1 = (Camera3D *) 0 ;
+  struct Camera3D *arg1 = (struct Camera3D *) 0 ;
   float result;
   
   SWIG_check_num_args("Camera3D::fovy",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::fovy",1,"Camera3D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::fovy",1,"struct Camera3D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera3D,0))){
     SWIG_fail_ptr("Camera3D_fovy_get",1,SWIGTYPE_p_Camera3D);
@@ -7025,11 +7029,11 @@ fail:
 
 static int _wrap_Camera3D_projection_set(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *arg1 = (Camera3D *) 0 ;
+  struct Camera3D *arg1 = (struct Camera3D *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Camera3D::projection",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::projection",1,"Camera3D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::projection",1,"struct Camera3D *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Camera3D::projection",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera3D,0))){
@@ -7051,11 +7055,11 @@ fail:
 
 static int _wrap_Camera3D_projection_get(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *arg1 = (Camera3D *) 0 ;
+  struct Camera3D *arg1 = (struct Camera3D *) 0 ;
   int result;
   
   SWIG_check_num_args("Camera3D::projection",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::projection",1,"Camera3D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera3D::projection",1,"struct Camera3D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera3D,0))){
     SWIG_fail_ptr("Camera3D_projection_get",1,SWIGTYPE_p_Camera3D);
@@ -7075,10 +7079,10 @@ fail:
 
 static int _wrap_new_Camera3D(lua_State* L) {
   int SWIG_arg = 0;
-  Camera3D *result = 0 ;
+  struct Camera3D *result = 0 ;
   
   SWIG_check_num_args("Camera3D::Camera3D",0,0)
-  result = (Camera3D *)new Camera3D();
+  result = (struct Camera3D *)calloc(1, sizeof(struct Camera3D));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Camera3D,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -7091,8 +7095,8 @@ fail:
 
 
 static void swig_delete_Camera3D(void *obj) {
-Camera3D *arg1 = (Camera3D *) obj;
-delete arg1;
+struct Camera3D *arg1 = (struct Camera3D *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Camera3D(lua_State *L) {
     assert(lua_istable(L,1));
@@ -7144,11 +7148,11 @@ static swig_lua_class _wrap_class_Camera3D = { "Camera3D", "Camera3D", &SWIGTYPE
 
 static int _wrap_Camera2D_offset_set(lua_State* L) {
   int SWIG_arg = 0;
-  Camera2D *arg1 = (Camera2D *) 0 ;
+  struct Camera2D *arg1 = (struct Camera2D *) 0 ;
   Vector2 *arg2 = (Vector2 *) 0 ;
   
   SWIG_check_num_args("Camera2D::offset",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::offset",1,"Camera2D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::offset",1,"struct Camera2D *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Camera2D::offset",2,"Vector2 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera2D,0))){
@@ -7174,11 +7178,11 @@ fail:
 
 static int _wrap_Camera2D_offset_get(lua_State* L) {
   int SWIG_arg = 0;
-  Camera2D *arg1 = (Camera2D *) 0 ;
+  struct Camera2D *arg1 = (struct Camera2D *) 0 ;
   Vector2 *result = 0 ;
   
   SWIG_check_num_args("Camera2D::offset",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::offset",1,"Camera2D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::offset",1,"struct Camera2D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera2D,0))){
     SWIG_fail_ptr("Camera2D_offset_get",1,SWIGTYPE_p_Camera2D);
@@ -7198,11 +7202,11 @@ fail:
 
 static int _wrap_Camera2D_target_set(lua_State* L) {
   int SWIG_arg = 0;
-  Camera2D *arg1 = (Camera2D *) 0 ;
+  struct Camera2D *arg1 = (struct Camera2D *) 0 ;
   Vector2 *arg2 = (Vector2 *) 0 ;
   
   SWIG_check_num_args("Camera2D::target",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::target",1,"Camera2D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::target",1,"struct Camera2D *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Camera2D::target",2,"Vector2 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera2D,0))){
@@ -7228,11 +7232,11 @@ fail:
 
 static int _wrap_Camera2D_target_get(lua_State* L) {
   int SWIG_arg = 0;
-  Camera2D *arg1 = (Camera2D *) 0 ;
+  struct Camera2D *arg1 = (struct Camera2D *) 0 ;
   Vector2 *result = 0 ;
   
   SWIG_check_num_args("Camera2D::target",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::target",1,"Camera2D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::target",1,"struct Camera2D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera2D,0))){
     SWIG_fail_ptr("Camera2D_target_get",1,SWIGTYPE_p_Camera2D);
@@ -7252,11 +7256,11 @@ fail:
 
 static int _wrap_Camera2D_rotation_set(lua_State* L) {
   int SWIG_arg = 0;
-  Camera2D *arg1 = (Camera2D *) 0 ;
+  struct Camera2D *arg1 = (struct Camera2D *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Camera2D::rotation",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::rotation",1,"Camera2D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::rotation",1,"struct Camera2D *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Camera2D::rotation",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera2D,0))){
@@ -7278,11 +7282,11 @@ fail:
 
 static int _wrap_Camera2D_rotation_get(lua_State* L) {
   int SWIG_arg = 0;
-  Camera2D *arg1 = (Camera2D *) 0 ;
+  struct Camera2D *arg1 = (struct Camera2D *) 0 ;
   float result;
   
   SWIG_check_num_args("Camera2D::rotation",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::rotation",1,"Camera2D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::rotation",1,"struct Camera2D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera2D,0))){
     SWIG_fail_ptr("Camera2D_rotation_get",1,SWIGTYPE_p_Camera2D);
@@ -7302,11 +7306,11 @@ fail:
 
 static int _wrap_Camera2D_zoom_set(lua_State* L) {
   int SWIG_arg = 0;
-  Camera2D *arg1 = (Camera2D *) 0 ;
+  struct Camera2D *arg1 = (struct Camera2D *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("Camera2D::zoom",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::zoom",1,"Camera2D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::zoom",1,"struct Camera2D *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Camera2D::zoom",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera2D,0))){
@@ -7328,11 +7332,11 @@ fail:
 
 static int _wrap_Camera2D_zoom_get(lua_State* L) {
   int SWIG_arg = 0;
-  Camera2D *arg1 = (Camera2D *) 0 ;
+  struct Camera2D *arg1 = (struct Camera2D *) 0 ;
   float result;
   
   SWIG_check_num_args("Camera2D::zoom",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::zoom",1,"Camera2D *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Camera2D::zoom",1,"struct Camera2D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Camera2D,0))){
     SWIG_fail_ptr("Camera2D_zoom_get",1,SWIGTYPE_p_Camera2D);
@@ -7352,10 +7356,10 @@ fail:
 
 static int _wrap_new_Camera2D(lua_State* L) {
   int SWIG_arg = 0;
-  Camera2D *result = 0 ;
+  struct Camera2D *result = 0 ;
   
   SWIG_check_num_args("Camera2D::Camera2D",0,0)
-  result = (Camera2D *)new Camera2D();
+  result = (struct Camera2D *)calloc(1, sizeof(struct Camera2D));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Camera2D,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -7368,8 +7372,8 @@ fail:
 
 
 static void swig_delete_Camera2D(void *obj) {
-Camera2D *arg1 = (Camera2D *) obj;
-delete arg1;
+struct Camera2D *arg1 = (struct Camera2D *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Camera2D(lua_State *L) {
     assert(lua_istable(L,1));
@@ -7420,11 +7424,11 @@ static swig_lua_class _wrap_class_Camera2D = { "Camera2D", "Camera2D", &SWIGTYPE
 
 static int _wrap_Mesh_vertexCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Mesh::vertexCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vertexCount",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vertexCount",1,"struct Mesh *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Mesh::vertexCount",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7446,11 +7450,11 @@ fail:
 
 static int _wrap_Mesh_vertexCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   int result;
   
   SWIG_check_num_args("Mesh::vertexCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vertexCount",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vertexCount",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_vertexCount_get",1,SWIGTYPE_p_Mesh);
@@ -7470,11 +7474,11 @@ fail:
 
 static int _wrap_Mesh_triangleCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Mesh::triangleCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::triangleCount",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::triangleCount",1,"struct Mesh *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Mesh::triangleCount",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7496,11 +7500,11 @@ fail:
 
 static int _wrap_Mesh_triangleCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   int result;
   
   SWIG_check_num_args("Mesh::triangleCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::triangleCount",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::triangleCount",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_triangleCount_get",1,SWIGTYPE_p_Mesh);
@@ -7520,11 +7524,11 @@ fail:
 
 static int _wrap_Mesh_vertices_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *arg2 = (float *) 0 ;
   
   SWIG_check_num_args("Mesh::vertices",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vertices",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vertices",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::vertices",2,"float *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7550,11 +7554,11 @@ fail:
 
 static int _wrap_Mesh_vertices_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("Mesh::vertices",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vertices",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vertices",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_vertices_get",1,SWIGTYPE_p_Mesh);
@@ -7574,11 +7578,11 @@ fail:
 
 static int _wrap_Mesh_texcoords_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *arg2 = (float *) 0 ;
   
   SWIG_check_num_args("Mesh::texcoords",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::texcoords",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::texcoords",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::texcoords",2,"float *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7604,11 +7608,11 @@ fail:
 
 static int _wrap_Mesh_texcoords_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("Mesh::texcoords",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::texcoords",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::texcoords",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_texcoords_get",1,SWIGTYPE_p_Mesh);
@@ -7628,11 +7632,11 @@ fail:
 
 static int _wrap_Mesh_texcoords2_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *arg2 = (float *) 0 ;
   
   SWIG_check_num_args("Mesh::texcoords2",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::texcoords2",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::texcoords2",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::texcoords2",2,"float *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7658,11 +7662,11 @@ fail:
 
 static int _wrap_Mesh_texcoords2_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("Mesh::texcoords2",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::texcoords2",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::texcoords2",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_texcoords2_get",1,SWIGTYPE_p_Mesh);
@@ -7682,11 +7686,11 @@ fail:
 
 static int _wrap_Mesh_normals_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *arg2 = (float *) 0 ;
   
   SWIG_check_num_args("Mesh::normals",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::normals",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::normals",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::normals",2,"float *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7712,11 +7716,11 @@ fail:
 
 static int _wrap_Mesh_normals_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("Mesh::normals",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::normals",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::normals",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_normals_get",1,SWIGTYPE_p_Mesh);
@@ -7736,11 +7740,11 @@ fail:
 
 static int _wrap_Mesh_tangents_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *arg2 = (float *) 0 ;
   
   SWIG_check_num_args("Mesh::tangents",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::tangents",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::tangents",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::tangents",2,"float *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7766,11 +7770,11 @@ fail:
 
 static int _wrap_Mesh_tangents_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("Mesh::tangents",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::tangents",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::tangents",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_tangents_get",1,SWIGTYPE_p_Mesh);
@@ -7790,11 +7794,11 @@ fail:
 
 static int _wrap_Mesh_colors_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   unsigned char *arg2 = (unsigned char *) 0 ;
   
   SWIG_check_num_args("Mesh::colors",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::colors",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::colors",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::colors",2,"unsigned char *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7820,11 +7824,11 @@ fail:
 
 static int _wrap_Mesh_colors_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   unsigned char *result = 0 ;
   
   SWIG_check_num_args("Mesh::colors",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::colors",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::colors",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_colors_get",1,SWIGTYPE_p_Mesh);
@@ -7844,11 +7848,11 @@ fail:
 
 static int _wrap_Mesh_indices_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   unsigned short *arg2 = (unsigned short *) 0 ;
   
   SWIG_check_num_args("Mesh::indices",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::indices",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::indices",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::indices",2,"unsigned short *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7874,11 +7878,11 @@ fail:
 
 static int _wrap_Mesh_indices_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   unsigned short *result = 0 ;
   
   SWIG_check_num_args("Mesh::indices",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::indices",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::indices",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_indices_get",1,SWIGTYPE_p_Mesh);
@@ -7898,11 +7902,11 @@ fail:
 
 static int _wrap_Mesh_animVertices_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *arg2 = (float *) 0 ;
   
   SWIG_check_num_args("Mesh::animVertices",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::animVertices",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::animVertices",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::animVertices",2,"float *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7928,11 +7932,11 @@ fail:
 
 static int _wrap_Mesh_animVertices_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("Mesh::animVertices",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::animVertices",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::animVertices",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_animVertices_get",1,SWIGTYPE_p_Mesh);
@@ -7952,11 +7956,11 @@ fail:
 
 static int _wrap_Mesh_animNormals_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *arg2 = (float *) 0 ;
   
   SWIG_check_num_args("Mesh::animNormals",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::animNormals",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::animNormals",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::animNormals",2,"float *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -7982,11 +7986,11 @@ fail:
 
 static int _wrap_Mesh_animNormals_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("Mesh::animNormals",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::animNormals",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::animNormals",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_animNormals_get",1,SWIGTYPE_p_Mesh);
@@ -8006,11 +8010,11 @@ fail:
 
 static int _wrap_Mesh_boneIds_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   unsigned char *arg2 = (unsigned char *) 0 ;
   
   SWIG_check_num_args("Mesh::boneIds",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::boneIds",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::boneIds",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::boneIds",2,"unsigned char *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -8036,11 +8040,11 @@ fail:
 
 static int _wrap_Mesh_boneIds_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   unsigned char *result = 0 ;
   
   SWIG_check_num_args("Mesh::boneIds",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::boneIds",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::boneIds",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_boneIds_get",1,SWIGTYPE_p_Mesh);
@@ -8060,11 +8064,11 @@ fail:
 
 static int _wrap_Mesh_boneWeights_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *arg2 = (float *) 0 ;
   
   SWIG_check_num_args("Mesh::boneWeights",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::boneWeights",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::boneWeights",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::boneWeights",2,"float *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -8090,11 +8094,11 @@ fail:
 
 static int _wrap_Mesh_boneWeights_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("Mesh::boneWeights",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::boneWeights",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::boneWeights",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_boneWeights_get",1,SWIGTYPE_p_Mesh);
@@ -8114,11 +8118,11 @@ fail:
 
 static int _wrap_Mesh_vaoId_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("Mesh::vaoId",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vaoId",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vaoId",1,"struct Mesh *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Mesh::vaoId",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -8141,11 +8145,11 @@ fail:
 
 static int _wrap_Mesh_vaoId_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("Mesh::vaoId",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vaoId",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vaoId",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_vaoId_get",1,SWIGTYPE_p_Mesh);
@@ -8165,11 +8169,11 @@ fail:
 
 static int _wrap_Mesh_vboId_set(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   unsigned int *arg2 = (unsigned int *) 0 ;
   
   SWIG_check_num_args("Mesh::vboId",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vboId",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vboId",1,"struct Mesh *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Mesh::vboId",2,"unsigned int *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
@@ -8195,11 +8199,11 @@ fail:
 
 static int _wrap_Mesh_vboId_get(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *arg1 = (Mesh *) 0 ;
+  struct Mesh *arg1 = (struct Mesh *) 0 ;
   unsigned int *result = 0 ;
   
   SWIG_check_num_args("Mesh::vboId",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vboId",1,"Mesh *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mesh::vboId",1,"struct Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mesh,0))){
     SWIG_fail_ptr("Mesh_vboId_get",1,SWIGTYPE_p_Mesh);
@@ -8219,10 +8223,10 @@ fail:
 
 static int _wrap_new_Mesh(lua_State* L) {
   int SWIG_arg = 0;
-  Mesh *result = 0 ;
+  struct Mesh *result = 0 ;
   
   SWIG_check_num_args("Mesh::Mesh",0,0)
-  result = (Mesh *)new Mesh();
+  result = (struct Mesh *)calloc(1, sizeof(struct Mesh));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Mesh,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -8235,8 +8239,8 @@ fail:
 
 
 static void swig_delete_Mesh(void *obj) {
-Mesh *arg1 = (Mesh *) obj;
-delete arg1;
+struct Mesh *arg1 = (struct Mesh *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Mesh(lua_State *L) {
     assert(lua_istable(L,1));
@@ -8298,11 +8302,11 @@ static swig_lua_class _wrap_class_Mesh = { "Mesh", "Mesh", &SWIGTYPE_p_Mesh,_pro
 
 static int _wrap_Shader_id_set(lua_State* L) {
   int SWIG_arg = 0;
-  Shader *arg1 = (Shader *) 0 ;
+  struct Shader *arg1 = (struct Shader *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("Shader::id",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Shader::id",1,"Shader *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Shader::id",1,"struct Shader *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Shader::id",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Shader,0))){
@@ -8325,11 +8329,11 @@ fail:
 
 static int _wrap_Shader_id_get(lua_State* L) {
   int SWIG_arg = 0;
-  Shader *arg1 = (Shader *) 0 ;
+  struct Shader *arg1 = (struct Shader *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("Shader::id",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Shader::id",1,"Shader *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Shader::id",1,"struct Shader *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Shader,0))){
     SWIG_fail_ptr("Shader_id_get",1,SWIGTYPE_p_Shader);
@@ -8349,11 +8353,11 @@ fail:
 
 static int _wrap_Shader_locs_set(lua_State* L) {
   int SWIG_arg = 0;
-  Shader *arg1 = (Shader *) 0 ;
+  struct Shader *arg1 = (struct Shader *) 0 ;
   int *arg2 = (int *) 0 ;
   
   SWIG_check_num_args("Shader::locs",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Shader::locs",1,"Shader *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Shader::locs",1,"struct Shader *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Shader::locs",2,"int *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Shader,0))){
@@ -8379,11 +8383,11 @@ fail:
 
 static int _wrap_Shader_locs_get(lua_State* L) {
   int SWIG_arg = 0;
-  Shader *arg1 = (Shader *) 0 ;
+  struct Shader *arg1 = (struct Shader *) 0 ;
   int *result = 0 ;
   
   SWIG_check_num_args("Shader::locs",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Shader::locs",1,"Shader *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Shader::locs",1,"struct Shader *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Shader,0))){
     SWIG_fail_ptr("Shader_locs_get",1,SWIGTYPE_p_Shader);
@@ -8403,10 +8407,10 @@ fail:
 
 static int _wrap_new_Shader(lua_State* L) {
   int SWIG_arg = 0;
-  Shader *result = 0 ;
+  struct Shader *result = 0 ;
   
   SWIG_check_num_args("Shader::Shader",0,0)
-  result = (Shader *)new Shader();
+  result = (struct Shader *)calloc(1, sizeof(struct Shader));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Shader,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -8419,8 +8423,8 @@ fail:
 
 
 static void swig_delete_Shader(void *obj) {
-Shader *arg1 = (Shader *) obj;
-delete arg1;
+struct Shader *arg1 = (struct Shader *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Shader(lua_State *L) {
     assert(lua_istable(L,1));
@@ -8469,11 +8473,11 @@ static swig_lua_class _wrap_class_Shader = { "Shader", "Shader", &SWIGTYPE_p_Sha
 
 static int _wrap_MaterialMap_texture_set(lua_State* L) {
   int SWIG_arg = 0;
-  MaterialMap *arg1 = (MaterialMap *) 0 ;
+  struct MaterialMap *arg1 = (struct MaterialMap *) 0 ;
   Texture2D *arg2 = (Texture2D *) 0 ;
   
   SWIG_check_num_args("MaterialMap::texture",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::texture",1,"MaterialMap *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::texture",1,"struct MaterialMap *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("MaterialMap::texture",2,"Texture2D *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_MaterialMap,0))){
@@ -8499,11 +8503,11 @@ fail:
 
 static int _wrap_MaterialMap_texture_get(lua_State* L) {
   int SWIG_arg = 0;
-  MaterialMap *arg1 = (MaterialMap *) 0 ;
+  struct MaterialMap *arg1 = (struct MaterialMap *) 0 ;
   Texture2D *result = 0 ;
   
   SWIG_check_num_args("MaterialMap::texture",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::texture",1,"MaterialMap *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::texture",1,"struct MaterialMap *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_MaterialMap,0))){
     SWIG_fail_ptr("MaterialMap_texture_get",1,SWIGTYPE_p_MaterialMap);
@@ -8523,11 +8527,11 @@ fail:
 
 static int _wrap_MaterialMap_color_set(lua_State* L) {
   int SWIG_arg = 0;
-  MaterialMap *arg1 = (MaterialMap *) 0 ;
+  struct MaterialMap *arg1 = (struct MaterialMap *) 0 ;
   Color *arg2 = (Color *) 0 ;
   
   SWIG_check_num_args("MaterialMap::color",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::color",1,"MaterialMap *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::color",1,"struct MaterialMap *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("MaterialMap::color",2,"Color *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_MaterialMap,0))){
@@ -8553,11 +8557,11 @@ fail:
 
 static int _wrap_MaterialMap_color_get(lua_State* L) {
   int SWIG_arg = 0;
-  MaterialMap *arg1 = (MaterialMap *) 0 ;
+  struct MaterialMap *arg1 = (struct MaterialMap *) 0 ;
   Color *result = 0 ;
   
   SWIG_check_num_args("MaterialMap::color",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::color",1,"MaterialMap *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::color",1,"struct MaterialMap *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_MaterialMap,0))){
     SWIG_fail_ptr("MaterialMap_color_get",1,SWIGTYPE_p_MaterialMap);
@@ -8577,11 +8581,11 @@ fail:
 
 static int _wrap_MaterialMap_value_set(lua_State* L) {
   int SWIG_arg = 0;
-  MaterialMap *arg1 = (MaterialMap *) 0 ;
+  struct MaterialMap *arg1 = (struct MaterialMap *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("MaterialMap::value",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::value",1,"MaterialMap *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::value",1,"struct MaterialMap *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("MaterialMap::value",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_MaterialMap,0))){
@@ -8603,11 +8607,11 @@ fail:
 
 static int _wrap_MaterialMap_value_get(lua_State* L) {
   int SWIG_arg = 0;
-  MaterialMap *arg1 = (MaterialMap *) 0 ;
+  struct MaterialMap *arg1 = (struct MaterialMap *) 0 ;
   float result;
   
   SWIG_check_num_args("MaterialMap::value",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::value",1,"MaterialMap *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("MaterialMap::value",1,"struct MaterialMap *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_MaterialMap,0))){
     SWIG_fail_ptr("MaterialMap_value_get",1,SWIGTYPE_p_MaterialMap);
@@ -8627,10 +8631,10 @@ fail:
 
 static int _wrap_new_MaterialMap(lua_State* L) {
   int SWIG_arg = 0;
-  MaterialMap *result = 0 ;
+  struct MaterialMap *result = 0 ;
   
   SWIG_check_num_args("MaterialMap::MaterialMap",0,0)
-  result = (MaterialMap *)new MaterialMap();
+  result = (struct MaterialMap *)calloc(1, sizeof(struct MaterialMap));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_MaterialMap,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -8643,8 +8647,8 @@ fail:
 
 
 static void swig_delete_MaterialMap(void *obj) {
-MaterialMap *arg1 = (MaterialMap *) obj;
-delete arg1;
+struct MaterialMap *arg1 = (struct MaterialMap *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_MaterialMap(lua_State *L) {
     assert(lua_istable(L,1));
@@ -8694,11 +8698,11 @@ static swig_lua_class _wrap_class_MaterialMap = { "MaterialMap", "MaterialMap", 
 
 static int _wrap_Material_shader_set(lua_State* L) {
   int SWIG_arg = 0;
-  Material *arg1 = (Material *) 0 ;
+  struct Material *arg1 = (struct Material *) 0 ;
   Shader *arg2 = (Shader *) 0 ;
   
   SWIG_check_num_args("Material::shader",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::shader",1,"Material *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::shader",1,"struct Material *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Material::shader",2,"Shader *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Material,0))){
@@ -8724,11 +8728,11 @@ fail:
 
 static int _wrap_Material_shader_get(lua_State* L) {
   int SWIG_arg = 0;
-  Material *arg1 = (Material *) 0 ;
+  struct Material *arg1 = (struct Material *) 0 ;
   Shader *result = 0 ;
   
   SWIG_check_num_args("Material::shader",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::shader",1,"Material *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::shader",1,"struct Material *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Material,0))){
     SWIG_fail_ptr("Material_shader_get",1,SWIGTYPE_p_Material);
@@ -8748,11 +8752,11 @@ fail:
 
 static int _wrap_Material_maps_set(lua_State* L) {
   int SWIG_arg = 0;
-  Material *arg1 = (Material *) 0 ;
+  struct Material *arg1 = (struct Material *) 0 ;
   MaterialMap *arg2 = (MaterialMap *) 0 ;
   
   SWIG_check_num_args("Material::maps",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::maps",1,"Material *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::maps",1,"struct Material *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Material::maps",2,"MaterialMap *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Material,0))){
@@ -8778,11 +8782,11 @@ fail:
 
 static int _wrap_Material_maps_get(lua_State* L) {
   int SWIG_arg = 0;
-  Material *arg1 = (Material *) 0 ;
+  struct Material *arg1 = (struct Material *) 0 ;
   MaterialMap *result = 0 ;
   
   SWIG_check_num_args("Material::maps",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::maps",1,"Material *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::maps",1,"struct Material *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Material,0))){
     SWIG_fail_ptr("Material_maps_get",1,SWIGTYPE_p_Material);
@@ -8802,11 +8806,11 @@ fail:
 
 static int _wrap_Material_params_set(lua_State* L) {
   int SWIG_arg = 0;
-  Material *arg1 = (Material *) 0 ;
+  struct Material *arg1 = (struct Material *) 0 ;
   float *arg2 ;
   
   SWIG_check_num_args("Material::params",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::params",1,"Material *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::params",1,"struct Material *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Material::params",2,"float [4]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Material,0))){
@@ -8836,11 +8840,11 @@ fail:
 
 static int _wrap_Material_params_get(lua_State* L) {
   int SWIG_arg = 0;
-  Material *arg1 = (Material *) 0 ;
+  struct Material *arg1 = (struct Material *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("Material::params",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::params",1,"Material *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Material::params",1,"struct Material *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Material,0))){
     SWIG_fail_ptr("Material_params_get",1,SWIGTYPE_p_Material);
@@ -8860,10 +8864,10 @@ fail:
 
 static int _wrap_new_Material(lua_State* L) {
   int SWIG_arg = 0;
-  Material *result = 0 ;
+  struct Material *result = 0 ;
   
   SWIG_check_num_args("Material::Material",0,0)
-  result = (Material *)new Material();
+  result = (struct Material *)calloc(1, sizeof(struct Material));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Material,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -8876,8 +8880,8 @@ fail:
 
 
 static void swig_delete_Material(void *obj) {
-Material *arg1 = (Material *) obj;
-delete arg1;
+struct Material *arg1 = (struct Material *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Material(lua_State *L) {
     assert(lua_istable(L,1));
@@ -8927,11 +8931,11 @@ static swig_lua_class _wrap_class_Material = { "Material", "Material", &SWIGTYPE
 
 static int _wrap_Transform_translation_set(lua_State* L) {
   int SWIG_arg = 0;
-  Transform *arg1 = (Transform *) 0 ;
+  struct Transform *arg1 = (struct Transform *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("Transform::translation",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::translation",1,"Transform *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::translation",1,"struct Transform *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Transform::translation",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Transform,0))){
@@ -8957,11 +8961,11 @@ fail:
 
 static int _wrap_Transform_translation_get(lua_State* L) {
   int SWIG_arg = 0;
-  Transform *arg1 = (Transform *) 0 ;
+  struct Transform *arg1 = (struct Transform *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("Transform::translation",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::translation",1,"Transform *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::translation",1,"struct Transform *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Transform,0))){
     SWIG_fail_ptr("Transform_translation_get",1,SWIGTYPE_p_Transform);
@@ -8981,11 +8985,11 @@ fail:
 
 static int _wrap_Transform_rotation_set(lua_State* L) {
   int SWIG_arg = 0;
-  Transform *arg1 = (Transform *) 0 ;
+  struct Transform *arg1 = (struct Transform *) 0 ;
   Quaternion *arg2 = (Quaternion *) 0 ;
   
   SWIG_check_num_args("Transform::rotation",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::rotation",1,"Transform *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::rotation",1,"struct Transform *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Transform::rotation",2,"Quaternion *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Transform,0))){
@@ -9011,11 +9015,11 @@ fail:
 
 static int _wrap_Transform_rotation_get(lua_State* L) {
   int SWIG_arg = 0;
-  Transform *arg1 = (Transform *) 0 ;
+  struct Transform *arg1 = (struct Transform *) 0 ;
   Quaternion *result = 0 ;
   
   SWIG_check_num_args("Transform::rotation",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::rotation",1,"Transform *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::rotation",1,"struct Transform *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Transform,0))){
     SWIG_fail_ptr("Transform_rotation_get",1,SWIGTYPE_p_Transform);
@@ -9035,11 +9039,11 @@ fail:
 
 static int _wrap_Transform_scale_set(lua_State* L) {
   int SWIG_arg = 0;
-  Transform *arg1 = (Transform *) 0 ;
+  struct Transform *arg1 = (struct Transform *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("Transform::scale",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::scale",1,"Transform *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::scale",1,"struct Transform *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Transform::scale",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Transform,0))){
@@ -9065,11 +9069,11 @@ fail:
 
 static int _wrap_Transform_scale_get(lua_State* L) {
   int SWIG_arg = 0;
-  Transform *arg1 = (Transform *) 0 ;
+  struct Transform *arg1 = (struct Transform *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("Transform::scale",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::scale",1,"Transform *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Transform::scale",1,"struct Transform *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Transform,0))){
     SWIG_fail_ptr("Transform_scale_get",1,SWIGTYPE_p_Transform);
@@ -9089,10 +9093,10 @@ fail:
 
 static int _wrap_new_Transform(lua_State* L) {
   int SWIG_arg = 0;
-  Transform *result = 0 ;
+  struct Transform *result = 0 ;
   
   SWIG_check_num_args("Transform::Transform",0,0)
-  result = (Transform *)new Transform();
+  result = (struct Transform *)calloc(1, sizeof(struct Transform));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Transform,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -9105,8 +9109,8 @@ fail:
 
 
 static void swig_delete_Transform(void *obj) {
-Transform *arg1 = (Transform *) obj;
-delete arg1;
+struct Transform *arg1 = (struct Transform *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Transform(lua_State *L) {
     assert(lua_istable(L,1));
@@ -9156,11 +9160,11 @@ static swig_lua_class _wrap_class_Transform = { "Transform", "Transform", &SWIGT
 
 static int _wrap_BoneInfo_name_set(lua_State* L) {
   int SWIG_arg = 0;
-  BoneInfo *arg1 = (BoneInfo *) 0 ;
+  struct BoneInfo *arg1 = (struct BoneInfo *) 0 ;
   char *arg2 ;
   
   SWIG_check_num_args("BoneInfo::name",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoneInfo::name",1,"BoneInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoneInfo::name",1,"struct BoneInfo *");
   if(!SWIG_lua_isnilstring(L,2)) SWIG_fail_arg("BoneInfo::name",2,"char [32]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_BoneInfo,0))){
@@ -9189,11 +9193,11 @@ fail:
 
 static int _wrap_BoneInfo_name_get(lua_State* L) {
   int SWIG_arg = 0;
-  BoneInfo *arg1 = (BoneInfo *) 0 ;
+  struct BoneInfo *arg1 = (struct BoneInfo *) 0 ;
   char *result = 0 ;
   
   SWIG_check_num_args("BoneInfo::name",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoneInfo::name",1,"BoneInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoneInfo::name",1,"struct BoneInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_BoneInfo,0))){
     SWIG_fail_ptr("BoneInfo_name_get",1,SWIGTYPE_p_BoneInfo);
@@ -9213,11 +9217,11 @@ fail:
 
 static int _wrap_BoneInfo_parent_set(lua_State* L) {
   int SWIG_arg = 0;
-  BoneInfo *arg1 = (BoneInfo *) 0 ;
+  struct BoneInfo *arg1 = (struct BoneInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("BoneInfo::parent",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoneInfo::parent",1,"BoneInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoneInfo::parent",1,"struct BoneInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("BoneInfo::parent",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_BoneInfo,0))){
@@ -9239,11 +9243,11 @@ fail:
 
 static int _wrap_BoneInfo_parent_get(lua_State* L) {
   int SWIG_arg = 0;
-  BoneInfo *arg1 = (BoneInfo *) 0 ;
+  struct BoneInfo *arg1 = (struct BoneInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("BoneInfo::parent",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoneInfo::parent",1,"BoneInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoneInfo::parent",1,"struct BoneInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_BoneInfo,0))){
     SWIG_fail_ptr("BoneInfo_parent_get",1,SWIGTYPE_p_BoneInfo);
@@ -9263,10 +9267,10 @@ fail:
 
 static int _wrap_new_BoneInfo(lua_State* L) {
   int SWIG_arg = 0;
-  BoneInfo *result = 0 ;
+  struct BoneInfo *result = 0 ;
   
   SWIG_check_num_args("BoneInfo::BoneInfo",0,0)
-  result = (BoneInfo *)new BoneInfo();
+  result = (struct BoneInfo *)calloc(1, sizeof(struct BoneInfo));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_BoneInfo,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -9279,8 +9283,8 @@ fail:
 
 
 static void swig_delete_BoneInfo(void *obj) {
-BoneInfo *arg1 = (BoneInfo *) obj;
-delete arg1;
+struct BoneInfo *arg1 = (struct BoneInfo *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_BoneInfo(lua_State *L) {
     assert(lua_istable(L,1));
@@ -9329,11 +9333,11 @@ static swig_lua_class _wrap_class_BoneInfo = { "BoneInfo", "BoneInfo", &SWIGTYPE
 
 static int _wrap_Model_transform_set(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   Matrix *arg2 = (Matrix *) 0 ;
   
   SWIG_check_num_args("Model::transform",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::transform",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::transform",1,"struct Model *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Model::transform",2,"Matrix *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
@@ -9359,11 +9363,11 @@ fail:
 
 static int _wrap_Model_transform_get(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   Matrix *result = 0 ;
   
   SWIG_check_num_args("Model::transform",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::transform",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::transform",1,"struct Model *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
     SWIG_fail_ptr("Model_transform_get",1,SWIGTYPE_p_Model);
@@ -9383,11 +9387,11 @@ fail:
 
 static int _wrap_Model_meshCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Model::meshCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshCount",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshCount",1,"struct Model *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Model::meshCount",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
@@ -9409,11 +9413,11 @@ fail:
 
 static int _wrap_Model_meshCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   int result;
   
   SWIG_check_num_args("Model::meshCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshCount",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshCount",1,"struct Model *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
     SWIG_fail_ptr("Model_meshCount_get",1,SWIGTYPE_p_Model);
@@ -9433,11 +9437,11 @@ fail:
 
 static int _wrap_Model_materialCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Model::materialCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::materialCount",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::materialCount",1,"struct Model *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Model::materialCount",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
@@ -9459,11 +9463,11 @@ fail:
 
 static int _wrap_Model_materialCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   int result;
   
   SWIG_check_num_args("Model::materialCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::materialCount",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::materialCount",1,"struct Model *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
     SWIG_fail_ptr("Model_materialCount_get",1,SWIGTYPE_p_Model);
@@ -9483,11 +9487,11 @@ fail:
 
 static int _wrap_Model_meshes_set(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   Mesh *arg2 = (Mesh *) 0 ;
   
   SWIG_check_num_args("Model::meshes",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshes",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshes",1,"struct Model *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Model::meshes",2,"Mesh *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
@@ -9513,11 +9517,11 @@ fail:
 
 static int _wrap_Model_meshes_get(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   Mesh *result = 0 ;
   
   SWIG_check_num_args("Model::meshes",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshes",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshes",1,"struct Model *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
     SWIG_fail_ptr("Model_meshes_get",1,SWIGTYPE_p_Model);
@@ -9537,11 +9541,11 @@ fail:
 
 static int _wrap_Model_materials_set(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   Material *arg2 = (Material *) 0 ;
   
   SWIG_check_num_args("Model::materials",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::materials",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::materials",1,"struct Model *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Model::materials",2,"Material *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
@@ -9567,11 +9571,11 @@ fail:
 
 static int _wrap_Model_materials_get(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   Material *result = 0 ;
   
   SWIG_check_num_args("Model::materials",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::materials",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::materials",1,"struct Model *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
     SWIG_fail_ptr("Model_materials_get",1,SWIGTYPE_p_Model);
@@ -9591,11 +9595,11 @@ fail:
 
 static int _wrap_Model_meshMaterial_set(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   int *arg2 = (int *) 0 ;
   
   SWIG_check_num_args("Model::meshMaterial",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshMaterial",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshMaterial",1,"struct Model *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Model::meshMaterial",2,"int *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
@@ -9621,11 +9625,11 @@ fail:
 
 static int _wrap_Model_meshMaterial_get(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   int *result = 0 ;
   
   SWIG_check_num_args("Model::meshMaterial",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshMaterial",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::meshMaterial",1,"struct Model *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
     SWIG_fail_ptr("Model_meshMaterial_get",1,SWIGTYPE_p_Model);
@@ -9645,11 +9649,11 @@ fail:
 
 static int _wrap_Model_boneCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Model::boneCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::boneCount",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::boneCount",1,"struct Model *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Model::boneCount",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
@@ -9671,11 +9675,11 @@ fail:
 
 static int _wrap_Model_boneCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   int result;
   
   SWIG_check_num_args("Model::boneCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::boneCount",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::boneCount",1,"struct Model *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
     SWIG_fail_ptr("Model_boneCount_get",1,SWIGTYPE_p_Model);
@@ -9695,11 +9699,11 @@ fail:
 
 static int _wrap_Model_bones_set(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   BoneInfo *arg2 = (BoneInfo *) 0 ;
   
   SWIG_check_num_args("Model::bones",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::bones",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::bones",1,"struct Model *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Model::bones",2,"BoneInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
@@ -9725,11 +9729,11 @@ fail:
 
 static int _wrap_Model_bones_get(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   BoneInfo *result = 0 ;
   
   SWIG_check_num_args("Model::bones",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::bones",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::bones",1,"struct Model *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
     SWIG_fail_ptr("Model_bones_get",1,SWIGTYPE_p_Model);
@@ -9749,11 +9753,11 @@ fail:
 
 static int _wrap_Model_bindPose_set(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   Transform *arg2 = (Transform *) 0 ;
   
   SWIG_check_num_args("Model::bindPose",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::bindPose",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::bindPose",1,"struct Model *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Model::bindPose",2,"Transform *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
@@ -9779,11 +9783,11 @@ fail:
 
 static int _wrap_Model_bindPose_get(lua_State* L) {
   int SWIG_arg = 0;
-  Model *arg1 = (Model *) 0 ;
+  struct Model *arg1 = (struct Model *) 0 ;
   Transform *result = 0 ;
   
   SWIG_check_num_args("Model::bindPose",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::bindPose",1,"Model *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Model::bindPose",1,"struct Model *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Model,0))){
     SWIG_fail_ptr("Model_bindPose_get",1,SWIGTYPE_p_Model);
@@ -9803,10 +9807,10 @@ fail:
 
 static int _wrap_new_Model(lua_State* L) {
   int SWIG_arg = 0;
-  Model *result = 0 ;
+  struct Model *result = 0 ;
   
   SWIG_check_num_args("Model::Model",0,0)
-  result = (Model *)new Model();
+  result = (struct Model *)calloc(1, sizeof(struct Model));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Model,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -9819,8 +9823,8 @@ fail:
 
 
 static void swig_delete_Model(void *obj) {
-Model *arg1 = (Model *) obj;
-delete arg1;
+struct Model *arg1 = (struct Model *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Model(lua_State *L) {
     assert(lua_istable(L,1));
@@ -9876,11 +9880,11 @@ static swig_lua_class _wrap_class_Model = { "Model", "Model", &SWIGTYPE_p_Model,
 
 static int _wrap_ModelAnimation_boneCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  ModelAnimation *arg1 = (ModelAnimation *) 0 ;
+  struct ModelAnimation *arg1 = (struct ModelAnimation *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("ModelAnimation::boneCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::boneCount",1,"ModelAnimation *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::boneCount",1,"struct ModelAnimation *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("ModelAnimation::boneCount",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ModelAnimation,0))){
@@ -9902,11 +9906,11 @@ fail:
 
 static int _wrap_ModelAnimation_boneCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  ModelAnimation *arg1 = (ModelAnimation *) 0 ;
+  struct ModelAnimation *arg1 = (struct ModelAnimation *) 0 ;
   int result;
   
   SWIG_check_num_args("ModelAnimation::boneCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::boneCount",1,"ModelAnimation *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::boneCount",1,"struct ModelAnimation *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ModelAnimation,0))){
     SWIG_fail_ptr("ModelAnimation_boneCount_get",1,SWIGTYPE_p_ModelAnimation);
@@ -9926,11 +9930,11 @@ fail:
 
 static int _wrap_ModelAnimation_frameCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  ModelAnimation *arg1 = (ModelAnimation *) 0 ;
+  struct ModelAnimation *arg1 = (struct ModelAnimation *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("ModelAnimation::frameCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::frameCount",1,"ModelAnimation *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::frameCount",1,"struct ModelAnimation *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("ModelAnimation::frameCount",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ModelAnimation,0))){
@@ -9952,11 +9956,11 @@ fail:
 
 static int _wrap_ModelAnimation_frameCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  ModelAnimation *arg1 = (ModelAnimation *) 0 ;
+  struct ModelAnimation *arg1 = (struct ModelAnimation *) 0 ;
   int result;
   
   SWIG_check_num_args("ModelAnimation::frameCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::frameCount",1,"ModelAnimation *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::frameCount",1,"struct ModelAnimation *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ModelAnimation,0))){
     SWIG_fail_ptr("ModelAnimation_frameCount_get",1,SWIGTYPE_p_ModelAnimation);
@@ -9976,11 +9980,11 @@ fail:
 
 static int _wrap_ModelAnimation_bones_set(lua_State* L) {
   int SWIG_arg = 0;
-  ModelAnimation *arg1 = (ModelAnimation *) 0 ;
+  struct ModelAnimation *arg1 = (struct ModelAnimation *) 0 ;
   BoneInfo *arg2 = (BoneInfo *) 0 ;
   
   SWIG_check_num_args("ModelAnimation::bones",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::bones",1,"ModelAnimation *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::bones",1,"struct ModelAnimation *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("ModelAnimation::bones",2,"BoneInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ModelAnimation,0))){
@@ -10006,11 +10010,11 @@ fail:
 
 static int _wrap_ModelAnimation_bones_get(lua_State* L) {
   int SWIG_arg = 0;
-  ModelAnimation *arg1 = (ModelAnimation *) 0 ;
+  struct ModelAnimation *arg1 = (struct ModelAnimation *) 0 ;
   BoneInfo *result = 0 ;
   
   SWIG_check_num_args("ModelAnimation::bones",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::bones",1,"ModelAnimation *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::bones",1,"struct ModelAnimation *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ModelAnimation,0))){
     SWIG_fail_ptr("ModelAnimation_bones_get",1,SWIGTYPE_p_ModelAnimation);
@@ -10030,11 +10034,11 @@ fail:
 
 static int _wrap_ModelAnimation_framePoses_set(lua_State* L) {
   int SWIG_arg = 0;
-  ModelAnimation *arg1 = (ModelAnimation *) 0 ;
+  struct ModelAnimation *arg1 = (struct ModelAnimation *) 0 ;
   Transform **arg2 = (Transform **) 0 ;
   
   SWIG_check_num_args("ModelAnimation::framePoses",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::framePoses",1,"ModelAnimation *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::framePoses",1,"struct ModelAnimation *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("ModelAnimation::framePoses",2,"Transform **");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ModelAnimation,0))){
@@ -10060,11 +10064,11 @@ fail:
 
 static int _wrap_ModelAnimation_framePoses_get(lua_State* L) {
   int SWIG_arg = 0;
-  ModelAnimation *arg1 = (ModelAnimation *) 0 ;
+  struct ModelAnimation *arg1 = (struct ModelAnimation *) 0 ;
   Transform **result = 0 ;
   
   SWIG_check_num_args("ModelAnimation::framePoses",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::framePoses",1,"ModelAnimation *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("ModelAnimation::framePoses",1,"struct ModelAnimation *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_ModelAnimation,0))){
     SWIG_fail_ptr("ModelAnimation_framePoses_get",1,SWIGTYPE_p_ModelAnimation);
@@ -10084,10 +10088,10 @@ fail:
 
 static int _wrap_new_ModelAnimation(lua_State* L) {
   int SWIG_arg = 0;
-  ModelAnimation *result = 0 ;
+  struct ModelAnimation *result = 0 ;
   
   SWIG_check_num_args("ModelAnimation::ModelAnimation",0,0)
-  result = (ModelAnimation *)new ModelAnimation();
+  result = (struct ModelAnimation *)calloc(1, sizeof(struct ModelAnimation));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_ModelAnimation,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -10100,8 +10104,8 @@ fail:
 
 
 static void swig_delete_ModelAnimation(void *obj) {
-ModelAnimation *arg1 = (ModelAnimation *) obj;
-delete arg1;
+struct ModelAnimation *arg1 = (struct ModelAnimation *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_ModelAnimation(lua_State *L) {
     assert(lua_istable(L,1));
@@ -10152,11 +10156,11 @@ static swig_lua_class _wrap_class_ModelAnimation = { "ModelAnimation", "ModelAni
 
 static int _wrap_Ray_position_set(lua_State* L) {
   int SWIG_arg = 0;
-  Ray *arg1 = (Ray *) 0 ;
+  struct Ray *arg1 = (struct Ray *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("Ray::position",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ray::position",1,"Ray *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ray::position",1,"struct Ray *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Ray::position",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ray,0))){
@@ -10182,11 +10186,11 @@ fail:
 
 static int _wrap_Ray_position_get(lua_State* L) {
   int SWIG_arg = 0;
-  Ray *arg1 = (Ray *) 0 ;
+  struct Ray *arg1 = (struct Ray *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("Ray::position",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ray::position",1,"Ray *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ray::position",1,"struct Ray *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ray,0))){
     SWIG_fail_ptr("Ray_position_get",1,SWIGTYPE_p_Ray);
@@ -10206,11 +10210,11 @@ fail:
 
 static int _wrap_Ray_direction_set(lua_State* L) {
   int SWIG_arg = 0;
-  Ray *arg1 = (Ray *) 0 ;
+  struct Ray *arg1 = (struct Ray *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("Ray::direction",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ray::direction",1,"Ray *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ray::direction",1,"struct Ray *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Ray::direction",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ray,0))){
@@ -10236,11 +10240,11 @@ fail:
 
 static int _wrap_Ray_direction_get(lua_State* L) {
   int SWIG_arg = 0;
-  Ray *arg1 = (Ray *) 0 ;
+  struct Ray *arg1 = (struct Ray *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("Ray::direction",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ray::direction",1,"Ray *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ray::direction",1,"struct Ray *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ray,0))){
     SWIG_fail_ptr("Ray_direction_get",1,SWIGTYPE_p_Ray);
@@ -10260,10 +10264,10 @@ fail:
 
 static int _wrap_new_Ray(lua_State* L) {
   int SWIG_arg = 0;
-  Ray *result = 0 ;
+  struct Ray *result = 0 ;
   
   SWIG_check_num_args("Ray::Ray",0,0)
-  result = (Ray *)new Ray();
+  result = (struct Ray *)calloc(1, sizeof(struct Ray));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Ray,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -10276,8 +10280,8 @@ fail:
 
 
 static void swig_delete_Ray(void *obj) {
-Ray *arg1 = (Ray *) obj;
-delete arg1;
+struct Ray *arg1 = (struct Ray *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Ray(lua_State *L) {
     assert(lua_istable(L,1));
@@ -10326,11 +10330,11 @@ static swig_lua_class _wrap_class_Ray = { "Ray", "Ray", &SWIGTYPE_p_Ray,_proxy__
 
 static int _wrap_RayCollision_hit_set(lua_State* L) {
   int SWIG_arg = 0;
-  RayCollision *arg1 = (RayCollision *) 0 ;
+  struct RayCollision *arg1 = (struct RayCollision *) 0 ;
   bool arg2 ;
   
   SWIG_check_num_args("RayCollision::hit",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::hit",1,"RayCollision *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::hit",1,"struct RayCollision *");
   if(!lua_isboolean(L,2)) SWIG_fail_arg("RayCollision::hit",2,"bool");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RayCollision,0))){
@@ -10352,11 +10356,11 @@ fail:
 
 static int _wrap_RayCollision_hit_get(lua_State* L) {
   int SWIG_arg = 0;
-  RayCollision *arg1 = (RayCollision *) 0 ;
+  struct RayCollision *arg1 = (struct RayCollision *) 0 ;
   bool result;
   
   SWIG_check_num_args("RayCollision::hit",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::hit",1,"RayCollision *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::hit",1,"struct RayCollision *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RayCollision,0))){
     SWIG_fail_ptr("RayCollision_hit_get",1,SWIGTYPE_p_RayCollision);
@@ -10376,11 +10380,11 @@ fail:
 
 static int _wrap_RayCollision_distance_set(lua_State* L) {
   int SWIG_arg = 0;
-  RayCollision *arg1 = (RayCollision *) 0 ;
+  struct RayCollision *arg1 = (struct RayCollision *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("RayCollision::distance",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::distance",1,"RayCollision *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::distance",1,"struct RayCollision *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("RayCollision::distance",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RayCollision,0))){
@@ -10402,11 +10406,11 @@ fail:
 
 static int _wrap_RayCollision_distance_get(lua_State* L) {
   int SWIG_arg = 0;
-  RayCollision *arg1 = (RayCollision *) 0 ;
+  struct RayCollision *arg1 = (struct RayCollision *) 0 ;
   float result;
   
   SWIG_check_num_args("RayCollision::distance",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::distance",1,"RayCollision *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::distance",1,"struct RayCollision *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RayCollision,0))){
     SWIG_fail_ptr("RayCollision_distance_get",1,SWIGTYPE_p_RayCollision);
@@ -10426,11 +10430,11 @@ fail:
 
 static int _wrap_RayCollision_point_set(lua_State* L) {
   int SWIG_arg = 0;
-  RayCollision *arg1 = (RayCollision *) 0 ;
+  struct RayCollision *arg1 = (struct RayCollision *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("RayCollision::point",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::point",1,"RayCollision *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::point",1,"struct RayCollision *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("RayCollision::point",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RayCollision,0))){
@@ -10456,11 +10460,11 @@ fail:
 
 static int _wrap_RayCollision_point_get(lua_State* L) {
   int SWIG_arg = 0;
-  RayCollision *arg1 = (RayCollision *) 0 ;
+  struct RayCollision *arg1 = (struct RayCollision *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("RayCollision::point",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::point",1,"RayCollision *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::point",1,"struct RayCollision *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RayCollision,0))){
     SWIG_fail_ptr("RayCollision_point_get",1,SWIGTYPE_p_RayCollision);
@@ -10480,11 +10484,11 @@ fail:
 
 static int _wrap_RayCollision_normal_set(lua_State* L) {
   int SWIG_arg = 0;
-  RayCollision *arg1 = (RayCollision *) 0 ;
+  struct RayCollision *arg1 = (struct RayCollision *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("RayCollision::normal",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::normal",1,"RayCollision *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::normal",1,"struct RayCollision *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("RayCollision::normal",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RayCollision,0))){
@@ -10510,11 +10514,11 @@ fail:
 
 static int _wrap_RayCollision_normal_get(lua_State* L) {
   int SWIG_arg = 0;
-  RayCollision *arg1 = (RayCollision *) 0 ;
+  struct RayCollision *arg1 = (struct RayCollision *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("RayCollision::normal",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::normal",1,"RayCollision *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("RayCollision::normal",1,"struct RayCollision *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_RayCollision,0))){
     SWIG_fail_ptr("RayCollision_normal_get",1,SWIGTYPE_p_RayCollision);
@@ -10534,10 +10538,10 @@ fail:
 
 static int _wrap_new_RayCollision(lua_State* L) {
   int SWIG_arg = 0;
-  RayCollision *result = 0 ;
+  struct RayCollision *result = 0 ;
   
   SWIG_check_num_args("RayCollision::RayCollision",0,0)
-  result = (RayCollision *)new RayCollision();
+  result = (struct RayCollision *)calloc(1, sizeof(struct RayCollision));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_RayCollision,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -10550,8 +10554,8 @@ fail:
 
 
 static void swig_delete_RayCollision(void *obj) {
-RayCollision *arg1 = (RayCollision *) obj;
-delete arg1;
+struct RayCollision *arg1 = (struct RayCollision *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_RayCollision(lua_State *L) {
     assert(lua_istable(L,1));
@@ -10602,11 +10606,11 @@ static swig_lua_class _wrap_class_RayCollision = { "RayCollision", "RayCollision
 
 static int _wrap_BoundingBox_min_set(lua_State* L) {
   int SWIG_arg = 0;
-  BoundingBox *arg1 = (BoundingBox *) 0 ;
+  struct BoundingBox *arg1 = (struct BoundingBox *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("BoundingBox::min",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoundingBox::min",1,"BoundingBox *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoundingBox::min",1,"struct BoundingBox *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("BoundingBox::min",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_BoundingBox,0))){
@@ -10632,11 +10636,11 @@ fail:
 
 static int _wrap_BoundingBox_min_get(lua_State* L) {
   int SWIG_arg = 0;
-  BoundingBox *arg1 = (BoundingBox *) 0 ;
+  struct BoundingBox *arg1 = (struct BoundingBox *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("BoundingBox::min",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoundingBox::min",1,"BoundingBox *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoundingBox::min",1,"struct BoundingBox *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_BoundingBox,0))){
     SWIG_fail_ptr("BoundingBox_min_get",1,SWIGTYPE_p_BoundingBox);
@@ -10656,11 +10660,11 @@ fail:
 
 static int _wrap_BoundingBox_max_set(lua_State* L) {
   int SWIG_arg = 0;
-  BoundingBox *arg1 = (BoundingBox *) 0 ;
+  struct BoundingBox *arg1 = (struct BoundingBox *) 0 ;
   Vector3 *arg2 = (Vector3 *) 0 ;
   
   SWIG_check_num_args("BoundingBox::max",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoundingBox::max",1,"BoundingBox *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoundingBox::max",1,"struct BoundingBox *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("BoundingBox::max",2,"Vector3 *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_BoundingBox,0))){
@@ -10686,11 +10690,11 @@ fail:
 
 static int _wrap_BoundingBox_max_get(lua_State* L) {
   int SWIG_arg = 0;
-  BoundingBox *arg1 = (BoundingBox *) 0 ;
+  struct BoundingBox *arg1 = (struct BoundingBox *) 0 ;
   Vector3 *result = 0 ;
   
   SWIG_check_num_args("BoundingBox::max",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoundingBox::max",1,"BoundingBox *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("BoundingBox::max",1,"struct BoundingBox *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_BoundingBox,0))){
     SWIG_fail_ptr("BoundingBox_max_get",1,SWIGTYPE_p_BoundingBox);
@@ -10710,10 +10714,10 @@ fail:
 
 static int _wrap_new_BoundingBox(lua_State* L) {
   int SWIG_arg = 0;
-  BoundingBox *result = 0 ;
+  struct BoundingBox *result = 0 ;
   
   SWIG_check_num_args("BoundingBox::BoundingBox",0,0)
-  result = (BoundingBox *)new BoundingBox();
+  result = (struct BoundingBox *)calloc(1, sizeof(struct BoundingBox));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_BoundingBox,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -10726,8 +10730,8 @@ fail:
 
 
 static void swig_delete_BoundingBox(void *obj) {
-BoundingBox *arg1 = (BoundingBox *) obj;
-delete arg1;
+struct BoundingBox *arg1 = (struct BoundingBox *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_BoundingBox(lua_State *L) {
     assert(lua_istable(L,1));
@@ -10776,11 +10780,11 @@ static swig_lua_class _wrap_class_BoundingBox = { "BoundingBox", "BoundingBox", 
 
 static int _wrap_Wave_frameCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
+  struct Wave *arg1 = (struct Wave *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("Wave::frameCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::frameCount",1,"Wave *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::frameCount",1,"struct Wave *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Wave::frameCount",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
@@ -10803,11 +10807,11 @@ fail:
 
 static int _wrap_Wave_frameCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
+  struct Wave *arg1 = (struct Wave *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("Wave::frameCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::frameCount",1,"Wave *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::frameCount",1,"struct Wave *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
     SWIG_fail_ptr("Wave_frameCount_get",1,SWIGTYPE_p_Wave);
@@ -10827,11 +10831,11 @@ fail:
 
 static int _wrap_Wave_sampleRate_set(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
+  struct Wave *arg1 = (struct Wave *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("Wave::sampleRate",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::sampleRate",1,"Wave *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::sampleRate",1,"struct Wave *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Wave::sampleRate",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
@@ -10854,11 +10858,11 @@ fail:
 
 static int _wrap_Wave_sampleRate_get(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
+  struct Wave *arg1 = (struct Wave *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("Wave::sampleRate",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::sampleRate",1,"Wave *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::sampleRate",1,"struct Wave *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
     SWIG_fail_ptr("Wave_sampleRate_get",1,SWIGTYPE_p_Wave);
@@ -10878,11 +10882,11 @@ fail:
 
 static int _wrap_Wave_sampleSize_set(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
+  struct Wave *arg1 = (struct Wave *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("Wave::sampleSize",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::sampleSize",1,"Wave *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::sampleSize",1,"struct Wave *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Wave::sampleSize",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
@@ -10905,11 +10909,11 @@ fail:
 
 static int _wrap_Wave_sampleSize_get(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
+  struct Wave *arg1 = (struct Wave *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("Wave::sampleSize",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::sampleSize",1,"Wave *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::sampleSize",1,"struct Wave *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
     SWIG_fail_ptr("Wave_sampleSize_get",1,SWIGTYPE_p_Wave);
@@ -10929,11 +10933,11 @@ fail:
 
 static int _wrap_Wave_channels_set(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
+  struct Wave *arg1 = (struct Wave *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("Wave::channels",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::channels",1,"Wave *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::channels",1,"struct Wave *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Wave::channels",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
@@ -10956,11 +10960,11 @@ fail:
 
 static int _wrap_Wave_channels_get(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
+  struct Wave *arg1 = (struct Wave *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("Wave::channels",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::channels",1,"Wave *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::channels",1,"struct Wave *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
     SWIG_fail_ptr("Wave_channels_get",1,SWIGTYPE_p_Wave);
@@ -10980,11 +10984,11 @@ fail:
 
 static int _wrap_Wave_data_set(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
+  struct Wave *arg1 = (struct Wave *) 0 ;
   void *arg2 = (void *) 0 ;
   
   SWIG_check_num_args("Wave::data",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::data",1,"Wave *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::data",1,"struct Wave *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Wave::data",2,"void *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
@@ -11006,11 +11010,11 @@ fail:
 
 static int _wrap_Wave_data_get(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *arg1 = (Wave *) 0 ;
+  struct Wave *arg1 = (struct Wave *) 0 ;
   void *result = 0 ;
   
   SWIG_check_num_args("Wave::data",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::data",1,"Wave *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Wave::data",1,"struct Wave *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Wave,0))){
     SWIG_fail_ptr("Wave_data_get",1,SWIGTYPE_p_Wave);
@@ -11030,10 +11034,10 @@ fail:
 
 static int _wrap_new_Wave(lua_State* L) {
   int SWIG_arg = 0;
-  Wave *result = 0 ;
+  struct Wave *result = 0 ;
   
   SWIG_check_num_args("Wave::Wave",0,0)
-  result = (Wave *)new Wave();
+  result = (struct Wave *)calloc(1, sizeof(struct Wave));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Wave,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -11046,8 +11050,8 @@ fail:
 
 
 static void swig_delete_Wave(void *obj) {
-Wave *arg1 = (Wave *) obj;
-delete arg1;
+struct Wave *arg1 = (struct Wave *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Wave(lua_State *L) {
     assert(lua_istable(L,1));
@@ -11099,11 +11103,11 @@ static swig_lua_class _wrap_class_Wave = { "Wave", "Wave", &SWIGTYPE_p_Wave,_pro
 
 static int _wrap_AudioStream_buffer_set(lua_State* L) {
   int SWIG_arg = 0;
-  AudioStream *arg1 = (AudioStream *) 0 ;
+  struct AudioStream *arg1 = (struct AudioStream *) 0 ;
   rAudioBuffer *arg2 = (rAudioBuffer *) 0 ;
   
   SWIG_check_num_args("AudioStream::buffer",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::buffer",1,"AudioStream *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::buffer",1,"struct AudioStream *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("AudioStream::buffer",2,"rAudioBuffer *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_AudioStream,0))){
@@ -11129,11 +11133,11 @@ fail:
 
 static int _wrap_AudioStream_buffer_get(lua_State* L) {
   int SWIG_arg = 0;
-  AudioStream *arg1 = (AudioStream *) 0 ;
+  struct AudioStream *arg1 = (struct AudioStream *) 0 ;
   rAudioBuffer *result = 0 ;
   
   SWIG_check_num_args("AudioStream::buffer",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::buffer",1,"AudioStream *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::buffer",1,"struct AudioStream *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_AudioStream,0))){
     SWIG_fail_ptr("AudioStream_buffer_get",1,SWIGTYPE_p_AudioStream);
@@ -11153,11 +11157,11 @@ fail:
 
 static int _wrap_AudioStream_sampleRate_set(lua_State* L) {
   int SWIG_arg = 0;
-  AudioStream *arg1 = (AudioStream *) 0 ;
+  struct AudioStream *arg1 = (struct AudioStream *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("AudioStream::sampleRate",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::sampleRate",1,"AudioStream *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::sampleRate",1,"struct AudioStream *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("AudioStream::sampleRate",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_AudioStream,0))){
@@ -11180,11 +11184,11 @@ fail:
 
 static int _wrap_AudioStream_sampleRate_get(lua_State* L) {
   int SWIG_arg = 0;
-  AudioStream *arg1 = (AudioStream *) 0 ;
+  struct AudioStream *arg1 = (struct AudioStream *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("AudioStream::sampleRate",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::sampleRate",1,"AudioStream *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::sampleRate",1,"struct AudioStream *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_AudioStream,0))){
     SWIG_fail_ptr("AudioStream_sampleRate_get",1,SWIGTYPE_p_AudioStream);
@@ -11204,11 +11208,11 @@ fail:
 
 static int _wrap_AudioStream_sampleSize_set(lua_State* L) {
   int SWIG_arg = 0;
-  AudioStream *arg1 = (AudioStream *) 0 ;
+  struct AudioStream *arg1 = (struct AudioStream *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("AudioStream::sampleSize",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::sampleSize",1,"AudioStream *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::sampleSize",1,"struct AudioStream *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("AudioStream::sampleSize",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_AudioStream,0))){
@@ -11231,11 +11235,11 @@ fail:
 
 static int _wrap_AudioStream_sampleSize_get(lua_State* L) {
   int SWIG_arg = 0;
-  AudioStream *arg1 = (AudioStream *) 0 ;
+  struct AudioStream *arg1 = (struct AudioStream *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("AudioStream::sampleSize",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::sampleSize",1,"AudioStream *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::sampleSize",1,"struct AudioStream *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_AudioStream,0))){
     SWIG_fail_ptr("AudioStream_sampleSize_get",1,SWIGTYPE_p_AudioStream);
@@ -11255,11 +11259,11 @@ fail:
 
 static int _wrap_AudioStream_channels_set(lua_State* L) {
   int SWIG_arg = 0;
-  AudioStream *arg1 = (AudioStream *) 0 ;
+  struct AudioStream *arg1 = (struct AudioStream *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("AudioStream::channels",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::channels",1,"AudioStream *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::channels",1,"struct AudioStream *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("AudioStream::channels",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_AudioStream,0))){
@@ -11282,11 +11286,11 @@ fail:
 
 static int _wrap_AudioStream_channels_get(lua_State* L) {
   int SWIG_arg = 0;
-  AudioStream *arg1 = (AudioStream *) 0 ;
+  struct AudioStream *arg1 = (struct AudioStream *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("AudioStream::channels",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::channels",1,"AudioStream *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("AudioStream::channels",1,"struct AudioStream *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_AudioStream,0))){
     SWIG_fail_ptr("AudioStream_channels_get",1,SWIGTYPE_p_AudioStream);
@@ -11306,10 +11310,10 @@ fail:
 
 static int _wrap_new_AudioStream(lua_State* L) {
   int SWIG_arg = 0;
-  AudioStream *result = 0 ;
+  struct AudioStream *result = 0 ;
   
   SWIG_check_num_args("AudioStream::AudioStream",0,0)
-  result = (AudioStream *)new AudioStream();
+  result = (struct AudioStream *)calloc(1, sizeof(struct AudioStream));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_AudioStream,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -11322,8 +11326,8 @@ fail:
 
 
 static void swig_delete_AudioStream(void *obj) {
-AudioStream *arg1 = (AudioStream *) obj;
-delete arg1;
+struct AudioStream *arg1 = (struct AudioStream *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_AudioStream(lua_State *L) {
     assert(lua_istable(L,1));
@@ -11374,11 +11378,11 @@ static swig_lua_class _wrap_class_AudioStream = { "AudioStream", "AudioStream", 
 
 static int _wrap_Sound_stream_set(lua_State* L) {
   int SWIG_arg = 0;
-  Sound *arg1 = (Sound *) 0 ;
+  struct Sound *arg1 = (struct Sound *) 0 ;
   AudioStream *arg2 = (AudioStream *) 0 ;
   
   SWIG_check_num_args("Sound::stream",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Sound::stream",1,"Sound *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Sound::stream",1,"struct Sound *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Sound::stream",2,"AudioStream *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Sound,0))){
@@ -11404,11 +11408,11 @@ fail:
 
 static int _wrap_Sound_stream_get(lua_State* L) {
   int SWIG_arg = 0;
-  Sound *arg1 = (Sound *) 0 ;
+  struct Sound *arg1 = (struct Sound *) 0 ;
   AudioStream *result = 0 ;
   
   SWIG_check_num_args("Sound::stream",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Sound::stream",1,"Sound *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Sound::stream",1,"struct Sound *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Sound,0))){
     SWIG_fail_ptr("Sound_stream_get",1,SWIGTYPE_p_Sound);
@@ -11428,11 +11432,11 @@ fail:
 
 static int _wrap_Sound_frameCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  Sound *arg1 = (Sound *) 0 ;
+  struct Sound *arg1 = (struct Sound *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("Sound::frameCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Sound::frameCount",1,"Sound *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Sound::frameCount",1,"struct Sound *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Sound::frameCount",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Sound,0))){
@@ -11455,11 +11459,11 @@ fail:
 
 static int _wrap_Sound_frameCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  Sound *arg1 = (Sound *) 0 ;
+  struct Sound *arg1 = (struct Sound *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("Sound::frameCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Sound::frameCount",1,"Sound *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Sound::frameCount",1,"struct Sound *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Sound,0))){
     SWIG_fail_ptr("Sound_frameCount_get",1,SWIGTYPE_p_Sound);
@@ -11479,10 +11483,10 @@ fail:
 
 static int _wrap_new_Sound(lua_State* L) {
   int SWIG_arg = 0;
-  Sound *result = 0 ;
+  struct Sound *result = 0 ;
   
   SWIG_check_num_args("Sound::Sound",0,0)
-  result = (Sound *)new Sound();
+  result = (struct Sound *)calloc(1, sizeof(struct Sound));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Sound,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -11495,8 +11499,8 @@ fail:
 
 
 static void swig_delete_Sound(void *obj) {
-Sound *arg1 = (Sound *) obj;
-delete arg1;
+struct Sound *arg1 = (struct Sound *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Sound(lua_State *L) {
     assert(lua_istable(L,1));
@@ -11545,11 +11549,11 @@ static swig_lua_class _wrap_class_Sound = { "Sound", "Sound", &SWIGTYPE_p_Sound,
 
 static int _wrap_Music_stream_set(lua_State* L) {
   int SWIG_arg = 0;
-  Music *arg1 = (Music *) 0 ;
+  struct Music *arg1 = (struct Music *) 0 ;
   AudioStream *arg2 = (AudioStream *) 0 ;
   
   SWIG_check_num_args("Music::stream",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::stream",1,"Music *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::stream",1,"struct Music *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Music::stream",2,"AudioStream *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Music,0))){
@@ -11575,11 +11579,11 @@ fail:
 
 static int _wrap_Music_stream_get(lua_State* L) {
   int SWIG_arg = 0;
-  Music *arg1 = (Music *) 0 ;
+  struct Music *arg1 = (struct Music *) 0 ;
   AudioStream *result = 0 ;
   
   SWIG_check_num_args("Music::stream",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::stream",1,"Music *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::stream",1,"struct Music *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Music,0))){
     SWIG_fail_ptr("Music_stream_get",1,SWIGTYPE_p_Music);
@@ -11599,11 +11603,11 @@ fail:
 
 static int _wrap_Music_frameCount_set(lua_State* L) {
   int SWIG_arg = 0;
-  Music *arg1 = (Music *) 0 ;
+  struct Music *arg1 = (struct Music *) 0 ;
   unsigned int arg2 ;
   
   SWIG_check_num_args("Music::frameCount",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::frameCount",1,"Music *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::frameCount",1,"struct Music *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Music::frameCount",2,"unsigned int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Music,0))){
@@ -11626,11 +11630,11 @@ fail:
 
 static int _wrap_Music_frameCount_get(lua_State* L) {
   int SWIG_arg = 0;
-  Music *arg1 = (Music *) 0 ;
+  struct Music *arg1 = (struct Music *) 0 ;
   unsigned int result;
   
   SWIG_check_num_args("Music::frameCount",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::frameCount",1,"Music *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::frameCount",1,"struct Music *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Music,0))){
     SWIG_fail_ptr("Music_frameCount_get",1,SWIGTYPE_p_Music);
@@ -11650,11 +11654,11 @@ fail:
 
 static int _wrap_Music_looping_set(lua_State* L) {
   int SWIG_arg = 0;
-  Music *arg1 = (Music *) 0 ;
+  struct Music *arg1 = (struct Music *) 0 ;
   bool arg2 ;
   
   SWIG_check_num_args("Music::looping",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::looping",1,"Music *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::looping",1,"struct Music *");
   if(!lua_isboolean(L,2)) SWIG_fail_arg("Music::looping",2,"bool");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Music,0))){
@@ -11676,11 +11680,11 @@ fail:
 
 static int _wrap_Music_looping_get(lua_State* L) {
   int SWIG_arg = 0;
-  Music *arg1 = (Music *) 0 ;
+  struct Music *arg1 = (struct Music *) 0 ;
   bool result;
   
   SWIG_check_num_args("Music::looping",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::looping",1,"Music *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::looping",1,"struct Music *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Music,0))){
     SWIG_fail_ptr("Music_looping_get",1,SWIGTYPE_p_Music);
@@ -11700,11 +11704,11 @@ fail:
 
 static int _wrap_Music_ctxType_set(lua_State* L) {
   int SWIG_arg = 0;
-  Music *arg1 = (Music *) 0 ;
+  struct Music *arg1 = (struct Music *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("Music::ctxType",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::ctxType",1,"Music *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::ctxType",1,"struct Music *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("Music::ctxType",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Music,0))){
@@ -11726,11 +11730,11 @@ fail:
 
 static int _wrap_Music_ctxType_get(lua_State* L) {
   int SWIG_arg = 0;
-  Music *arg1 = (Music *) 0 ;
+  struct Music *arg1 = (struct Music *) 0 ;
   int result;
   
   SWIG_check_num_args("Music::ctxType",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::ctxType",1,"Music *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::ctxType",1,"struct Music *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Music,0))){
     SWIG_fail_ptr("Music_ctxType_get",1,SWIGTYPE_p_Music);
@@ -11750,11 +11754,11 @@ fail:
 
 static int _wrap_Music_ctxData_set(lua_State* L) {
   int SWIG_arg = 0;
-  Music *arg1 = (Music *) 0 ;
+  struct Music *arg1 = (struct Music *) 0 ;
   void *arg2 = (void *) 0 ;
   
   SWIG_check_num_args("Music::ctxData",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::ctxData",1,"Music *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::ctxData",1,"struct Music *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Music::ctxData",2,"void *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Music,0))){
@@ -11776,11 +11780,11 @@ fail:
 
 static int _wrap_Music_ctxData_get(lua_State* L) {
   int SWIG_arg = 0;
-  Music *arg1 = (Music *) 0 ;
+  struct Music *arg1 = (struct Music *) 0 ;
   void *result = 0 ;
   
   SWIG_check_num_args("Music::ctxData",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::ctxData",1,"Music *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Music::ctxData",1,"struct Music *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Music,0))){
     SWIG_fail_ptr("Music_ctxData_get",1,SWIGTYPE_p_Music);
@@ -11800,10 +11804,10 @@ fail:
 
 static int _wrap_new_Music(lua_State* L) {
   int SWIG_arg = 0;
-  Music *result = 0 ;
+  struct Music *result = 0 ;
   
   SWIG_check_num_args("Music::Music",0,0)
-  result = (Music *)new Music();
+  result = (struct Music *)calloc(1, sizeof(struct Music));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Music,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -11816,8 +11820,8 @@ fail:
 
 
 static void swig_delete_Music(void *obj) {
-Music *arg1 = (Music *) obj;
-delete arg1;
+struct Music *arg1 = (struct Music *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_Music(lua_State *L) {
     assert(lua_istable(L,1));
@@ -11869,11 +11873,11 @@ static swig_lua_class _wrap_class_Music = { "Music", "Music", &SWIGTYPE_p_Music,
 
 static int _wrap_VrDeviceInfo_hResolution_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("VrDeviceInfo::hResolution",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::hResolution",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::hResolution",1,"struct VrDeviceInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("VrDeviceInfo::hResolution",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
@@ -11895,11 +11899,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_hResolution_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("VrDeviceInfo::hResolution",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::hResolution",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::hResolution",1,"struct VrDeviceInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
     SWIG_fail_ptr("VrDeviceInfo_hResolution_get",1,SWIGTYPE_p_VrDeviceInfo);
@@ -11919,11 +11923,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_vResolution_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   int arg2 ;
   
   SWIG_check_num_args("VrDeviceInfo::vResolution",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vResolution",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vResolution",1,"struct VrDeviceInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("VrDeviceInfo::vResolution",2,"int");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
@@ -11945,11 +11949,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_vResolution_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   int result;
   
   SWIG_check_num_args("VrDeviceInfo::vResolution",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vResolution",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vResolution",1,"struct VrDeviceInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
     SWIG_fail_ptr("VrDeviceInfo_vResolution_get",1,SWIGTYPE_p_VrDeviceInfo);
@@ -11969,11 +11973,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_hScreenSize_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("VrDeviceInfo::hScreenSize",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::hScreenSize",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::hScreenSize",1,"struct VrDeviceInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("VrDeviceInfo::hScreenSize",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
@@ -11995,11 +11999,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_hScreenSize_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float result;
   
   SWIG_check_num_args("VrDeviceInfo::hScreenSize",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::hScreenSize",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::hScreenSize",1,"struct VrDeviceInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
     SWIG_fail_ptr("VrDeviceInfo_hScreenSize_get",1,SWIGTYPE_p_VrDeviceInfo);
@@ -12019,11 +12023,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_vScreenSize_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("VrDeviceInfo::vScreenSize",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vScreenSize",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vScreenSize",1,"struct VrDeviceInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("VrDeviceInfo::vScreenSize",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
@@ -12045,11 +12049,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_vScreenSize_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float result;
   
   SWIG_check_num_args("VrDeviceInfo::vScreenSize",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vScreenSize",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vScreenSize",1,"struct VrDeviceInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
     SWIG_fail_ptr("VrDeviceInfo_vScreenSize_get",1,SWIGTYPE_p_VrDeviceInfo);
@@ -12069,11 +12073,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_vScreenCenter_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("VrDeviceInfo::vScreenCenter",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vScreenCenter",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vScreenCenter",1,"struct VrDeviceInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("VrDeviceInfo::vScreenCenter",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
@@ -12095,11 +12099,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_vScreenCenter_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float result;
   
   SWIG_check_num_args("VrDeviceInfo::vScreenCenter",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vScreenCenter",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::vScreenCenter",1,"struct VrDeviceInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
     SWIG_fail_ptr("VrDeviceInfo_vScreenCenter_get",1,SWIGTYPE_p_VrDeviceInfo);
@@ -12119,11 +12123,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_eyeToScreenDistance_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("VrDeviceInfo::eyeToScreenDistance",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::eyeToScreenDistance",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::eyeToScreenDistance",1,"struct VrDeviceInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("VrDeviceInfo::eyeToScreenDistance",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
@@ -12145,11 +12149,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_eyeToScreenDistance_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float result;
   
   SWIG_check_num_args("VrDeviceInfo::eyeToScreenDistance",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::eyeToScreenDistance",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::eyeToScreenDistance",1,"struct VrDeviceInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
     SWIG_fail_ptr("VrDeviceInfo_eyeToScreenDistance_get",1,SWIGTYPE_p_VrDeviceInfo);
@@ -12169,11 +12173,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_lensSeparationDistance_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("VrDeviceInfo::lensSeparationDistance",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::lensSeparationDistance",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::lensSeparationDistance",1,"struct VrDeviceInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("VrDeviceInfo::lensSeparationDistance",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
@@ -12195,11 +12199,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_lensSeparationDistance_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float result;
   
   SWIG_check_num_args("VrDeviceInfo::lensSeparationDistance",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::lensSeparationDistance",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::lensSeparationDistance",1,"struct VrDeviceInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
     SWIG_fail_ptr("VrDeviceInfo_lensSeparationDistance_get",1,SWIGTYPE_p_VrDeviceInfo);
@@ -12219,11 +12223,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_interpupillaryDistance_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float arg2 ;
   
   SWIG_check_num_args("VrDeviceInfo::interpupillaryDistance",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::interpupillaryDistance",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::interpupillaryDistance",1,"struct VrDeviceInfo *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("VrDeviceInfo::interpupillaryDistance",2,"float");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
@@ -12245,11 +12249,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_interpupillaryDistance_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float result;
   
   SWIG_check_num_args("VrDeviceInfo::interpupillaryDistance",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::interpupillaryDistance",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::interpupillaryDistance",1,"struct VrDeviceInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
     SWIG_fail_ptr("VrDeviceInfo_interpupillaryDistance_get",1,SWIGTYPE_p_VrDeviceInfo);
@@ -12269,11 +12273,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_lensDistortionValues_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float *arg2 ;
   
   SWIG_check_num_args("VrDeviceInfo::lensDistortionValues",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::lensDistortionValues",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::lensDistortionValues",1,"struct VrDeviceInfo *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("VrDeviceInfo::lensDistortionValues",2,"float [4]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
@@ -12303,11 +12307,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_lensDistortionValues_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("VrDeviceInfo::lensDistortionValues",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::lensDistortionValues",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::lensDistortionValues",1,"struct VrDeviceInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
     SWIG_fail_ptr("VrDeviceInfo_lensDistortionValues_get",1,SWIGTYPE_p_VrDeviceInfo);
@@ -12327,11 +12331,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_chromaAbCorrection_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float *arg2 ;
   
   SWIG_check_num_args("VrDeviceInfo::chromaAbCorrection",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::chromaAbCorrection",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::chromaAbCorrection",1,"struct VrDeviceInfo *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("VrDeviceInfo::chromaAbCorrection",2,"float [4]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
@@ -12361,11 +12365,11 @@ fail:
 
 static int _wrap_VrDeviceInfo_chromaAbCorrection_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *arg1 = (VrDeviceInfo *) 0 ;
+  struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("VrDeviceInfo::chromaAbCorrection",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::chromaAbCorrection",1,"VrDeviceInfo *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrDeviceInfo::chromaAbCorrection",1,"struct VrDeviceInfo *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrDeviceInfo,0))){
     SWIG_fail_ptr("VrDeviceInfo_chromaAbCorrection_get",1,SWIGTYPE_p_VrDeviceInfo);
@@ -12385,10 +12389,10 @@ fail:
 
 static int _wrap_new_VrDeviceInfo(lua_State* L) {
   int SWIG_arg = 0;
-  VrDeviceInfo *result = 0 ;
+  struct VrDeviceInfo *result = 0 ;
   
   SWIG_check_num_args("VrDeviceInfo::VrDeviceInfo",0,0)
-  result = (VrDeviceInfo *)new VrDeviceInfo();
+  result = (struct VrDeviceInfo *)calloc(1, sizeof(struct VrDeviceInfo));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_VrDeviceInfo,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -12401,8 +12405,8 @@ fail:
 
 
 static void swig_delete_VrDeviceInfo(void *obj) {
-VrDeviceInfo *arg1 = (VrDeviceInfo *) obj;
-delete arg1;
+struct VrDeviceInfo *arg1 = (struct VrDeviceInfo *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_VrDeviceInfo(lua_State *L) {
     assert(lua_istable(L,1));
@@ -12459,11 +12463,11 @@ static swig_lua_class _wrap_class_VrDeviceInfo = { "VrDeviceInfo", "VrDeviceInfo
 
 static int _wrap_VrStereoConfig_projection_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   Matrix *arg2 ;
   
   SWIG_check_num_args("VrStereoConfig::projection",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::projection",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::projection",1,"struct VrStereoConfig *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("VrStereoConfig::projection",2,"Matrix [2]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
@@ -12493,11 +12497,11 @@ fail:
 
 static int _wrap_VrStereoConfig_projection_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   Matrix *result = 0 ;
   
   SWIG_check_num_args("VrStereoConfig::projection",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::projection",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::projection",1,"struct VrStereoConfig *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
     SWIG_fail_ptr("VrStereoConfig_projection_get",1,SWIGTYPE_p_VrStereoConfig);
@@ -12517,11 +12521,11 @@ fail:
 
 static int _wrap_VrStereoConfig_viewOffset_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   Matrix *arg2 ;
   
   SWIG_check_num_args("VrStereoConfig::viewOffset",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::viewOffset",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::viewOffset",1,"struct VrStereoConfig *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("VrStereoConfig::viewOffset",2,"Matrix [2]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
@@ -12551,11 +12555,11 @@ fail:
 
 static int _wrap_VrStereoConfig_viewOffset_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   Matrix *result = 0 ;
   
   SWIG_check_num_args("VrStereoConfig::viewOffset",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::viewOffset",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::viewOffset",1,"struct VrStereoConfig *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
     SWIG_fail_ptr("VrStereoConfig_viewOffset_get",1,SWIGTYPE_p_VrStereoConfig);
@@ -12575,11 +12579,11 @@ fail:
 
 static int _wrap_VrStereoConfig_leftLensCenter_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *arg2 ;
   
   SWIG_check_num_args("VrStereoConfig::leftLensCenter",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::leftLensCenter",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::leftLensCenter",1,"struct VrStereoConfig *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("VrStereoConfig::leftLensCenter",2,"float [2]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
@@ -12609,11 +12613,11 @@ fail:
 
 static int _wrap_VrStereoConfig_leftLensCenter_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("VrStereoConfig::leftLensCenter",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::leftLensCenter",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::leftLensCenter",1,"struct VrStereoConfig *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
     SWIG_fail_ptr("VrStereoConfig_leftLensCenter_get",1,SWIGTYPE_p_VrStereoConfig);
@@ -12633,11 +12637,11 @@ fail:
 
 static int _wrap_VrStereoConfig_rightLensCenter_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *arg2 ;
   
   SWIG_check_num_args("VrStereoConfig::rightLensCenter",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::rightLensCenter",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::rightLensCenter",1,"struct VrStereoConfig *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("VrStereoConfig::rightLensCenter",2,"float [2]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
@@ -12667,11 +12671,11 @@ fail:
 
 static int _wrap_VrStereoConfig_rightLensCenter_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("VrStereoConfig::rightLensCenter",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::rightLensCenter",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::rightLensCenter",1,"struct VrStereoConfig *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
     SWIG_fail_ptr("VrStereoConfig_rightLensCenter_get",1,SWIGTYPE_p_VrStereoConfig);
@@ -12691,11 +12695,11 @@ fail:
 
 static int _wrap_VrStereoConfig_leftScreenCenter_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *arg2 ;
   
   SWIG_check_num_args("VrStereoConfig::leftScreenCenter",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::leftScreenCenter",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::leftScreenCenter",1,"struct VrStereoConfig *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("VrStereoConfig::leftScreenCenter",2,"float [2]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
@@ -12725,11 +12729,11 @@ fail:
 
 static int _wrap_VrStereoConfig_leftScreenCenter_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("VrStereoConfig::leftScreenCenter",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::leftScreenCenter",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::leftScreenCenter",1,"struct VrStereoConfig *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
     SWIG_fail_ptr("VrStereoConfig_leftScreenCenter_get",1,SWIGTYPE_p_VrStereoConfig);
@@ -12749,11 +12753,11 @@ fail:
 
 static int _wrap_VrStereoConfig_rightScreenCenter_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *arg2 ;
   
   SWIG_check_num_args("VrStereoConfig::rightScreenCenter",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::rightScreenCenter",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::rightScreenCenter",1,"struct VrStereoConfig *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("VrStereoConfig::rightScreenCenter",2,"float [2]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
@@ -12783,11 +12787,11 @@ fail:
 
 static int _wrap_VrStereoConfig_rightScreenCenter_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("VrStereoConfig::rightScreenCenter",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::rightScreenCenter",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::rightScreenCenter",1,"struct VrStereoConfig *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
     SWIG_fail_ptr("VrStereoConfig_rightScreenCenter_get",1,SWIGTYPE_p_VrStereoConfig);
@@ -12807,11 +12811,11 @@ fail:
 
 static int _wrap_VrStereoConfig_scale_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *arg2 ;
   
   SWIG_check_num_args("VrStereoConfig::scale",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::scale",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::scale",1,"struct VrStereoConfig *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("VrStereoConfig::scale",2,"float [2]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
@@ -12841,11 +12845,11 @@ fail:
 
 static int _wrap_VrStereoConfig_scale_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("VrStereoConfig::scale",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::scale",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::scale",1,"struct VrStereoConfig *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
     SWIG_fail_ptr("VrStereoConfig_scale_get",1,SWIGTYPE_p_VrStereoConfig);
@@ -12865,11 +12869,11 @@ fail:
 
 static int _wrap_VrStereoConfig_scaleIn_set(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *arg2 ;
   
   SWIG_check_num_args("VrStereoConfig::scaleIn",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::scaleIn",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::scaleIn",1,"struct VrStereoConfig *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("VrStereoConfig::scaleIn",2,"float [2]");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
@@ -12899,11 +12903,11 @@ fail:
 
 static int _wrap_VrStereoConfig_scaleIn_get(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *arg1 = (VrStereoConfig *) 0 ;
+  struct VrStereoConfig *arg1 = (struct VrStereoConfig *) 0 ;
   float *result = 0 ;
   
   SWIG_check_num_args("VrStereoConfig::scaleIn",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::scaleIn",1,"VrStereoConfig *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("VrStereoConfig::scaleIn",1,"struct VrStereoConfig *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_VrStereoConfig,0))){
     SWIG_fail_ptr("VrStereoConfig_scaleIn_get",1,SWIGTYPE_p_VrStereoConfig);
@@ -12923,10 +12927,10 @@ fail:
 
 static int _wrap_new_VrStereoConfig(lua_State* L) {
   int SWIG_arg = 0;
-  VrStereoConfig *result = 0 ;
+  struct VrStereoConfig *result = 0 ;
   
   SWIG_check_num_args("VrStereoConfig::VrStereoConfig",0,0)
-  result = (VrStereoConfig *)new VrStereoConfig();
+  result = (struct VrStereoConfig *)calloc(1, sizeof(struct VrStereoConfig));
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_VrStereoConfig,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -12939,8 +12943,8 @@ fail:
 
 
 static void swig_delete_VrStereoConfig(void *obj) {
-VrStereoConfig *arg1 = (VrStereoConfig *) obj;
-delete arg1;
+struct VrStereoConfig *arg1 = (struct VrStereoConfig *) obj;
+free((char *) arg1);
 }
 static int _proxy__wrap_new_VrStereoConfig(lua_State *L) {
     assert(lua_istable(L,1));
@@ -13519,7 +13523,9 @@ static int _wrap_GetMonitorPosition(lua_State* L) {
   arg1 = (int)lua_tonumber(L, 1);
   result = GetMonitorPosition(arg1);
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -13639,7 +13645,9 @@ static int _wrap_GetWindowPosition(lua_State* L) {
   SWIG_check_num_args("GetWindowPosition",0,0)
   result = GetWindowPosition();
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -13659,7 +13667,9 @@ static int _wrap_GetWindowScaleDPI(lua_State* L) {
   SWIG_check_num_args("GetWindowScaleDPI",0,0)
   result = GetWindowScaleDPI();
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -14234,7 +14244,9 @@ static int _wrap_LoadVrStereoConfig(lua_State* L) {
   
   result = LoadVrStereoConfig(arg1);
   {
-    VrStereoConfig * resultptr = new VrStereoConfig((const VrStereoConfig &) result);
+    VrStereoConfig * resultptr;
+    resultptr = (VrStereoConfig *) malloc(sizeof(VrStereoConfig));
+    memmove(resultptr, &result, sizeof(VrStereoConfig));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_VrStereoConfig,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -14285,7 +14297,9 @@ static int _wrap_LoadShader(lua_State* L) {
   arg2 = (char *)lua_tostring(L, 2);
   result = LoadShader((char const *)arg1,(char const *)arg2);
   {
-    Shader * resultptr = new Shader((const Shader &) result);
+    Shader * resultptr;
+    resultptr = (Shader *) malloc(sizeof(Shader));
+    memmove(resultptr, &result, sizeof(Shader));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Shader,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -14311,7 +14325,9 @@ static int _wrap_LoadShaderFromMemory(lua_State* L) {
   arg2 = (char *)lua_tostring(L, 2);
   result = LoadShaderFromMemory((char const *)arg1,(char const *)arg2);
   {
-    Shader * resultptr = new Shader((const Shader &) result);
+    Shader * resultptr;
+    resultptr = (Shader *) malloc(sizeof(Shader));
+    memmove(resultptr, &result, sizeof(Shader));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Shader,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -14577,7 +14593,9 @@ static int _wrap_GetMouseRay(lua_State* L) {
   
   result = GetMouseRay(arg1,arg2);
   {
-    Ray * resultptr = new Ray((const Ray &) result);
+    Ray * resultptr;
+    resultptr = (Ray *) malloc(sizeof(Ray));
+    memmove(resultptr, &result, sizeof(Ray));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Ray,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -14606,7 +14624,9 @@ static int _wrap_GetCameraMatrix(lua_State* L) {
   
   result = GetCameraMatrix(arg1);
   {
-    Matrix * resultptr = new Matrix((const Matrix &) result);
+    Matrix * resultptr;
+    resultptr = (Matrix *) malloc(sizeof(Matrix));
+    memmove(resultptr, &result, sizeof(Matrix));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Matrix,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -14635,7 +14655,9 @@ static int _wrap_GetCameraMatrix2D(lua_State* L) {
   
   result = GetCameraMatrix2D(arg1);
   {
-    Matrix * resultptr = new Matrix((const Matrix &) result);
+    Matrix * resultptr;
+    resultptr = (Matrix *) malloc(sizeof(Matrix));
+    memmove(resultptr, &result, sizeof(Matrix));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Matrix,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -14673,7 +14695,9 @@ static int _wrap_GetWorldToScreen(lua_State* L) {
   
   result = GetWorldToScreen(arg1,arg2);
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -14717,7 +14741,9 @@ static int _wrap_GetWorldToScreenEx(lua_State* L) {
   arg4 = (int)lua_tonumber(L, 4);
   result = GetWorldToScreenEx(arg1,arg2,arg3,arg4);
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -14755,7 +14781,9 @@ static int _wrap_GetWorldToScreen2D(lua_State* L) {
   
   result = GetWorldToScreen2D(arg1,arg2);
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -14793,7 +14821,9 @@ static int _wrap_GetScreenToWorld2D(lua_State* L) {
   
   result = GetScreenToWorld2D(arg1,arg2);
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -16299,7 +16329,9 @@ static int _wrap_GetMousePosition(lua_State* L) {
   SWIG_check_num_args("GetMousePosition",0,0)
   result = GetMousePosition();
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -16319,7 +16351,9 @@ static int _wrap_GetMouseDelta(lua_State* L) {
   SWIG_check_num_args("GetMouseDelta",0,0)
   result = GetMouseDelta();
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -16478,7 +16512,9 @@ static int _wrap_GetTouchPosition(lua_State* L) {
   arg1 = (int)lua_tonumber(L, 1);
   result = GetTouchPosition(arg1);
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -16609,7 +16645,9 @@ static int _wrap_GetGestureDragVector(lua_State* L) {
   SWIG_check_num_args("GetGestureDragVector",0,0)
   result = GetGestureDragVector();
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -16646,7 +16684,9 @@ static int _wrap_GetGesturePinchVector(lua_State* L) {
   SWIG_check_num_args("GetGesturePinchVector",0,0)
   result = GetGesturePinchVector();
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -18803,7 +18843,9 @@ static int _wrap_GetCollisionRec(lua_State* L) {
   
   result = GetCollisionRec(arg1,arg2);
   {
-    Rectangle * resultptr = new Rectangle((const Rectangle &) result);
+    Rectangle * resultptr;
+    resultptr = (Rectangle *) malloc(sizeof(Rectangle));
+    memmove(resultptr, &result, sizeof(Rectangle));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Rectangle,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -18826,7 +18868,9 @@ static int _wrap_LoadImage(lua_State* L) {
   arg1 = (char *)lua_tostring(L, 1);
   result = LoadImage((char const *)arg1);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -18861,7 +18905,9 @@ static int _wrap_LoadImageRaw(lua_State* L) {
   arg5 = (int)lua_tonumber(L, 5);
   result = LoadImageRaw((char const *)arg1,arg2,arg3,arg4,arg5);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -18891,7 +18937,9 @@ static int _wrap_LoadImageAnim(lua_State* L) {
   
   result = LoadImageAnim((char const *)arg1,arg2);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -18924,7 +18972,9 @@ static int _wrap_LoadImageFromMemory(lua_State* L) {
   arg3 = (int)lua_tonumber(L, 3);
   result = LoadImageFromMemory((char const *)arg1,(unsigned char const *)arg2,arg3);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -18953,7 +19003,9 @@ static int _wrap_LoadImageFromTexture(lua_State* L) {
   
   result = LoadImageFromTexture(arg1);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -18973,7 +19025,9 @@ static int _wrap_LoadImageFromScreen(lua_State* L) {
   SWIG_check_num_args("LoadImageFromScreen",0,0)
   result = LoadImageFromScreen();
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19091,7 +19145,9 @@ static int _wrap_GenImageColor(lua_State* L) {
   
   result = GenImageColor(arg1,arg2,arg3);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19135,7 +19191,9 @@ static int _wrap_GenImageGradientV(lua_State* L) {
   
   result = GenImageGradientV(arg1,arg2,arg3,arg4);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19179,7 +19237,9 @@ static int _wrap_GenImageGradientH(lua_State* L) {
   
   result = GenImageGradientH(arg1,arg2,arg3,arg4);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19226,7 +19286,9 @@ static int _wrap_GenImageGradientRadial(lua_State* L) {
   
   result = GenImageGradientRadial(arg1,arg2,arg3,arg4,arg5);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19276,7 +19338,9 @@ static int _wrap_GenImageChecked(lua_State* L) {
   
   result = GenImageChecked(arg1,arg2,arg3,arg4,arg5,arg6);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19305,7 +19369,9 @@ static int _wrap_GenImageWhiteNoise(lua_State* L) {
   arg3 = (float)lua_tonumber(L, 3);
   result = GenImageWhiteNoise(arg1,arg2,arg3);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19334,7 +19400,9 @@ static int _wrap_GenImageCellular(lua_State* L) {
   arg3 = (int)lua_tonumber(L, 3);
   result = GenImageCellular(arg1,arg2,arg3);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19363,7 +19431,9 @@ static int _wrap_ImageCopy(lua_State* L) {
   
   result = ImageCopy(arg1);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19401,7 +19471,9 @@ static int _wrap_ImageFromImage(lua_State* L) {
   
   result = ImageFromImage(arg1,arg2);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19436,7 +19508,9 @@ static int _wrap_ImageText(lua_State* L) {
   
   result = ImageText((char const *)arg1,arg2,arg3);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -19483,7 +19557,9 @@ static int _wrap_ImageTextEx(lua_State* L) {
   
   result = ImageTextEx(arg1,(char const *)arg2,arg3,arg4,arg5);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -20252,7 +20328,9 @@ static int _wrap_GetImageAlphaBorder(lua_State* L) {
   arg2 = (float)lua_tonumber(L, 2);
   result = GetImageAlphaBorder(arg1,arg2);
   {
-    Rectangle * resultptr = new Rectangle((const Rectangle &) result);
+    Rectangle * resultptr;
+    resultptr = (Rectangle *) malloc(sizeof(Rectangle));
+    memmove(resultptr, &result, sizeof(Rectangle));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Rectangle,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -20287,7 +20365,9 @@ static int _wrap_GetImageColor(lua_State* L) {
   arg3 = (int)lua_tonumber(L, 3);
   result = GetImageColor(arg1,arg2,arg3);
   {
-    Color * resultptr = new Color((const Color &) result);
+    Color * resultptr;
+    resultptr = (Color *) malloc(sizeof(Color));
+    memmove(resultptr, &result, sizeof(Color));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Color,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -20941,7 +21021,9 @@ static int _wrap_LoadTexture(lua_State* L) {
   arg1 = (char *)lua_tostring(L, 1);
   result = LoadTexture((char const *)arg1);
   {
-    Texture2D * resultptr = new Texture2D((const Texture2D &) result);
+    Texture2D * resultptr;
+    resultptr = (Texture2D *) malloc(sizeof(Texture2D));
+    memmove(resultptr, &result, sizeof(Texture2D));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Texture,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -20970,7 +21052,9 @@ static int _wrap_LoadTextureFromImage(lua_State* L) {
   
   result = LoadTextureFromImage(arg1);
   {
-    Texture2D * resultptr = new Texture2D((const Texture2D &) result);
+    Texture2D * resultptr;
+    resultptr = (Texture2D *) malloc(sizeof(Texture2D));
+    memmove(resultptr, &result, sizeof(Texture2D));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Texture,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -21002,7 +21086,9 @@ static int _wrap_LoadTextureCubemap(lua_State* L) {
   arg2 = (int)lua_tonumber(L, 2);
   result = LoadTextureCubemap(arg1,arg2);
   {
-    TextureCubemap * resultptr = new TextureCubemap((const TextureCubemap &) result);
+    TextureCubemap * resultptr;
+    resultptr = (TextureCubemap *) malloc(sizeof(TextureCubemap));
+    memmove(resultptr, &result, sizeof(TextureCubemap));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Texture,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -21028,7 +21114,9 @@ static int _wrap_LoadRenderTexture(lua_State* L) {
   arg2 = (int)lua_tonumber(L, 2);
   result = LoadRenderTexture(arg1,arg2);
   {
-    RenderTexture2D * resultptr = new RenderTexture2D((const RenderTexture2D &) result);
+    RenderTexture2D * resultptr;
+    resultptr = (RenderTexture2D *) malloc(sizeof(RenderTexture2D));
+    memmove(resultptr, &result, sizeof(RenderTexture2D));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_RenderTexture,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -21754,7 +21842,9 @@ static int _wrap_Fade(lua_State* L) {
   arg2 = (float)lua_tonumber(L, 2);
   result = Fade(arg1,arg2);
   {
-    Color * resultptr = new Color((const Color &) result);
+    Color * resultptr;
+    resultptr = (Color *) malloc(sizeof(Color));
+    memmove(resultptr, &result, sizeof(Color));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Color,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -21809,7 +21899,9 @@ static int _wrap_ColorNormalize(lua_State* L) {
   
   result = ColorNormalize(arg1);
   {
-    Vector4 * resultptr = new Vector4((const Vector4 &) result);
+    Vector4 * resultptr;
+    resultptr = (Vector4 *) malloc(sizeof(Vector4));
+    memmove(resultptr, &result, sizeof(Vector4));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector4,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -21838,7 +21930,9 @@ static int _wrap_ColorFromNormalized(lua_State* L) {
   
   result = ColorFromNormalized(arg1);
   {
-    Color * resultptr = new Color((const Color &) result);
+    Color * resultptr;
+    resultptr = (Color *) malloc(sizeof(Color));
+    memmove(resultptr, &result, sizeof(Color));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Color,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -21867,7 +21961,9 @@ static int _wrap_ColorToHSV(lua_State* L) {
   
   result = ColorToHSV(arg1);
   {
-    Vector3 * resultptr = new Vector3((const Vector3 &) result);
+    Vector3 * resultptr;
+    resultptr = (Vector3 *) malloc(sizeof(Vector3));
+    memmove(resultptr, &result, sizeof(Vector3));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector3,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -21896,7 +21992,9 @@ static int _wrap_ColorFromHSV(lua_State* L) {
   arg3 = (float)lua_tonumber(L, 3);
   result = ColorFromHSV(arg1,arg2,arg3);
   {
-    Color * resultptr = new Color((const Color &) result);
+    Color * resultptr;
+    resultptr = (Color *) malloc(sizeof(Color));
+    memmove(resultptr, &result, sizeof(Color));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Color,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -21928,7 +22026,9 @@ static int _wrap_ColorAlpha(lua_State* L) {
   arg2 = (float)lua_tonumber(L, 2);
   result = ColorAlpha(arg1,arg2);
   {
-    Color * resultptr = new Color((const Color &) result);
+    Color * resultptr;
+    resultptr = (Color *) malloc(sizeof(Color));
+    memmove(resultptr, &result, sizeof(Color));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Color,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -21975,7 +22075,9 @@ static int _wrap_ColorAlphaBlend(lua_State* L) {
   
   result = ColorAlphaBlend(arg1,arg2,arg3);
   {
-    Color * resultptr = new Color((const Color &) result);
+    Color * resultptr;
+    resultptr = (Color *) malloc(sizeof(Color));
+    memmove(resultptr, &result, sizeof(Color));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Color,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -21999,7 +22101,9 @@ static int _wrap_GetColor(lua_State* L) {
   arg1 = (unsigned int)lua_tonumber(L, 1);
   result = GetColor(arg1);
   {
-    Color * resultptr = new Color((const Color &) result);
+    Color * resultptr;
+    resultptr = (Color *) malloc(sizeof(Color));
+    memmove(resultptr, &result, sizeof(Color));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Color,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -22025,7 +22129,9 @@ static int _wrap_GetPixelColor(lua_State* L) {
   arg2 = (int)lua_tonumber(L, 2);
   result = GetPixelColor(arg1,arg2);
   {
-    Color * resultptr = new Color((const Color &) result);
+    Color * resultptr;
+    resultptr = (Color *) malloc(sizeof(Color));
+    memmove(resultptr, &result, sizeof(Color));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Color,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -22102,7 +22208,9 @@ static int _wrap_GetFontDefault(lua_State* L) {
   SWIG_check_num_args("GetFontDefault",0,0)
   result = GetFontDefault();
   {
-    Font * resultptr = new Font((const Font &) result);
+    Font * resultptr;
+    resultptr = (Font *) malloc(sizeof(Font));
+    memmove(resultptr, &result, sizeof(Font));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Font,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -22125,7 +22233,9 @@ static int _wrap_LoadFont(lua_State* L) {
   arg1 = (char *)lua_tostring(L, 1);
   result = LoadFont((char const *)arg1);
   {
-    Font * resultptr = new Font((const Font &) result);
+    Font * resultptr;
+    resultptr = (Font *) malloc(sizeof(Font));
+    memmove(resultptr, &result, sizeof(Font));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Font,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -22161,7 +22271,9 @@ static int _wrap_LoadFontEx(lua_State* L) {
   arg4 = (int)lua_tonumber(L, 4);
   result = LoadFontEx((char const *)arg1,arg2,arg3,arg4);
   {
-    Font * resultptr = new Font((const Font &) result);
+    Font * resultptr;
+    resultptr = (Font *) malloc(sizeof(Font));
+    memmove(resultptr, &result, sizeof(Font));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Font,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -22202,7 +22314,9 @@ static int _wrap_LoadFontFromImage(lua_State* L) {
   arg3 = (int)lua_tonumber(L, 3);
   result = LoadFontFromImage(arg1,arg2,arg3);
   {
-    Font * resultptr = new Font((const Font &) result);
+    Font * resultptr;
+    resultptr = (Font *) malloc(sizeof(Font));
+    memmove(resultptr, &result, sizeof(Font));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Font,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -22248,7 +22362,9 @@ static int _wrap_LoadFontFromMemory(lua_State* L) {
   arg6 = (int)lua_tonumber(L, 6);
   result = LoadFontFromMemory((char const *)arg1,(unsigned char const *)arg2,arg3,arg4,arg5,arg6);
   {
-    Font * resultptr = new Font((const Font &) result);
+    Font * resultptr;
+    resultptr = (Font *) malloc(sizeof(Font));
+    memmove(resultptr, &result, sizeof(Font));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Font,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -22335,9 +22451,11 @@ static int _wrap_GenImageFontAtlas(lua_State* L) {
   arg4 = (int)lua_tonumber(L, 4);
   arg5 = (int)lua_tonumber(L, 5);
   arg6 = (int)lua_tonumber(L, 6);
-  result = GenImageFontAtlas((GlyphInfo const *)arg1,arg2,arg3,arg4,arg5,arg6);
+  result = GenImageFontAtlas((struct GlyphInfo const *)arg1,arg2,arg3,arg4,arg5,arg6);
   {
-    Image * resultptr = new Image((const Image &) result);
+    Image * resultptr;
+    resultptr = (Image *) malloc(sizeof(Image));
+    memmove(resultptr, &result, sizeof(Image));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Image,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -22673,7 +22791,9 @@ static int _wrap_MeasureTextEx(lua_State* L) {
   arg4 = (float)lua_tonumber(L, 4);
   result = MeasureTextEx(arg1,(char const *)arg2,arg3,arg4);
   {
-    Vector2 * resultptr = new Vector2((const Vector2 &) result);
+    Vector2 * resultptr;
+    resultptr = (Vector2 *) malloc(sizeof(Vector2));
+    memmove(resultptr, &result, sizeof(Vector2));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Vector2,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -22734,7 +22854,9 @@ static int _wrap_GetGlyphInfo(lua_State* L) {
   arg2 = (int)lua_tonumber(L, 2);
   result = GetGlyphInfo(arg1,arg2);
   {
-    GlyphInfo * resultptr = new GlyphInfo((const GlyphInfo &) result);
+    GlyphInfo * resultptr;
+    resultptr = (GlyphInfo *) malloc(sizeof(GlyphInfo));
+    memmove(resultptr, &result, sizeof(GlyphInfo));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_GlyphInfo,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -22766,7 +22888,9 @@ static int _wrap_GetGlyphAtlasRec(lua_State* L) {
   arg2 = (int)lua_tonumber(L, 2);
   result = GetGlyphAtlasRec(arg1,arg2);
   {
-    Rectangle * resultptr = new Rectangle((const Rectangle &) result);
+    Rectangle * resultptr;
+    resultptr = (Rectangle *) malloc(sizeof(Rectangle));
+    memmove(resultptr, &result, sizeof(Rectangle));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Rectangle,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -24213,7 +24337,9 @@ static int _wrap_LoadModel(lua_State* L) {
   arg1 = (char *)lua_tostring(L, 1);
   result = LoadModel((char const *)arg1);
   {
-    Model * resultptr = new Model((const Model &) result);
+    Model * resultptr;
+    resultptr = (Model *) malloc(sizeof(Model));
+    memmove(resultptr, &result, sizeof(Model));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Model,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -24242,7 +24368,9 @@ static int _wrap_LoadModelFromMesh(lua_State* L) {
   
   result = LoadModelFromMesh(arg1);
   {
-    Model * resultptr = new Model((const Model &) result);
+    Model * resultptr;
+    resultptr = (Model *) malloc(sizeof(Model));
+    memmove(resultptr, &result, sizeof(Model));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Model,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -24321,7 +24449,9 @@ static int _wrap_GetModelBoundingBox(lua_State* L) {
   
   result = GetModelBoundingBox(arg1);
   {
-    BoundingBox * resultptr = new BoundingBox((const BoundingBox &) result);
+    BoundingBox * resultptr;
+    resultptr = (BoundingBox *) malloc(sizeof(BoundingBox));
+    memmove(resultptr, &result, sizeof(BoundingBox));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_BoundingBox,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25024,7 +25154,9 @@ static int _wrap_GetMeshBoundingBox(lua_State* L) {
   
   result = GetMeshBoundingBox(arg1);
   {
-    BoundingBox * resultptr = new BoundingBox((const BoundingBox &) result);
+    BoundingBox * resultptr;
+    resultptr = (BoundingBox *) malloc(sizeof(BoundingBox));
+    memmove(resultptr, &result, sizeof(BoundingBox));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_BoundingBox,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25096,7 +25228,9 @@ static int _wrap_GenMeshPoly(lua_State* L) {
   arg2 = (float)lua_tonumber(L, 2);
   result = GenMeshPoly(arg1,arg2);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25128,7 +25262,9 @@ static int _wrap_GenMeshPlane(lua_State* L) {
   arg4 = (int)lua_tonumber(L, 4);
   result = GenMeshPlane(arg1,arg2,arg3,arg4);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25157,7 +25293,9 @@ static int _wrap_GenMeshCube(lua_State* L) {
   arg3 = (float)lua_tonumber(L, 3);
   result = GenMeshCube(arg1,arg2,arg3);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25186,7 +25324,9 @@ static int _wrap_GenMeshSphere(lua_State* L) {
   arg3 = (int)lua_tonumber(L, 3);
   result = GenMeshSphere(arg1,arg2,arg3);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25215,7 +25355,9 @@ static int _wrap_GenMeshHemiSphere(lua_State* L) {
   arg3 = (int)lua_tonumber(L, 3);
   result = GenMeshHemiSphere(arg1,arg2,arg3);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25244,7 +25386,9 @@ static int _wrap_GenMeshCylinder(lua_State* L) {
   arg3 = (int)lua_tonumber(L, 3);
   result = GenMeshCylinder(arg1,arg2,arg3);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25273,7 +25417,9 @@ static int _wrap_GenMeshCone(lua_State* L) {
   arg3 = (int)lua_tonumber(L, 3);
   result = GenMeshCone(arg1,arg2,arg3);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25305,7 +25451,9 @@ static int _wrap_GenMeshTorus(lua_State* L) {
   arg4 = (int)lua_tonumber(L, 4);
   result = GenMeshTorus(arg1,arg2,arg3,arg4);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25337,7 +25485,9 @@ static int _wrap_GenMeshKnot(lua_State* L) {
   arg4 = (int)lua_tonumber(L, 4);
   result = GenMeshKnot(arg1,arg2,arg3,arg4);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25375,7 +25525,9 @@ static int _wrap_GenMeshHeightmap(lua_State* L) {
   
   result = GenMeshHeightmap(arg1,arg2);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25413,7 +25565,9 @@ static int _wrap_GenMeshCubicmap(lua_State* L) {
   
   result = GenMeshCubicmap(arg1,arg2);
   {
-    Mesh * resultptr = new Mesh((const Mesh &) result);
+    Mesh * resultptr;
+    resultptr = (Mesh *) malloc(sizeof(Mesh));
+    memmove(resultptr, &result, sizeof(Mesh));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Mesh,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25460,7 +25614,9 @@ static int _wrap_LoadMaterialDefault(lua_State* L) {
   SWIG_check_num_args("LoadMaterialDefault",0,0)
   result = LoadMaterialDefault();
   {
-    Material * resultptr = new Material((const Material &) result);
+    Material * resultptr;
+    resultptr = (Material *) malloc(sizeof(Material));
+    memmove(resultptr, &result, sizeof(Material));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Material,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25855,7 +26011,9 @@ static int _wrap_GetRayCollisionSphere(lua_State* L) {
   arg3 = (float)lua_tonumber(L, 3);
   result = GetRayCollisionSphere(arg1,arg2,arg3);
   {
-    RayCollision * resultptr = new RayCollision((const RayCollision &) result);
+    RayCollision * resultptr;
+    resultptr = (RayCollision *) malloc(sizeof(RayCollision));
+    memmove(resultptr, &result, sizeof(RayCollision));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_RayCollision,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25893,7 +26051,9 @@ static int _wrap_GetRayCollisionBox(lua_State* L) {
   
   result = GetRayCollisionBox(arg1,arg2);
   {
-    RayCollision * resultptr = new RayCollision((const RayCollision &) result);
+    RayCollision * resultptr;
+    resultptr = (RayCollision *) malloc(sizeof(RayCollision));
+    memmove(resultptr, &result, sizeof(RayCollision));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_RayCollision,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25931,7 +26091,9 @@ static int _wrap_GetRayCollisionModel(lua_State* L) {
   
   result = GetRayCollisionModel(arg1,arg2);
   {
-    RayCollision * resultptr = new RayCollision((const RayCollision &) result);
+    RayCollision * resultptr;
+    resultptr = (RayCollision *) malloc(sizeof(RayCollision));
+    memmove(resultptr, &result, sizeof(RayCollision));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_RayCollision,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -25978,7 +26140,9 @@ static int _wrap_GetRayCollisionMesh(lua_State* L) {
   
   result = GetRayCollisionMesh(arg1,arg2,arg3);
   {
-    RayCollision * resultptr = new RayCollision((const RayCollision &) result);
+    RayCollision * resultptr;
+    resultptr = (RayCollision *) malloc(sizeof(RayCollision));
+    memmove(resultptr, &result, sizeof(RayCollision));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_RayCollision,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -26034,7 +26198,9 @@ static int _wrap_GetRayCollisionTriangle(lua_State* L) {
   
   result = GetRayCollisionTriangle(arg1,arg2,arg3,arg4);
   {
-    RayCollision * resultptr = new RayCollision((const RayCollision &) result);
+    RayCollision * resultptr;
+    resultptr = (RayCollision *) malloc(sizeof(RayCollision));
+    memmove(resultptr, &result, sizeof(RayCollision));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_RayCollision,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -26099,7 +26265,9 @@ static int _wrap_GetRayCollisionQuad(lua_State* L) {
   
   result = GetRayCollisionQuad(arg1,arg2,arg3,arg4,arg5);
   {
-    RayCollision * resultptr = new RayCollision((const RayCollision &) result);
+    RayCollision * resultptr;
+    resultptr = (RayCollision *) malloc(sizeof(RayCollision));
+    memmove(resultptr, &result, sizeof(RayCollision));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_RayCollision,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -26190,7 +26358,9 @@ static int _wrap_LoadWave(lua_State* L) {
   arg1 = (char *)lua_tostring(L, 1);
   result = LoadWave((char const *)arg1);
   {
-    Wave * resultptr = new Wave((const Wave &) result);
+    Wave * resultptr;
+    resultptr = (Wave *) malloc(sizeof(Wave));
+    memmove(resultptr, &result, sizeof(Wave));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Wave,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -26223,7 +26393,9 @@ static int _wrap_LoadWaveFromMemory(lua_State* L) {
   arg3 = (int)lua_tonumber(L, 3);
   result = LoadWaveFromMemory((char const *)arg1,(unsigned char const *)arg2,arg3);
   {
-    Wave * resultptr = new Wave((const Wave &) result);
+    Wave * resultptr;
+    resultptr = (Wave *) malloc(sizeof(Wave));
+    memmove(resultptr, &result, sizeof(Wave));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Wave,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -26246,7 +26418,9 @@ static int _wrap_LoadSound(lua_State* L) {
   arg1 = (char *)lua_tostring(L, 1);
   result = LoadSound((char const *)arg1);
   {
-    Sound * resultptr = new Sound((const Sound &) result);
+    Sound * resultptr;
+    resultptr = (Sound *) malloc(sizeof(Sound));
+    memmove(resultptr, &result, sizeof(Sound));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Sound,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -26275,7 +26449,9 @@ static int _wrap_LoadSoundFromWave(lua_State* L) {
   
   result = LoadSoundFromWave(arg1);
   {
-    Sound * resultptr = new Sound((const Sound &) result);
+    Sound * resultptr;
+    resultptr = (Sound *) malloc(sizeof(Sound));
+    memmove(resultptr, &result, sizeof(Sound));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Sound,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -26715,7 +26891,9 @@ static int _wrap_WaveCopy(lua_State* L) {
   
   result = WaveCopy(arg1);
   {
-    Wave * resultptr = new Wave((const Wave &) result);
+    Wave * resultptr;
+    resultptr = (Wave *) malloc(sizeof(Wave));
+    memmove(resultptr, &result, sizeof(Wave));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Wave,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -26816,7 +26994,9 @@ static int _wrap_LoadMusicStream(lua_State* L) {
   arg1 = (char *)lua_tostring(L, 1);
   result = LoadMusicStream((char const *)arg1);
   {
-    Music * resultptr = new Music((const Music &) result);
+    Music * resultptr;
+    resultptr = (Music *) malloc(sizeof(Music));
+    memmove(resultptr, &result, sizeof(Music));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Music,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -26849,7 +27029,9 @@ static int _wrap_LoadMusicStreamFromMemory(lua_State* L) {
   arg3 = (int)lua_tonumber(L, 3);
   result = LoadMusicStreamFromMemory((char const *)arg1,arg2,arg3);
   {
-    Music * resultptr = new Music((const Music &) result);
+    Music * resultptr;
+    resultptr = (Music *) malloc(sizeof(Music));
+    memmove(resultptr, &result, sizeof(Music));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_Music,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -27193,7 +27375,9 @@ static int _wrap_LoadAudioStream(lua_State* L) {
   arg3 = (unsigned int)lua_tonumber(L, 3);
   result = LoadAudioStream(arg1,arg2,arg3);
   {
-    AudioStream * resultptr = new AudioStream((const AudioStream &) result);
+    AudioStream * resultptr;
+    resultptr = (AudioStream *) malloc(sizeof(AudioStream));
+    memmove(resultptr, &result, sizeof(AudioStream));
     SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_AudioStream,1); SWIG_arg++;
   }
   return SWIG_arg;
@@ -27489,7 +27673,475 @@ fail:
 }
 
 
+static int _wrap_LIGHTGRAY_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_LIGHTGRAY",0,0)
+  result = (Color *)&SWIG_LIGHTGRAY;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_GRAY_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_GRAY",0,0)
+  result = (Color *)&SWIG_GRAY;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_DARKGRAY_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_DARKGRAY",0,0)
+  result = (Color *)&SWIG_DARKGRAY;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_YELLOW_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_YELLOW",0,0)
+  result = (Color *)&SWIG_YELLOW;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_GOLD_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_GOLD",0,0)
+  result = (Color *)&SWIG_GOLD;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_ORANGE_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_ORANGE",0,0)
+  result = (Color *)&SWIG_ORANGE;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_PINK_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_PINK",0,0)
+  result = (Color *)&SWIG_PINK;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_RED_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_RED",0,0)
+  result = (Color *)&SWIG_RED;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_MAROON_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_MAROON",0,0)
+  result = (Color *)&SWIG_MAROON;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_GREEN_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_GREEN",0,0)
+  result = (Color *)&SWIG_GREEN;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_LIME_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_LIME",0,0)
+  result = (Color *)&SWIG_LIME;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_DARKGREEN_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_DARKGREEN",0,0)
+  result = (Color *)&SWIG_DARKGREEN;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_SKYBLUE_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_SKYBLUE",0,0)
+  result = (Color *)&SWIG_SKYBLUE;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_BLUE_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_BLUE",0,0)
+  result = (Color *)&SWIG_BLUE;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_DARKBLUE_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_DARKBLUE",0,0)
+  result = (Color *)&SWIG_DARKBLUE;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_PURPLE_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_PURPLE",0,0)
+  result = (Color *)&SWIG_PURPLE;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_VIOLET_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_VIOLET",0,0)
+  result = (Color *)&SWIG_VIOLET;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_DARKPURPLE_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_DARKPURPLE",0,0)
+  result = (Color *)&SWIG_DARKPURPLE;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_BEIGE_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_BEIGE",0,0)
+  result = (Color *)&SWIG_BEIGE;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_BROWN_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_BROWN",0,0)
+  result = (Color *)&SWIG_BROWN;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_DARKBROWN_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_DARKBROWN",0,0)
+  result = (Color *)&SWIG_DARKBROWN;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_WHITE_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_WHITE",0,0)
+  result = (Color *)&SWIG_WHITE;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_BLACK_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_BLACK",0,0)
+  result = (Color *)&SWIG_BLACK;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_BLANK_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_BLANK",0,0)
+  result = (Color *)&SWIG_BLANK;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_MAGENTA_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_MAGENTA",0,0)
+  result = (Color *)&SWIG_MAGENTA;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_RAYWHITE_get(lua_State* L) {
+  int SWIG_arg = 0;
+  Color *result = 0 ;
+  
+  SWIG_check_num_args("SWIG_RAYWHITE",0,0)
+  result = (Color *)&SWIG_RAYWHITE;
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Color,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static swig_lua_attribute swig_SwigModule_attributes[] = {
+    { "LIGHTGRAY", _wrap_LIGHTGRAY_get, SWIG_Lua_set_immutable },
+    { "GRAY", _wrap_GRAY_get, SWIG_Lua_set_immutable },
+    { "DARKGRAY", _wrap_DARKGRAY_get, SWIG_Lua_set_immutable },
+    { "YELLOW", _wrap_YELLOW_get, SWIG_Lua_set_immutable },
+    { "GOLD", _wrap_GOLD_get, SWIG_Lua_set_immutable },
+    { "ORANGE", _wrap_ORANGE_get, SWIG_Lua_set_immutable },
+    { "PINK", _wrap_PINK_get, SWIG_Lua_set_immutable },
+    { "RED", _wrap_RED_get, SWIG_Lua_set_immutable },
+    { "MAROON", _wrap_MAROON_get, SWIG_Lua_set_immutable },
+    { "GREEN", _wrap_GREEN_get, SWIG_Lua_set_immutable },
+    { "LIME", _wrap_LIME_get, SWIG_Lua_set_immutable },
+    { "DARKGREEN", _wrap_DARKGREEN_get, SWIG_Lua_set_immutable },
+    { "SKYBLUE", _wrap_SKYBLUE_get, SWIG_Lua_set_immutable },
+    { "BLUE", _wrap_BLUE_get, SWIG_Lua_set_immutable },
+    { "DARKBLUE", _wrap_DARKBLUE_get, SWIG_Lua_set_immutable },
+    { "PURPLE", _wrap_PURPLE_get, SWIG_Lua_set_immutable },
+    { "VIOLET", _wrap_VIOLET_get, SWIG_Lua_set_immutable },
+    { "DARKPURPLE", _wrap_DARKPURPLE_get, SWIG_Lua_set_immutable },
+    { "BEIGE", _wrap_BEIGE_get, SWIG_Lua_set_immutable },
+    { "BROWN", _wrap_BROWN_get, SWIG_Lua_set_immutable },
+    { "DARKBROWN", _wrap_DARKBROWN_get, SWIG_Lua_set_immutable },
+    { "WHITE", _wrap_WHITE_get, SWIG_Lua_set_immutable },
+    { "BLACK", _wrap_BLACK_get, SWIG_Lua_set_immutable },
+    { "BLANK", _wrap_BLANK_get, SWIG_Lua_set_immutable },
+    { "MAGENTA", _wrap_MAGENTA_get, SWIG_Lua_set_immutable },
+    { "RAYWHITE", _wrap_RAYWHITE_get, SWIG_Lua_set_immutable },
     {0,0,0}
 };
 static swig_lua_const_info swig_SwigModule_constants[]= {
@@ -28332,58 +28984,58 @@ static swig_lua_namespace swig_SwigModule = {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
-static swig_type_info _swigt__p_AudioStream = {"_p_AudioStream", "AudioStream *", 0, 0, (void*)&_wrap_class_AudioStream, 0};
+static swig_type_info _swigt__p_AudioStream = {"_p_AudioStream", "struct AudioStream *|AudioStream *", 0, 0, (void*)&_wrap_class_AudioStream, 0};
 static swig_type_info _swigt__p_BlendMode = {"_p_BlendMode", "enum BlendMode *|BlendMode *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_BoneInfo = {"_p_BoneInfo", "BoneInfo *", 0, 0, (void*)&_wrap_class_BoneInfo, 0};
-static swig_type_info _swigt__p_BoundingBox = {"_p_BoundingBox", "BoundingBox *", 0, 0, (void*)&_wrap_class_BoundingBox, 0};
-static swig_type_info _swigt__p_Camera2D = {"_p_Camera2D", "Camera2D *", 0, 0, (void*)&_wrap_class_Camera2D, 0};
-static swig_type_info _swigt__p_Camera3D = {"_p_Camera3D", "Camera3D *|Camera *", 0, 0, (void*)&_wrap_class_Camera3D, 0};
+static swig_type_info _swigt__p_BoneInfo = {"_p_BoneInfo", "struct BoneInfo *|BoneInfo *", 0, 0, (void*)&_wrap_class_BoneInfo, 0};
+static swig_type_info _swigt__p_BoundingBox = {"_p_BoundingBox", "struct BoundingBox *|BoundingBox *", 0, 0, (void*)&_wrap_class_BoundingBox, 0};
+static swig_type_info _swigt__p_Camera2D = {"_p_Camera2D", "struct Camera2D *|Camera2D *", 0, 0, (void*)&_wrap_class_Camera2D, 0};
+static swig_type_info _swigt__p_Camera3D = {"_p_Camera3D", "struct Camera3D *|Camera3D *|Camera *", 0, 0, (void*)&_wrap_class_Camera3D, 0};
 static swig_type_info _swigt__p_CameraMode = {"_p_CameraMode", "enum CameraMode *|CameraMode *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_CameraProjection = {"_p_CameraProjection", "enum CameraProjection *|CameraProjection *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Color = {"_p_Color", "Color *", 0, 0, (void*)&_wrap_class_Color, 0};
+static swig_type_info _swigt__p_Color = {"_p_Color", "struct Color *|Color *", 0, 0, (void*)&_wrap_class_Color, 0};
 static swig_type_info _swigt__p_ConfigFlags = {"_p_ConfigFlags", "enum ConfigFlags *|ConfigFlags *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_CubemapLayout = {"_p_CubemapLayout", "enum CubemapLayout *|CubemapLayout *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Font = {"_p_Font", "Font *", 0, 0, (void*)&_wrap_class_Font, 0};
+static swig_type_info _swigt__p_Font = {"_p_Font", "struct Font *|Font *", 0, 0, (void*)&_wrap_class_Font, 0};
 static swig_type_info _swigt__p_FontType = {"_p_FontType", "enum FontType *|FontType *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_GamepadAxis = {"_p_GamepadAxis", "enum GamepadAxis *|GamepadAxis *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_GamepadButton = {"_p_GamepadButton", "enum GamepadButton *|GamepadButton *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Gesture = {"_p_Gesture", "enum Gesture *|Gesture *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_GlyphInfo = {"_p_GlyphInfo", "GlyphInfo *", 0, 0, (void*)&_wrap_class_GlyphInfo, 0};
-static swig_type_info _swigt__p_Image = {"_p_Image", "Image *", 0, 0, (void*)&_wrap_class_Image, 0};
+static swig_type_info _swigt__p_GlyphInfo = {"_p_GlyphInfo", "struct GlyphInfo *|GlyphInfo *", 0, 0, (void*)&_wrap_class_GlyphInfo, 0};
+static swig_type_info _swigt__p_Image = {"_p_Image", "struct Image *|Image *", 0, 0, (void*)&_wrap_class_Image, 0};
 static swig_type_info _swigt__p_KeyboardKey = {"_p_KeyboardKey", "enum KeyboardKey *|KeyboardKey *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Material = {"_p_Material", "Material *", 0, 0, (void*)&_wrap_class_Material, 0};
-static swig_type_info _swigt__p_MaterialMap = {"_p_MaterialMap", "MaterialMap *", 0, 0, (void*)&_wrap_class_MaterialMap, 0};
+static swig_type_info _swigt__p_Material = {"_p_Material", "struct Material *|Material *", 0, 0, (void*)&_wrap_class_Material, 0};
+static swig_type_info _swigt__p_MaterialMap = {"_p_MaterialMap", "struct MaterialMap *|MaterialMap *", 0, 0, (void*)&_wrap_class_MaterialMap, 0};
 static swig_type_info _swigt__p_MaterialMapIndex = {"_p_MaterialMapIndex", "enum MaterialMapIndex *|MaterialMapIndex *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Matrix = {"_p_Matrix", "Matrix *", 0, 0, (void*)&_wrap_class_Matrix, 0};
-static swig_type_info _swigt__p_Mesh = {"_p_Mesh", "Mesh *", 0, 0, (void*)&_wrap_class_Mesh, 0};
-static swig_type_info _swigt__p_Model = {"_p_Model", "Model *", 0, 0, (void*)&_wrap_class_Model, 0};
-static swig_type_info _swigt__p_ModelAnimation = {"_p_ModelAnimation", "ModelAnimation *", 0, 0, (void*)&_wrap_class_ModelAnimation, 0};
+static swig_type_info _swigt__p_Matrix = {"_p_Matrix", "struct Matrix *|Matrix *", 0, 0, (void*)&_wrap_class_Matrix, 0};
+static swig_type_info _swigt__p_Mesh = {"_p_Mesh", "struct Mesh *|Mesh *", 0, 0, (void*)&_wrap_class_Mesh, 0};
+static swig_type_info _swigt__p_Model = {"_p_Model", "struct Model *|Model *", 0, 0, (void*)&_wrap_class_Model, 0};
+static swig_type_info _swigt__p_ModelAnimation = {"_p_ModelAnimation", "struct ModelAnimation *|ModelAnimation *", 0, 0, (void*)&_wrap_class_ModelAnimation, 0};
 static swig_type_info _swigt__p_MouseButton = {"_p_MouseButton", "enum MouseButton *|MouseButton *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_MouseCursor = {"_p_MouseCursor", "enum MouseCursor *|MouseCursor *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Music = {"_p_Music", "Music *", 0, 0, (void*)&_wrap_class_Music, 0};
-static swig_type_info _swigt__p_NPatchInfo = {"_p_NPatchInfo", "NPatchInfo *", 0, 0, (void*)&_wrap_class_NPatchInfo, 0};
+static swig_type_info _swigt__p_Music = {"_p_Music", "struct Music *|Music *", 0, 0, (void*)&_wrap_class_Music, 0};
+static swig_type_info _swigt__p_NPatchInfo = {"_p_NPatchInfo", "struct NPatchInfo *|NPatchInfo *", 0, 0, (void*)&_wrap_class_NPatchInfo, 0};
 static swig_type_info _swigt__p_NPatchLayout = {"_p_NPatchLayout", "enum NPatchLayout *|NPatchLayout *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PixelFormat = {"_p_PixelFormat", "enum PixelFormat *|PixelFormat *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Ray = {"_p_Ray", "Ray *", 0, 0, (void*)&_wrap_class_Ray, 0};
-static swig_type_info _swigt__p_RayCollision = {"_p_RayCollision", "RayCollision *", 0, 0, (void*)&_wrap_class_RayCollision, 0};
-static swig_type_info _swigt__p_Rectangle = {"_p_Rectangle", "Rectangle *", 0, 0, (void*)&_wrap_class_Rectangle, 0};
-static swig_type_info _swigt__p_RenderTexture = {"_p_RenderTexture", "RenderTexture *|RenderTexture2D *", 0, 0, (void*)&_wrap_class_RenderTexture, 0};
-static swig_type_info _swigt__p_Shader = {"_p_Shader", "Shader *", 0, 0, (void*)&_wrap_class_Shader, 0};
+static swig_type_info _swigt__p_Ray = {"_p_Ray", "Ray *|struct Ray *", 0, 0, (void*)&_wrap_class_Ray, 0};
+static swig_type_info _swigt__p_RayCollision = {"_p_RayCollision", "struct RayCollision *|RayCollision *", 0, 0, (void*)&_wrap_class_RayCollision, 0};
+static swig_type_info _swigt__p_Rectangle = {"_p_Rectangle", "struct Rectangle *|Rectangle *", 0, 0, (void*)&_wrap_class_Rectangle, 0};
+static swig_type_info _swigt__p_RenderTexture = {"_p_RenderTexture", "struct RenderTexture *|RenderTexture *|RenderTexture2D *", 0, 0, (void*)&_wrap_class_RenderTexture, 0};
+static swig_type_info _swigt__p_Shader = {"_p_Shader", "struct Shader *|Shader *", 0, 0, (void*)&_wrap_class_Shader, 0};
 static swig_type_info _swigt__p_ShaderAttributeDataType = {"_p_ShaderAttributeDataType", "enum ShaderAttributeDataType *|ShaderAttributeDataType *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_ShaderLocationIndex = {"_p_ShaderLocationIndex", "enum ShaderLocationIndex *|ShaderLocationIndex *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_ShaderUniformDataType = {"_p_ShaderUniformDataType", "enum ShaderUniformDataType *|ShaderUniformDataType *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Sound = {"_p_Sound", "Sound *", 0, 0, (void*)&_wrap_class_Sound, 0};
-static swig_type_info _swigt__p_Texture = {"_p_Texture", "TextureCubemap *|Texture *|Texture2D *", 0, 0, (void*)&_wrap_class_Texture, 0};
+static swig_type_info _swigt__p_Sound = {"_p_Sound", "struct Sound *|Sound *", 0, 0, (void*)&_wrap_class_Sound, 0};
+static swig_type_info _swigt__p_Texture = {"_p_Texture", "TextureCubemap *|struct Texture *|Texture *|Texture2D *", 0, 0, (void*)&_wrap_class_Texture, 0};
 static swig_type_info _swigt__p_TextureFilter = {"_p_TextureFilter", "enum TextureFilter *|TextureFilter *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_TextureWrap = {"_p_TextureWrap", "enum TextureWrap *|TextureWrap *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_TraceLogLevel = {"_p_TraceLogLevel", "enum TraceLogLevel *|TraceLogLevel *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Transform = {"_p_Transform", "Transform *", 0, 0, (void*)&_wrap_class_Transform, 0};
-static swig_type_info _swigt__p_Vector2 = {"_p_Vector2", "Vector2 *", 0, 0, (void*)&_wrap_class_Vector2, 0};
-static swig_type_info _swigt__p_Vector3 = {"_p_Vector3", "Vector3 *", 0, 0, (void*)&_wrap_class_Vector3, 0};
-static swig_type_info _swigt__p_Vector4 = {"_p_Vector4", "Vector4 *|Quaternion *", 0, 0, (void*)&_wrap_class_Vector4, 0};
-static swig_type_info _swigt__p_VrDeviceInfo = {"_p_VrDeviceInfo", "VrDeviceInfo *", 0, 0, (void*)&_wrap_class_VrDeviceInfo, 0};
-static swig_type_info _swigt__p_VrStereoConfig = {"_p_VrStereoConfig", "VrStereoConfig *", 0, 0, (void*)&_wrap_class_VrStereoConfig, 0};
-static swig_type_info _swigt__p_Wave = {"_p_Wave", "Wave *", 0, 0, (void*)&_wrap_class_Wave, 0};
+static swig_type_info _swigt__p_Transform = {"_p_Transform", "struct Transform *|Transform *", 0, 0, (void*)&_wrap_class_Transform, 0};
+static swig_type_info _swigt__p_Vector2 = {"_p_Vector2", "struct Vector2 *|Vector2 *", 0, 0, (void*)&_wrap_class_Vector2, 0};
+static swig_type_info _swigt__p_Vector3 = {"_p_Vector3", "struct Vector3 *|Vector3 *", 0, 0, (void*)&_wrap_class_Vector3, 0};
+static swig_type_info _swigt__p_Vector4 = {"_p_Vector4", "struct Vector4 *|Vector4 *|Quaternion *", 0, 0, (void*)&_wrap_class_Vector4, 0};
+static swig_type_info _swigt__p_VrDeviceInfo = {"_p_VrDeviceInfo", "struct VrDeviceInfo *|VrDeviceInfo *", 0, 0, (void*)&_wrap_class_VrDeviceInfo, 0};
+static swig_type_info _swigt__p_VrStereoConfig = {"_p_VrStereoConfig", "struct VrStereoConfig *|VrStereoConfig *", 0, 0, (void*)&_wrap_class_VrStereoConfig, 0};
+static swig_type_info _swigt__p_Wave = {"_p_Wave", "struct Wave *|Wave *", 0, 0, (void*)&_wrap_class_Wave, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_int_p_q_const__char_va_list__void = {"_p_f_int_p_q_const__char_va_list__void", "void (*)(int,char const *,va_list)|TraceLogCallback", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__char__p_char = {"_p_f_p_q_const__char__p_char", "char *(*)(char const *)|LoadFileTextCallback", 0, 0, (void*)0, 0};
@@ -28392,10 +29044,10 @@ static swig_type_info _swigt__p_f_p_q_const__char_p_unsigned_int__p_unsigned_cha
 static swig_type_info _swigt__p_f_p_q_const__char_p_void_unsigned_int__bool = {"_p_f_p_q_const__char_p_void_unsigned_int__bool", "bool (*)(char const *,void *,unsigned int)|SaveFileDataCallback", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_float = {"_p_float", "float *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_int = {"_p_int", "int *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_p_Rectangle = {"_p_p_Rectangle", "Rectangle **", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_p_Transform = {"_p_p_Transform", "Transform **", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_p_Rectangle = {"_p_p_Rectangle", "struct Rectangle **|Rectangle **", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_p_Transform = {"_p_p_Transform", "struct Transform **|Transform **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_char = {"_p_p_char", "char **", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_rAudioBuffer = {"_p_rAudioBuffer", "rAudioBuffer *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_rAudioBuffer = {"_p_rAudioBuffer", "struct rAudioBuffer *|rAudioBuffer *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_char = {"_p_unsigned_char", "unsigned char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_int = {"_p_unsigned_int", "unsigned int *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_short = {"_p_unsigned_short", "unsigned short *", 0, 0, (void*)0, 0};

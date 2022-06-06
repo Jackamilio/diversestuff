@@ -7,12 +7,12 @@ return {
    {5},
    {6},
    {7},
+   ["Bitmap aliases"]={4},
    ["Scanned lua context"]={6},
    ["Run command"]={3},
    ["Console"]={2},
-   ["Demo"]={5},
    ["Scripts"]={7},
-   ["Bitmap aliases"]={4},
+   ["Demo"]={5},
 },
 -- Table: {2}
 {
