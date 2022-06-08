@@ -559,6 +559,16 @@ int main()
 			fileDialog.Close();
 		}
 
+		// Calling all "End"s in case lua stopped a script inside a Begin/End or the user made a mistake
+		// Todo : trace this in lua wrapping and tell the user
+		EndMode2D();
+		EndMode3D();
+		EndTextureMode();
+		EndShaderMode();
+		EndBlendMode();
+		EndScissorMode();
+		EndVrStereoMode();
+
 		// End frame
 		rlImGuiEnd();
 		EndDrawing();
