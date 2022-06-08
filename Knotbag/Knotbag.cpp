@@ -1,208 +1,101 @@
 #include <iostream>
-#include <allegro5/allegro5.h>
-#include <allegro5/allegro_image.h>
-#include "imgui_impl_allegro5.h"
-#include <allegro5/allegro_primitives.h>
+#include <raylib.h>
+#include <rlgl.h>
+#include "rlImGui.h"
 #include "lua/lua.hpp"
 #include "TextEditor.h"
 #include <fstream>
 #include <sstream>
 #include "stdcapture.h"
 #include "ImFileDialog.h"
-#include <objbase.h>
 #include "imgui_lua_bindings.h"
 #include "additional_bindings.h"
 #include <set>
 #include "utils.h"
-#include "lallegro.h"
+#include <assert.h>
 
-thread_local ImGuiContext* MyImGuiTLS;
+extern "C" int luaopen_raylib(lua_State * L);
 
+ImGuiContext* lua_fail_imgui_context = nullptr;
 static double last_loop_start = 0.0;
-static bool kill_lua = false;
-static ALLEGRO_MUTEX* lua_monitoring_mutex;
+static bool lua_is_failing = false;
+static double last_lua_fail_frame = 0.0;
+static Color lua_fail_fade_color;
 
-static ALLEGRO_DISPLAY* main_display = nullptr;
+std::capture::CaptureStdout logcapture;
+Texture screenshot;
 
-namespace DearImguiIntegration {
-	void Init(ALLEGRO_DISPLAY* display) {
-		// Setup Dear ImGui context
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-
-		ImGuiIO& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-
-		// Setup Dear ImGui style
-		ImGui::StyleColorsDark();
-		//ImGui::StyleColorsClassic();
-
-		// Setup Platform/Renderer backends
-		ImGui_ImplAllegro5_Init(display);
-	}
-
-	bool Event(ALLEGRO_EVENT& event) {
-		ImGui_ImplAllegro5_ProcessEvent(&event);
-
-		if (event.type == ALLEGRO_EVENT_DISPLAY_RESIZE)
-		{
-			ImGui_ImplAllegro5_InvalidateDeviceObjects();
-			//al_acknowledge_resize(display);
-			ImGui_ImplAllegro5_CreateDeviceObjects();
-		}
-
-		ImGuiIO& io = ImGui::GetIO();
-		return io.WantCaptureKeyboard || io.WantCaptureMouse;
-	}
-
-	void NewFrame() {
-		// Start the Dear ImGui frame
-		ImGui_ImplAllegro5_NewFrame();
-		ImGui::NewFrame();
-	}
-
-	void Render() {
-		ImGui::Render();
-		ImGui_ImplAllegro5_RenderDrawData(ImGui::GetDrawData());
-	}
-
-	void Destroy() {
-		ImGui_ImplAllegro5_Shutdown();
-		ImGui::DestroyContext();
+void UnloadScreenshot() {
+	if (screenshot.id != 0) {
+		UnloadTexture(screenshot);
+		screenshot.id = 0;
 	}
 }
 
-static void* lua_monitoring(ALLEGRO_THREAD* thread, void* arg) {
-	//ALLEGRO_DISPLAY* display = al_create_display(280, 420);
-	//if (!display) {
-	//	fprintf(stderr, "failed to create display!\n");
-	//	return (void*)1;
-	//}
-
-	al_set_target_backbuffer(main_display);
-
-	ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
-	if (!eventQueue) {
-		fprintf(stderr, "failed to create event queue!\n");
-		return (void*)1;
-	};
-
-	al_register_event_source(eventQueue, al_get_display_event_source(main_display));
-	al_register_event_source(eventQueue, al_get_keyboard_event_source());
-	al_register_event_source(eventQueue, al_get_mouse_event_source());
-
-	// Dear Imgui
-	DearImguiIntegration::Init(main_display);
-
-	// time management
-	double lastTime = al_get_time();
-	double dtTarget = 1.0 / 10.0;
-
-	// taking over stuff
-	bool taking_over = false;
-	// screenshot doesn't work because it takes the current buffer where nothing was drawn yet
-	//ALLEGRO_BITMAP* screenshot = nullptr;
-
-	bool stayOpen = true;
-	while (stayOpen) {
-		double time = al_get_time();
-
-		al_lock_mutex(lua_monitoring_mutex);
-		bool needs_taking_over = (al_get_time() - last_loop_start) > 1.0;
-		al_unlock_mutex(lua_monitoring_mutex);
-
-		if (needs_taking_over && !taking_over) {
-			// started taking over
-			dtTarget = 1.0 / 60.0;
-			//if (screenshot) {
-			//	al_destroy_bitmap(screenshot);
-			//}
-			//ALLEGRO_BITMAP* bb = al_get_backbuffer(main_display);
-			//screenshot = al_create_bitmap(al_get_bitmap_width(bb), al_get_bitmap_height(bb));
-			//al_set_target_bitmap(screenshot);
-			//al_draw_bitmap(bb, 0.0f, 0.0f, 0);
-			//al_set_target_bitmap(bb);
-		}
-		else if (!needs_taking_over && taking_over) {
-			// stopped taking over
-			dtTarget = 1.0 / 10.0;
-			//if (screenshot) {
-			//	al_destroy_bitmap(screenshot);
-			//	screenshot = nullptr;
-			//}
-		}
-
-		taking_over = needs_taking_over;
-
-		if (taking_over) {
-			ALLEGRO_EVENT event;
-			while (al_get_next_event(eventQueue, &event)) {
-				if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-					stayOpen = false;
-				}
-				else if (!DearImguiIntegration::Event(event)) {
-					// other events
-				}
-			}
-
-			DearImguiIntegration::NewFrame();
-
-			ImGui::Begin("Debug");
-
-			ImGui::Text("Infinite loop detected!");
-			if (ImGui::Button("Kill current lua script")) {
-				al_lock_mutex(lua_monitoring_mutex);
-				kill_lua = true;
-				al_unlock_mutex(lua_monitoring_mutex);
-			}
-
-			ImGui::End();
-
-			//if (screenshot) {
-			//	al_draw_bitmap(screenshot, 0.0f, 0.0f, 0);
-			//}
-			//else {
-				al_clear_to_color(al_map_rgb(0,0,0));
-			//}
-
-			DearImguiIntegration::Render();
-
-			al_flip_display();
-		}
-		else {
-			al_flush_event_queue(eventQueue);
-		}
-
-		double elapsed = al_get_time() - time;
-
-		if (al_get_thread_should_stop(thread)) {
-			stayOpen = false;
-		}
-
-		if (elapsed < dtTarget) {
-			al_rest(dtTarget - elapsed);
-		}
-	}
-
-	DearImguiIntegration::Destroy();
-
-	//if (display) { al_destroy_display(display); }
-	if (eventQueue) { al_destroy_event_queue(eventQueue); }
-
-	return nullptr;
+void TakeScreenshot(bool late = false) {
+	UnloadScreenshot();
+	if (late) SwapScreenBuffer();
+	Image img = LoadImageFromScreen();
+	if (late) SwapScreenBuffer();
+	screenshot = LoadTextureFromImage(img);
+	UnloadImage(img);
 }
 
 void lua_monitoring_hook(lua_State* L, lua_Debug* ar) {
-	al_lock_mutex(lua_monitoring_mutex);
+	bool needs_taking_over = (GetTime() - last_loop_start) > 1.0;
+
+	if (needs_taking_over && !lua_is_failing) {
+		// started taking over
+		TakeScreenshot(true);
+		lua_fail_fade_color = WHITE;
+	}
+	else if (!needs_taking_over && lua_is_failing) {
+		// stopped taking over
+		UnloadScreenshot();
+	}
+
+	lua_is_failing = needs_taking_over;
+	bool kill_lua = false;
+
+	if (lua_is_failing && GetTime() - last_lua_fail_frame > 1.0 / 60.0) {
+		logcapture.flush();
+		last_lua_fail_frame = GetTime();
+		BeginDrawing();
+		if (lua_fail_fade_color.r > 64) {
+			lua_fail_fade_color.r -= 2;
+			lua_fail_fade_color.g -= 2;
+			lua_fail_fade_color.b -= 2;
+		}
+		DrawTexture(screenshot, 0, 0, lua_fail_fade_color);
+		ImGuiContext* truecontext = ImGui::GetCurrentContext();
+		ImGui::SetCurrentContext(lua_fail_imgui_context);
+		rlImGuiBegin();
+
+		ImGui::Begin("Debug");
+
+		ImGui::Text("Infinite loop detected!");
+		if (ImGui::Button("Kill current lua script")) {
+			kill_lua = true;
+		}
+
+		ImGui::End();
+
+		rlImGuiEnd();
+		ImGui::SetCurrentContext(truecontext);
+
+		// This the main stuff done inside EndDrawing, but without time management
+		rlDrawRenderBatchActive();
+		SwapScreenBuffer();
+		PollInputEvents();
+	}
+
+	//lua_monitoring_mutex.lock();
 	if (kill_lua) {
 		kill_lua = false;
-		al_unlock_mutex(lua_monitoring_mutex);
 		lua_pushfstring(L, "Lua script killed from debugger");
 		lua_error(L); // never returns
 		return; // I'm explicit about this anyway
 	}
-	al_unlock_mutex(lua_monitoring_mutex);
 }
 
 static thread_local lua_State* currentluacontext = nullptr;
@@ -265,85 +158,60 @@ void trigger_knotbag_callback(lua_State* L, const char* callback) {
 
 int main()
 {
-	CoInitialize(nullptr); // ImFileDialog needs this if we don't want the debug output complaining
-
-	// Init allegro
-	if (!al_install_system(ALLEGRO_VERSION_INT, nullptr)) {
-		fprintf(stderr, "failed to initialize allegro!\n");
-		return false;
-	}
-
-	if (!al_install_keyboard()) {
-		fprintf(stderr, "failed to install keyboard!\n");
-		return false;
-	}
-
-	if (!al_install_mouse()) {
-		fprintf(stderr, "failed to install mouse!\n");
-		return false;
-	}
-
-	if (!al_init_primitives_addon()) {
-		fprintf(stderr, "failed to load primitives addon!\n");
-		return false;
-	}
-
-	if (!al_init_image_addon()) {
-		fprintf(stderr, "failed to load image addon!\n");
-		return false;
-	}
-
-//	if (!al_init_font_addon()) {
-//		fprintf(stderr, "failed to load font addon!\n");
-//		return false;
-//	}
-
-//	if (!al_init_native_dialog_addon()) {
-//		fprintf(stderr, "failed to load native dialog addon!\n");
-//		return false;
-//	}
-
-	al_set_new_display_flags(ALLEGRO_RESIZABLE);
-//	al_set_new_display_option(ALLEGRO_DEPTH_SIZE, 16, ALLEGRO_SUGGEST);
-
-	main_display = al_create_display(1280, 720);
-	if (!main_display) {
-		fprintf(stderr, "failed to create display!\n");
-		return false;
-	}
-
-	ALLEGRO_EVENT_QUEUE* eventQueue = al_create_event_queue();
-	if (!eventQueue) {
-		fprintf(stderr, "failed to create event queue!\n");
-		return false;
-	};
-
-	al_register_event_source(eventQueue, al_get_display_event_source(main_display));
-	al_register_event_source(eventQueue, al_get_keyboard_event_source());
-	al_register_event_source(eventQueue, al_get_mouse_event_source());
-
-	// Dear Imgui
-	DearImguiIntegration::Init(main_display);
+	// Init raylib and ImGui
+	SetTraceLogLevel(LOG_WARNING);
+	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
+	InitWindow(1280, 800, "KNOTBAG");
+	SetTargetFPS(60);
+	rlImGuiSetup(true);
+	lua_fail_imgui_context = ImGui::CreateContext(ImGui::GetIO().Fonts);
 
 	// File Dialog
-	ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
-		ALLEGRO_BITMAP* bmp = al_create_bitmap(w, h);
-		ALLEGRO_LOCKED_REGION* lr = al_lock_bitmap(bmp, (fmt == 0) ? ALLEGRO_PIXEL_FORMAT_ARGB_8888 : ALLEGRO_PIXEL_FORMAT_ABGR_8888, ALLEGRO_LOCK_WRITEONLY);
-		memcpy(lr->data, data, w * h * lr->pixel_size); // I mostly ignore lr, will it work?
-		al_unlock_bitmap(bmp);
-		return (void*)bmp;
-	};
-	std::vector<ALLEGRO_BITMAP*> bitmaps_to_destroy;
-	ifd::FileDialog::Instance().DeleteTexture = [&bitmaps_to_destroy](void* tex) {
-		bitmaps_to_destroy.push_back((ALLEGRO_BITMAP*)tex);
-	};
 	ifd::FileDialog& fileDialog = ifd::FileDialog::Instance();
+	fileDialog.CreateImage = [](const char* file, int& w, int& h) -> uint8_t* {
+		Image img = LoadImage(file);
+		ImageFormat(&img, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+		w = img.width;
+		h = img.height;
+		size_t s = w * h * 4;
+		uint8_t* ret = new uint8_t[s];
+		memcpy(ret, img.data, s);
+		UnloadImage(img);
+		return ret;
+	};
+	fileDialog.DeleteImage = [](uint8_t* data) {
+		delete[] data;
+	};
+	fileDialog.CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
+		if (!fmt) {
+			// convert from BGRA to RGBA = swap B and R
+			for (int i = 0; i < w * h * 4; i += 4) {
+				std::swap(data[i], data[i + 2]);
+			}
+		}
+		Image img;
+		img.data = data;
+		img.width = w;
+		img.height = h;
+		img.mipmaps = 1;
+		img.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+		Texture2D* tex = new Texture2D;
+		*tex = LoadTextureFromImage(img);
+		GenTextureMipmaps(tex);
+		SetTextureWrap(*tex, TEXTURE_WRAP_CLAMP);
+		return tex;
+	};
+	fileDialog.DeleteTexture = [](void* voidtex) {
+		Texture2D* tex = (Texture2D*)voidtex;
+		UnloadTexture(*tex);
+		delete tex;
+	};
 
 	lua_State* L;
 	// Console
 	ImGuiTextBuffer capture;
 	ImGuiTextBuffer lastcapture;
-	std::capture::CaptureStdout capturer([&capture, &lastcapture, &L](const char* buf, size_t szbuf) {
+	logcapture.callback = [&capture, &lastcapture, &L](const char* buf, size_t szbuf) {
 		// give it to lua if the users wants a custom console
 		int pop = 1;
 		bool callsuccess = false;
@@ -363,14 +231,13 @@ int main()
 			capture.append(buf);
 		}
 		lastcapture.append(buf);
-		});
+		};
 
 	// lua
 	L = luaL_newstate();
 	luaL_openlibs(L);
 	ImGui::LuaBindings::Load(L);
-	luaopen_lallegro_core(L);
-	luaopen_lallegro_primitives(L);
+	luaopen_raylib(L);
 	additional_bindings(L);
 	lua_newtable(L);
 	lua_pushcfunction(L, lua_knotbag_legacyconsole);
@@ -387,9 +254,6 @@ int main()
 
 	// lua monitoring
 	lua_sethook(L, lua_monitoring_hook, LUA_MASKCOUNT, 100);
-	lua_monitoring_mutex = al_create_mutex();
-	ALLEGRO_THREAD* thread = al_create_thread(lua_monitoring, NULL);
-	al_start_thread(thread);
 
 	// Text editors
 	std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>> lua_editors;
@@ -421,24 +285,29 @@ int main()
 	auto EditorOpenFile = [&fileDialog]() {
 		fileDialog.Open("MultiPurposeOpen", "Open a file", "Lua script (*.lua){.lua},.*");
 	};
-	auto EditorSaveFile = [&fileDialog, &editor_saving_as](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator it, bool saveas) {
-		if (saveas) {
-			fileDialog.Save("SaveLuaScriptAs", "Save the script", "Lua script (*.lua){.lua}");
-			std::get<0>(editor_saving_as) = it->first;
-			std::get<1>(editor_saving_as) = std::get<0>(it->second);
-			std::get<2>(editor_saving_as) = std::get<2>(it->second);
-		}
-		else {
-			TextEditor& editor = *std::get<0>(it->second);
-			auto textToSave = editor.GetText();
-			std::ofstream t(it->first);
-			if (t.good()) {
-				t << textToSave;
-				editor.MarkSaved();
-				return true;
-			}
+	auto EditorSave = [](const std::string& file, std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator it) {
+		TextEditor& editor = *std::get<0>(it->second);
+		std::ofstream t(file);
+		if (t.good()) {
+			t << editor.GetText();
+			editor.MarkSaved();
+			return true;
 		}
 		return false;
+	};
+	auto EditorSaveAs = [&fileDialog, &editor_saving_as](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator it) {
+		fileDialog.Save("SaveLuaScriptAs", "Save the script", "Lua script (*.lua){.lua}");
+		std::get<0>(editor_saving_as) = it->first;
+		std::get<1>(editor_saving_as) = std::get<0>(it->second);
+		std::get<2>(editor_saving_as) = std::get<2>(it->second);
+	};
+	auto EditorTrySave = [&fileDialog, &editor_saving_as, &EditorSave, &EditorSaveAs](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator it) {
+		if (std::get<1>(it->second)) {
+			EditorSaveAs(it);
+		}
+		else {
+			EditorSave(it->first, it);
+		}
 	};
 	auto EditorRun = [&L](std::unordered_map<std::string, std::tuple<TextEditor*, bool, int>>::iterator& it) {
 		std::cout << "Running " << it->first << std::endl;
@@ -462,33 +331,16 @@ int main()
 		it = lua_editors.erase(it);
 	};
 
-	// time management
-	double lastTime = al_get_time();
-	double dtTarget = 1.0 / 60.0;
-
 	bool stayOpen = true;
-	while (stayOpen) {
-		double time = al_get_time();
+	while (stayOpen && !WindowShouldClose()) {
 
-		al_lock_mutex(lua_monitoring_mutex);
-		last_loop_start = time;
-		al_unlock_mutex(lua_monitoring_mutex);
+		//lua_monitoring_mutex.lock();
+		last_loop_start = GetTime();
+		//lua_monitoring_mutex.unlock();
 
-		ALLEGRO_EVENT event;
-		while (al_get_next_event(eventQueue, &event)) {
-			if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-				stayOpen = false;
-			}
-			else if (event.type == ALLEGRO_EVENT_DISPLAY_RESIZE) {
-				al_acknowledge_resize(main_display);
-			}
-			else if (!DearImguiIntegration::Event(event)) {
-				// other events
-			}
-		}
-
-		al_clear_to_color(al_map_rgba_f(0.5f, 0.5f, 0.5f, 1.0f));
-		DearImguiIntegration::NewFrame();
+		BeginDrawing();
+		ClearBackground(LIGHTGRAY);
+		rlImGuiBegin();
 
 		ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
 
@@ -505,10 +357,10 @@ int main()
 					EditorOpenFile();
 				}
 				if (ImGui::MenuItem("Save", "Ctrl-S", nullptr, editor)) {
-					EditorSaveFile(editorit, std::get<1>(editorit->second));
+					EditorTrySave(editorit);
 				}
 				if (ImGui::MenuItem("Save as", nullptr, nullptr, editor)) {
-					EditorSaveFile(editorit, true);
+					EditorSaveAs(editorit);
 				}
 				if (ImGui::MenuItem("Run", "Ctrl-R", nullptr, editor)) {
 					EditorRun(editorit);
@@ -573,7 +425,7 @@ int main()
 			}
 			if (editor) {
 				if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S))) {
-					EditorSaveFile(editorit, std::get<1>(editorit->second));
+					EditorTrySave(editorit);
 				}
 				else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R))) {
 					EditorRun(editorit);
@@ -587,12 +439,12 @@ int main()
 		// function that gets called automatically each frame, the rest is lua's code reponsibility
 		trigger_knotbag_callback(L, "framescript");
 
-		bool console_updated = capturer.end();
+		bool console_updated = logcapture.end();
 		if (console_updated) {
 			std::cout << lastcapture.c_str();
 			lastcapture.clear();
 		}
-		capturer.start();
+		logcapture.start();
 
 		if (legacyconsole_openstate) {
 			if (ImGui::Begin("Legacy console", &legacyconsole_openstate)) {
@@ -689,7 +541,7 @@ int main()
 		if (fileDialog.IsDone("SaveLuaScriptAs")) {
 			if (fileDialog.HasResult() && std::get<1>(editor_saving_as)) {
 				std::string res = fileDialog.GetStrLocalResult();
-				if (EditorSaveFile(editorit, false)) {
+				if (EditorSave(res, editorit)) {
 					std::cout << "Saved file \"" << res << '\"' << std::endl;
 					auto it = lua_editors.find(std::get<0>(editor_saving_as));
 					if (it != lua_editors.end()) {
@@ -708,39 +560,23 @@ int main()
 		}
 
 		// End frame
-		DearImguiIntegration::Render();
-		al_flip_display();
-
-		// Clean frame
-		for (auto bmp : bitmaps_to_destroy) {
-			al_destroy_bitmap(bmp);
-		}
-		bitmaps_to_destroy.clear();
-
-		// Wait next frame
-		double elapsed = al_get_time() - time;
-		if (elapsed < dtTarget) {
-			al_rest(dtTarget - elapsed);
-		}
+		rlImGuiEnd();
+		EndDrawing();
 	}
 
 	// Notify quit
 	trigger_knotbag_callback(L, "quit");
 
-	// Memory leaks happen if we don't do this and the dialog is open while we close everything
-	ifd::FileDialog::Instance().Close();
-
-	al_join_thread(thread, nullptr);
-	al_destroy_thread(thread);
-	al_destroy_mutex(lua_monitoring_mutex);
+	logcapture.end();
 
 	lua_close(L);
 
-	DearImguiIntegration::Destroy();
+	// Memory leaks happen if we don't do this and the dialog is open while we close everything
+	ifd::FileDialog::Instance().Close();
 
-	if (main_display) { al_destroy_display(main_display); }
-	if (eventQueue) { al_destroy_event_queue(eventQueue); }
+	ImGui::DestroyContext(lua_fail_imgui_context);
+	rlImGuiShutdown();
 
-	al_uninstall_system();
-	CoUninitialize(); // see CoInitialize at the top of main
+	UnloadScreenshot();
+	CloseWindow();
 }

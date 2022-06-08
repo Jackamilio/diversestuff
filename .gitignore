@@ -26,4 +26,6 @@
 /Knotbag/x64
 /Knotbag/.vs
 /Knotbag/packages
-Knotbag/allegro.log
+/Knotbag/allegro.log
+/Knotbag/imgui.ini
+/Knotbag/openedwindows.lua

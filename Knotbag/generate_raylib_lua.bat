@@ -1,0 +1,1 @@
+swig -lua -I..\..\vcpkg\installed\x64-windows\include -o raylib_wrap.cpp raylib.i

@@ -4,16 +4,6 @@
 #include "imgui.h"
 #include "imgui_lua_bindings.h"
 #include "utils.h"
-#include <allegro5/allegro5.h>
-#include <allegro5/allegro_primitives.h>
-
-//std::string imgui_inputtext(const char* label, std::string text) {
-//	char buf[128];
-//	sprintf_s(buf, 128, text.c_str());
-//	ImGui::InputText(label, buf, 128);
-//	text = buf;
-//	return text;
-//}
 
 bool imgui_io_mousedown(ImGuiIO* io, int b) {
 	return io && b >= 0 && b <= 5 && io->MouseDown[b];
@@ -35,7 +25,6 @@ void additional_bindings(lua_State* L)
 		.addFunction("fileexists", fileexists)
 		.beginNamespace("imgui")
 			.addFunction("CleanEndStack", ImGui::LuaBindings::CleanEndStack)
-			//.addFunction("InputText", imgui_inputtext)
 			.beginClass<ImVec2>("ImVec2")
 				.addConstructor<void(*)(float, float)>()
 				.addProperty("x", &ImVec2::x)

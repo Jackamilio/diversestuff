@@ -1,0 +1,13 @@
+knotbag.set_window("Raylib tests", function()
+	imgui.LabelText("Raylib Ctrl", tostring(raylib.IsKeyDown(raylib.KEY_LEFT_CONTROL)))
+	imgui.LabelText("Raylib S", tostring(raylib.IsKeyDown(raylib.KEY_S)))
+	imgui.LabelText("Raylib R", tostring(raylib.IsKeyDown(raylib.KEY_R)))
+	imgui.LabelText("Raylib A", tostring(raylib.IsKeyDown(raylib.KEY_A)))
+	imgui.Separator()
+	local iio = imgui.GetIO()
+	imgui.LabelText("ImGui Ctrl", tostring(iio.KeyCtrl))
+	imgui.LabelText("ImGui S", tostring(imgui.IsKeyDown(imgui.constant.Key.S)))
+	imgui.LabelText("ImGui R", tostring(imgui.IsKeyDown(imgui.constant.Key.R)))
+	imgui.LabelText("ImGui A", tostring(imgui.IsKeyDown(imgui.constant.Key.A)))
+	return true
+end)

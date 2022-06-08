@@ -82,12 +82,14 @@
     <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
     <Allegro_LibraryType>DynamicRelease</Allegro_LibraryType>
     <ExternalIncludePath>..\..\LuaBridge\Source</ExternalIncludePath>
+    <IncludePath>lua;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <ExternalIncludePath>..\..\LuaBridge\Source</ExternalIncludePath>
     <Allegro_AddonImage>true</Allegro_AddonImage>
     <Allegro_AddonPrimitives>true</Allegro_AddonPrimitives>
+    <IncludePath>lua;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -153,13 +155,10 @@
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_demo.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
-    <ClCompile Include="imgui_impl_allegro5.cpp" />
     <ClCompile Include="imgui_lua_bindings.cpp" />
     <ClCompile Include="imgui_tables.cpp" />
     <ClCompile Include="imgui_widgets.cpp" />
     <ClCompile Include="Knotbag.cpp" />
-    <ClCompile Include="lallegro_core.c" />
-    <ClCompile Include="lallegro_primitives.c" />
     <ClCompile Include="lua\lapi.c" />
     <ClCompile Include="lua\lauxlib.c" />
     <ClCompile Include="lua\lbaselib.c" />
@@ -192,12 +191,13 @@
     <ClCompile Include="lua\lutf8lib.c" />
     <ClCompile Include="lua\lvm.c" />
     <ClCompile Include="lua\lzio.c" />
+    <ClCompile Include="raylib_wrap.cpp" />
+    <ClCompile Include="rlImGui.cpp" />
     <ClCompile Include="TextEditor.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui_iterator.inl" />
-    <None Include="packages.config" />
     <None Include="SWIG_footer.inl" />
     <None Include="SWIG_header.inl" />
   </ItemGroup>
@@ -206,13 +206,11 @@
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="ImFileDialog.h" />
     <ClInclude Include="imgui.h" />
-    <ClInclude Include="imgui_impl_allegro5.h" />
     <ClInclude Include="imgui_internal.h" />
     <ClInclude Include="imgui_lua_bindings.h" />
     <ClInclude Include="imstb_rectpack.h" />
     <ClInclude Include="imstb_textedit.h" />
     <ClInclude Include="imstb_truetype.h" />
-    <ClInclude Include="lallegro.h" />
     <ClInclude Include="lua\lapi.h" />
     <ClInclude Include="lua\lauxlib.h" />
     <ClInclude Include="lua\lcode.h" />
@@ -241,20 +239,12 @@
     <ClInclude Include="lua\lundump.h" />
     <ClInclude Include="lua\lvm.h" />
     <ClInclude Include="lua\lzio.h" />
+    <ClInclude Include="rlImGui.h" />
+    <ClInclude Include="rlImGuiColors.h" />
     <ClInclude Include="stdcapture.h" />
     <ClInclude Include="TextEditor.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets" Condition="Exists('packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" />
-    <Import Project="packages\Allegro.5.2.7.1\build\native\Allegro.targets" Condition="Exists('packages\Allegro.5.2.7.1\build\native\Allegro.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>Ce projet fait référence à des packages NuGet qui sont manquants sur cet ordinateur. Utilisez l'option de restauration des packages NuGet pour les télécharger. Pour plus d'informations, consultez http://go.microsoft.com/fwlink/?LinkID=322105. Le fichier manquant est : {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\AllegroDeps.1.12.1\build\native\AllegroDeps.targets'))" />
-    <Error Condition="!Exists('packages\Allegro.5.2.7.1\build\native\Allegro.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Allegro.5.2.7.1\build\native\Allegro.targets'))" />
-  </Target>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

@@ -2,13 +2,12 @@
 #include <ctime>
 #include <stack>
 #include <string>
-//#include <thread>
+#include <thread>
 #include <vector>
 #include <functional>
 #include <filesystem>
 #include <unordered_map>
 #include <algorithm> // std::min, std::max
-#include <allegro5/allegro5.h>
 
 #define IFD_DIALOG_FILE			0
 #define IFD_DIALOG_DIRECTORY	1
@@ -50,6 +49,9 @@ namespace ifd {
 		}
 		inline float GetZoom() { return m_zoom; }
 
+		std::function<uint8_t* (const char*, int&, int&)> CreateImage;
+		std::function<void(uint8_t*)> DeleteImage;
+
 		std::function<void*(uint8_t*, int, int, char)> CreateTexture; // char -> fmt -> { 0 = BGRA, 1 = RGBA }
 		std::function<void(void*)> DeleteTexture;
 
@@ -82,7 +84,7 @@ namespace ifd {
 
 			bool HasIconPreview;
 			void* IconPreview;
-			//uint8_t* IconPreviewData;
+			uint8_t* IconPreviewData;
 			int IconPreviewWidth, IconPreviewHeight;
 		};
 
@@ -122,12 +124,10 @@ namespace ifd {
 		void m_refreshIconPreview();
 		void m_clearIconPreview();
 
-		//std::thread* m_previewLoader;
-		ALLEGRO_THREAD* m_previewLoader;
+		std::thread* m_previewLoader;
 		bool m_previewLoaderRunning;
 		void m_stopPreviewLoader();
 		void m_loadPreview();
-		static void* m_loadPreviewThread(ALLEGRO_THREAD* thread, void* arg);
 
 		std::vector<FileTreeNode*> m_treeCache;
 		void m_clearTree(FileTreeNode* node);
