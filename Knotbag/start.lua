@@ -1,10 +1,3 @@
-function pdofile(filename) --WHY WOULD DESTINY GENERATE THIS NAME
-	local ret, err = pcall(dofile, filename)
-	if not ret then
-		print(err)
-	end
-end
-
 pdofile("scan_all_context.lua")
 pdofile("table_save.lua")
 

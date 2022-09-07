@@ -192,7 +192,8 @@ knotbag.set_script("Windows menu", function()
 	local show, cont = imgui.BeginPopupModal("Add docking module", dk.popupstate)
 	dk.popupstate = cont
 	if show then
-		dk.inputvalue = imgui.InputText("##add_docking_module", dk.inputvalue)
+		local change, newname = imgui.InputText("##add_docking_module", dk.inputvalue or "", 128)
+		if change then dk.inputvalue = newname end
 		imgui.SameLine()
 		local run = imgui.IsWindowFocused() and imgui.IsKeyPressed(imgui.constant.Key.Enter)
 		if imgui.Button("Add") or run then
@@ -309,6 +310,7 @@ end)
 knotbag.framescript = function()
 	for i=1,#knotbag.scripts do
 		local s = knotbag.scripts[i]
+		--print("Script "..s.name)
 		s.keepme = s.call()
 		if imgui.CleanEndStack() then
 			print("/!\\ Aborting script \""..s.name.."\" /!\\ (needed imgui stack cleaning)")

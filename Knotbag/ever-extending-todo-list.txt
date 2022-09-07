@@ -1,0 +1,5 @@
+Trace Begin/End functions in raylib-lua and call the End with a warning whenever the user forgets it or lua crashes inside a Begin/End
+
+Create lua constructors for Vectors, Matrices, etc
+
+Regroup all Vectors and similar math stuff in a separate lua module and make it compatible accross all lua modules using it : imgui, raylib, future 3D physics engine, etc

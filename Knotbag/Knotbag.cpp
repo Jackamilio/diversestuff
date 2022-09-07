@@ -243,13 +243,13 @@ int main()
 	lua_pushcfunction(L, lua_knotbag_legacyconsole);
 	lua_setfield(L, -2, "legacy_console");
 	lua_setglobal(L, "knotbag");
-	if (fileexists("start.lua")) {
+	if (fileexists("auto.lua")) {
 		SafeLuaStart(L);
-		SafeLuaDefaultError(luaL_dofile(L, "start.lua"));
+		SafeLuaDefaultError(luaL_dofile(L, "auto.lua"));
 		SafeLuaEnd();
 	}
 	else {
-		std::cout << "start.lua doesn't exist, it's probably why you don't see much yet" << std::endl;
+		std::cout << "auto.lua doesn't exist, it's probably why you don't see much yet" << std::endl;
 	}
 
 	// lua monitoring
