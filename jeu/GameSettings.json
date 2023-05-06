@@ -1,0 +1,1 @@
+{"critter":{"chaseSpeed":1.5,"patrolSpeed":1.0,"patrolTurnRate":0.10000000149011612,"sightDistance":5.0},"critterAttack":{"attackDuration":1.0,"attackSpeed":2.0,"postAttackPauseDuration":0.5,"prepareDuration":1.0,"prepareSpeed":-1.0},"slashFrameDuration":2}

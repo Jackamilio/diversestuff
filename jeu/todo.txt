@@ -1,0 +1,38 @@
+Player gameplay
+  Jump / dodge
+  Sword slash
+  Sword parry
+  
+Enemy
+  Critter
+    Patrol
+    Attack
+      Head bump
+  Humanoid
+    Patrol
+    Attack
+      Light
+      Heavy
+      Dodge and lunge
+  Range
+    Stand back
+    Shoot projectile
+      Arrow
+      Bomb
+  Boss
+    ...
+
+Items
+  Keys
+
+Level building blocks
+  Wall
+  Slope
+  Chests
+  Door
+    Revolving
+    Vertical sliding
+  Mechanisms
+    Pressure plate
+    Lever
+    Pushable block

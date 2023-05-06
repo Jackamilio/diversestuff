@@ -1,0 +1,7 @@
+// code
+RAYLIB - https://www.raylib.com
+IMGUI - https://github.com/ocornut/imgui
+IMGUI RAYLIB INTEGRATION - https://github.com/raylib-extras/rlImGui
+
+// assets
+SWORD SLASHES - https://spikerman.itch.io

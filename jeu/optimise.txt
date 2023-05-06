@@ -1,0 +1,1 @@
+Ennemy / MovingEntity, allow for a MovingEntity with spheres instead of only capsules
