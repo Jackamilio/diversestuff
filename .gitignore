@@ -31,4 +31,6 @@
 /Knotbag/openedwindows.lua
 /jeu/x64
 /jeu/.vs
-jeu/imgui.ini
+/jeu/ignore
+/jeu/imgui.ini
+/jeu/slash.blend1

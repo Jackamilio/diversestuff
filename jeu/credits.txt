@@ -2,6 +2,7 @@
 RAYLIB - https://www.raylib.com
 IMGUI - https://github.com/ocornut/imgui
 IMGUI RAYLIB INTEGRATION - https://github.com/raylib-extras/rlImGui
+NLOHMANN JSON - https://github.com/nlohmann/json
 
 // assets
 SWORD SLASHES - https://spikerman.itch.io
