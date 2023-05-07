@@ -23,7 +23,7 @@ int main(void)
     GamePlane gp;
     VoxelManager vm;
     Player p(vm.voxels);
-    Enemy e(vm.voxels, Vector3{10.0f, 2.0f, 10.0f}, p.position, p.slash);
+    Enemy e(vm.voxels, Vector3{-10.0f, 2.0f, -10.0f}, p.position, p.slash);
     PointLight pl;
 
     game.Loop();

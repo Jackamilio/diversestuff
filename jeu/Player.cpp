@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "rcamera.h"
 #include <string>
 
 SlashTest::SlashTest() : UpdateTask(PRIO_NORMAL) {
@@ -73,7 +74,12 @@ void Player::Do() {
 
     Vector3 prevpos = position;
 
-    UpdateCamera(&game.camera, CAMERA_THIRD_PERSON);
+    Vector2 movement = game.input.movement * (game.deltaTime * game.settings.playerSpeed);
+    CameraMoveForward(&game.camera, movement.y, true);
+    CameraMoveRight(&game.camera, movement.x, true);
+    Vector2 view = game.input.view * (game.deltaTime * 180.0f);
+    CameraPitch(&game.camera, -view.y * DEG2RAD, true, true, false);
+    CameraYaw(&game.camera, -view.x * DEG2RAD, true);
 
     Vector3 newpos = position;
 
@@ -91,7 +97,7 @@ void Player::Do() {
 
     AdjustToCollisions();
 
-    game.camera.position = game.camera.position + position - newpos;
+    game.camera.position += position - newpos;
 
     if (game.input.attack.IsPressed()) {
         Vector3 slashpos = position;

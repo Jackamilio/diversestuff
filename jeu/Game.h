@@ -43,6 +43,7 @@ struct Input {
 		inline void SetCurrentFrame(bool down) { previousframe = currentframe; currentframe = down; }
 	};
 	Vector2 movement{ 0.0f, 0.0f };
+	Vector2 view{ 0.0f, 0.0f };
 	Button jump;
 	Button attack;
 	Button placeblock;
@@ -75,6 +76,7 @@ public:
 	Shader mainshader;
 	Settings settings;
 	Input input;
+	float deltaTime;
 
 	Game();
 

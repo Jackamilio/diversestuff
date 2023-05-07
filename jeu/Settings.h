@@ -4,12 +4,13 @@
 
 struct Settings
 {
+	float playerSpeed = 3.0f;
 	int slashFrameDuration = 2;
 
 	struct Enemy {
 		float patrolSpeed = 1.0f;
+		float patrolCenterDistance = 5.0f;
 		float chaseSpeed = 1.5f;
-		float patrolTurnRate = 0.1f;
 		float sightDistance = 5.0f;
 		
 		struct Attack {
@@ -26,5 +27,5 @@ struct Settings
 };
 
 JSONANDGUI_REFLECTION(Settings::Enemy::Attack, prepareDuration, prepareSpeed, attackDuration, attackSpeed, postAttackPauseDuration);
-JSONANDGUI_REFLECTION(Settings::Enemy, patrolSpeed, chaseSpeed, patrolTurnRate, sightDistance);
-JSONANDGUI_REFLECTION(Settings, slashFrameDuration, critter, critterAttack);
+JSONANDGUI_REFLECTION(Settings::Enemy, patrolSpeed, patrolCenterDistance, chaseSpeed, sightDistance);
+JSONANDGUI_REFLECTION(Settings, playerSpeed, slashFrameDuration, critter, critterAttack);

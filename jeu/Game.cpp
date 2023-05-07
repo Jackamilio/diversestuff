@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "raymath.h"
 #include "rlImGui.h"
 #include "rlgl.h"
 #include <fstream>
@@ -23,7 +24,7 @@ void Game::RemoveUpdateTask(IUpdateTask& task, int priority)
     }
 }
 
-Game::Game() : camera{0}, mainshader{0}
+Game::Game() : camera{0}, mainshader{0}, deltaTime(1.0f/60.0f)
 {
 }
 
@@ -103,6 +104,7 @@ void Game::Loop()
         else {
             input.movement.x = (float)IsKeyDown(KEY_D) - (float)IsKeyDown(KEY_A);
             input.movement.y = (float)IsKeyDown(KEY_W) - (float)IsKeyDown(KEY_S);
+            input.view = Vector2Scale(GetMouseDelta(), 0.05f);
             input.jump.SetCurrentFrame(IsKeyDown(KEY_SPACE));
             input.attack.SetCurrentFrame(IsKeyDown(KEY_F));
             input.placeblock.SetCurrentFrame(IsMouseButtonDown(0));

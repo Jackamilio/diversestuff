@@ -48,6 +48,20 @@ inline Vector3& operator-=(Vector3& lhs, float rhs) {
     return lhs;
 }
 
+inline Vector3& operator*=(Vector3& lhs, float rhs) {
+    lhs.x *= rhs;
+    lhs.y *= rhs;
+    lhs.z *= rhs;
+    return lhs;
+}
+
+inline Vector3& operator/=(Vector3& lhs, float rhs) {
+    lhs.x /= rhs;
+    lhs.y /= rhs;
+    lhs.z /= rhs;
+    return lhs;
+}
+
 inline Vector3 operator-(const Vector3& rhs) {
     return {-rhs.x, -rhs.y, -rhs.z};
 }
@@ -60,8 +74,72 @@ inline bool operator!=(const Vector3& lhs, const Vector3& rhs) {
     return !Vector3Equals(lhs, rhs);
 }
 
+inline Vector2 operator+(const Vector2& lhs, const Vector2& rhs) {
+    return Vector2Add(lhs, rhs);
+}
+
+inline Vector2 operator-(const Vector2& lhs, const Vector2& rhs) {
+    return Vector2Subtract(lhs, rhs);
+}
+
+inline Vector2 operator*(const Vector2& lhs, const float scalar) {
+    return Vector2Scale(lhs, scalar);
+}
+
+inline Vector2 operator/(const Vector2& lhs, const float scalar) {
+    return Vector2Scale(lhs, 1.0f / scalar);
+}
+
+inline Vector2& operator+=(Vector2& lhs, const Vector2& rhs) {
+    lhs.x += rhs.x;
+    lhs.y += rhs.y;
+    return lhs;
+}
+
+inline Vector2& operator-=(Vector2& lhs, const Vector2& rhs) {
+    lhs.x -= rhs.x;
+    lhs.y -= rhs.y;
+    return lhs;
+}
+
+inline Vector2& operator+=(Vector2& lhs, float rhs) {
+    lhs.x += rhs;
+    lhs.y += rhs;
+    return lhs;
+}
+
+inline Vector2& operator-=(Vector2& lhs, float rhs) {
+    lhs.x -= rhs;
+    lhs.y -= rhs;
+    return lhs;
+}
+
+inline Vector2 operator-(const Vector2& rhs) {
+    return { -rhs.x, -rhs.y };
+}
+
+inline bool operator==(const Vector2& lhs, const Vector2& rhs) {
+    return Vector2Equals(lhs, rhs);
+}
+
+inline bool operator!=(const Vector2& lhs, const Vector2& rhs) {
+    return !Vector2Equals(lhs, rhs);
+}
+
 inline Matrix operator*(const Matrix& lhs, const Matrix& rhs) {
     return MatrixMultiply(lhs, rhs);
+}
+
+inline Vector3 Vec2ToVec3(const Vector2& in, float z = 0.0f) {
+    return {in.x, in.y, z};
+}
+
+inline Vector3 Vec2ToVec3xz(const Vector2& in, float y = 0.0f) {
+    return { in.x, y, in.y };
+}
+
+inline Vector4 Vec3ToVec4(const Vector3& in, float w = 0.0f) {
+    return { in.x, in.y, in.x, w };
 }
 
 // makes sure each min component is < to each max component

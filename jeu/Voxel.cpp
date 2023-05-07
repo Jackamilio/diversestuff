@@ -10,18 +10,9 @@ VoxelManager::VoxelManager() : UpdateTask(PRIO_NORMAL), collision{ 0 } {
 }
 
 void VoxelManager::Do() {
-    collision.hit = false;
-    collision.distance = FLT_MAX;
-
     Ray pickray = GetMouseRay({ GetScreenWidth() * 0.5f , GetScreenHeight() * 0.5f }, game.camera);
 
-    for (const auto& voxel : voxels) {
-        BoundingBox box{ voxel.first.ToVector3(), voxel.first.ToVector3() + Vector3{1.0f,1.0f,1.0f} };
-        RayCollision voxelcollision = GetRayCollisionBox(pickray, box);
-        if (voxelcollision.hit && voxelcollision.distance < collision.distance) {
-            collision = voxelcollision;
-        }
-    }
+    collision = GetRayCollisionVoxelMap(pickray, voxels);
 
     if (!collision.hit) {
         collision = GetRayCollisionQuad(pickray, { -16.0f, 0.0f, 16.0f }, { 16.0f, 0.0f, 16.0f }, { 16.0f, 0.0f, -16.0f }, { -16.0f, 0.0f, -16.0f });
@@ -63,4 +54,19 @@ void VoxelManager::Draw() {
     for (const auto& voxel : voxels) {
         DrawCube(voxel.first.ToVector3() + Vector3{ 0.5f, 0.5f, 0.5f }, 1.0f, 1.0f, 1.0f, voxel.second.color);
     }
+}
+
+RayCollision GetRayCollisionVoxelMap(const Ray& ray, const VoxelMap& voxels)
+{
+    RayCollision collision{ false, FLT_MAX, Vector3Zero(), Vector3Zero() };
+
+    for (const auto& voxel : voxels) {
+        BoundingBox box{ voxel.first.ToVector3(), voxel.first.ToVector3() + Vector3{1.0f,1.0f,1.0f} };
+        RayCollision voxelcollision = GetRayCollisionBox(ray, box);
+        if (voxelcollision.hit && voxelcollision.distance < collision.distance) {
+            collision = voxelcollision;
+        }
+    }
+
+    return collision;
 }

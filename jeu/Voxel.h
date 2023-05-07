@@ -51,5 +51,7 @@ public:
     void Draw();
 };
 
+RayCollision GetRayCollisionVoxelMap(const Ray& ray, const VoxelMap& voxels);
+
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Voxel::Position, x, y, z);
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Voxel, color);
