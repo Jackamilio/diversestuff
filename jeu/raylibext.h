@@ -151,6 +151,10 @@ RenderTexture2D LoadRenderTextureDepthTex(int width, int height);
 // Unload render texture from GPU memory (VRAM)
 void UnloadRenderTextureDepthTex(RenderTexture2D target);
 
+// Float version of GetRandomValue
+float GetRandomValue(); // 0.0f - 1.0f range
+float GetRandomValue(float min, float max);
+
 typedef struct Segment {
     Vector3 pointA;
     Vector3 pointB;

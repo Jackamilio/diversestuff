@@ -14,8 +14,10 @@ struct Settings
 		float sightDistance = 5.0f;
 		
 		struct Attack {
-			float prepareDuration = 1.0f;
-			float prepareSpeed = -1.0f;
+			float minInBetweenDuration = 5.0f;
+			float maxInBetweenDuration = 10.0f;
+			float windingDuration = 1.0f;
+			float windingSpeed = -1.0f;
 			float attackDuration = 1.0f;
 			float attackSpeed = 2.0f;
 			float postAttackPauseDuration = 0.5f;
@@ -26,6 +28,6 @@ struct Settings
 	Enemy::Attack critterAttack;
 };
 
-JSONANDGUI_REFLECTION(Settings::Enemy::Attack, prepareDuration, prepareSpeed, attackDuration, attackSpeed, postAttackPauseDuration);
+JSONANDGUI_REFLECTION(Settings::Enemy::Attack, minInBetweenDuration, maxInBetweenDuration, windingDuration, windingSpeed, attackDuration, attackSpeed, postAttackPauseDuration);
 JSONANDGUI_REFLECTION(Settings::Enemy, patrolSpeed, patrolCenterDistance, chaseSpeed, sightDistance);
 JSONANDGUI_REFLECTION(Settings, playerSpeed, slashFrameDuration, critter, critterAttack);

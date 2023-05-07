@@ -74,7 +74,7 @@ void Player::Do() {
 
     Vector3 prevpos = position;
 
-    Vector2 movement = game.input.movement * (game.deltaTime * game.settings.playerSpeed);
+    Vector2 movement = game.input.movement * (game.settings.playerSpeed * game.deltaTime);
     CameraMoveForward(&game.camera, movement.y, true);
     CameraMoveRight(&game.camera, movement.x, true);
     Vector2 view = game.input.view * (game.deltaTime * 180.0f);
@@ -90,7 +90,7 @@ void Player::Do() {
 
     ApplyGravity();
     if (grounded && game.input.jump.IsPressed()) {
-        velocity.y += 0.15f;
+        velocity.y += 9.0f;
     }
 
     ApplyVelocity();

@@ -13,7 +13,7 @@ void GuiReflection(const char* name, Vector3& value);
 #define GUI_REFLECTION_INTERNAL(v1) GuiReflection(#v1, value.v1);
 #define GUI_REFLECTION(name, ...) \
 	inline void GuiReflection(const char* n, name& value) { \
-		if (ImGui::TreeNode(#name)) { \
+		if (ImGui::TreeNode(n)) { \
 			NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(GUI_REFLECTION_INTERNAL, __VA_ARGS__)) \
 			ImGui::TreePop(); \
 		}\

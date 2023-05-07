@@ -13,7 +13,7 @@ MovingEntity::MovingEntity(const VoxelMap& v, Vector3& position) :
 }
 
 void MovingEntity::ApplyGravity() {
-    const float gravity = 0.005f;
+    const float gravity = 0.3f;
 
     if (!grounded) {
         velocity.y -= gravity;
@@ -21,7 +21,7 @@ void MovingEntity::ApplyGravity() {
 }
 
 void MovingEntity::ApplyVelocity() {
-    position = position + velocity;// Vector3{ 0.0f, velocity.y, 0.0f };
+    position = position + velocity * game.deltaTime;
 }
 
 void MovingEntity::AdjustToCollisions() {

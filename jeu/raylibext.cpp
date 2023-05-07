@@ -62,3 +62,13 @@ void UnloadRenderTextureDepthTex(RenderTexture2D target)
         rlUnloadFramebuffer(target.id);
     }
 }
+
+float GetRandomValue()
+{
+    return float(rand()) / RAND_MAX;
+}
+
+float GetRandomValue(float min, float max)
+{
+    return min + (float(rand()) * (max-min)) / RAND_MAX;
+}
