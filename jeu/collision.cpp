@@ -389,3 +389,40 @@ Vector3 ClosestBoxPointToSegment(const BoundingBox& box, const Segment& segment)
 
 	return candidate;
 }
+
+// All collision possibilities !
+// Every Col_ function is responsible for adding points to the shape if applicable
+// BOX, RAY, PLANE, SPHERE, CAPSULE
+void Col_BoxBox(Collisions::Shape& box, Collisions::Shape& ray) {}
+void Col_BoxRay(Collisions::Shape& box, Collisions::Shape& ray) {}
+void Col_BoxPlane(Collisions::Shape& box, Collisions::Shape& ray) {}
+void Col_BoxSphere(Collisions::Shape& box, Collisions::Shape& ray) {}
+void Col_BoxCapsule(Collisions::Shape& box, Collisions::Shape& ray) {}
+
+void Col_WrongOrder(Collisions::Shape& box, Collisions::Shape& ray) {}
+void Col_Todo(Collisions::Shape& box, Collisions::Shape& ray) {}
+
+typedef void (*Col_Function)(Collisions::Shape&, Collisions::Shape&);
+
+Col_Function Col_FunctionMatrix[5][5] = {
+	Col_BoxBox,		Col_BoxRay,		Col_BoxPlane,	Col_BoxSphere,	Col_BoxCapsule,
+	Col_WrongOrder,	Col_Todo,		Col_Todo,		Col_Todo,		Col_Todo,
+	Col_WrongOrder,	Col_WrongOrder,	Col_Todo,		Col_Todo,		Col_Todo,
+	Col_WrongOrder,	Col_WrongOrder,	Col_WrongOrder,	Col_Todo,		Col_Todo,
+	Col_WrongOrder,	Col_WrongOrder,	Col_WrongOrder,	Col_WrongOrder,	Col_Todo
+};
+
+Collisions::Collisions()
+{
+}
+
+void Collisions::Update()
+{
+	// first clear all previous collisions
+	for (auto& shape : shapes) {
+		shape.points.clear();
+	}
+
+	// now perform all collisions
+	// BRUTE FORCE FOR NOW
+}
