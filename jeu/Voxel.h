@@ -35,17 +35,28 @@ struct Voxel {
         }
     };
 
-    Color color;
+    Color color{};
+    Shape shape{};
+    ShapeLocation shapeloc{};
+
+    void Init(const Position& p);
+    Voxel();
+    ~Voxel();
 };
 
 typedef std::map<Voxel::Position, Voxel> VoxelMap;
 
 class VoxelManager : public UpdateTask, public IDrawTask {
-public:
+private:
     VoxelMap voxels;
     RayCollision collision;
 
+public:
     VoxelManager();
+
+    inline const VoxelMap& GetVoxels() const {
+        return voxels;
+    }
 
     void Do();
     void Draw();

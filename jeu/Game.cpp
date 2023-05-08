@@ -9,6 +9,7 @@ using nlohmann::json;
 Game game;
 
 typedef std::multimap<int, IUpdateTask&>::iterator TLUit;
+typedef std::multimap<int, ICollisionChecker&>::iterator TLCit;
 typedef std::multimap<int, IDrawTask&>::iterator TLDit;
 
 void Game::RemoveUpdateTask(IUpdateTask& task, int priority)
@@ -19,6 +20,19 @@ void Game::RemoveUpdateTask(IUpdateTask& task, int priority)
     for (; it != iterpair.second; ++it) {
         if (&it->second == &task) {
             update.erase(it);
+            break;
+        }
+    }
+}
+
+void Game::RemoveCollisionChecker(ICollisionChecker& check, int priority)
+{
+    std::pair<TLCit, TLCit> iterpair = collisioncheckers.equal_range(priority);
+
+    TLCit it = iterpair.first;
+    for (; it != iterpair.second; ++it) {
+        if (&it->second == &check) {
+            collisioncheckers.erase(it);
             break;
         }
     }
@@ -93,10 +107,6 @@ void Game::Loop()
             ImGui::ShowDemoWindow(&demowindow);
         }
 
-        for (auto& up : update) {
-            up.second.Do();
-        }
-
         // inputs for the game
         if (rlImGuiIsEnabled()) {
             input = {};
@@ -109,6 +119,18 @@ void Game::Loop()
             input.attack.SetCurrentFrame(IsKeyDown(KEY_F));
             input.placeblock.SetCurrentFrame(IsMouseButtonDown(0));
             input.removeblock.SetCurrentFrame(IsMouseButtonDown(2));
+        }
+
+        // update everything
+        for (auto& up : update) {
+            up.second.Do();
+        }
+
+        // resolve collisions
+        collisions.Update();
+
+        for (auto& col : collisioncheckers) {
+            col.second.CheckCollision();
         }
 
         BeginDrawing();
@@ -174,6 +196,16 @@ UpdateTask::~UpdateTask()
     game.RemoveUpdateTask(*this, priority);
 }
 
+CollisionChecker::CollisionChecker(int prio) : priority(prio)
+{
+    game.AddCollisionChecker(*this, priority);
+}
+
+CollisionChecker::~CollisionChecker()
+{
+    game.RemoveCollisionChecker(*this, priority);
+}
+
 void DrawTask::Do()
 {
     game.AddDrawTask(*this, drawpriority);
@@ -182,4 +214,3 @@ void DrawTask::Do()
 DrawTask::DrawTask(int prio) : UpdateTask(PRIO_NORMAL), drawpriority(prio)
 {
 }
-

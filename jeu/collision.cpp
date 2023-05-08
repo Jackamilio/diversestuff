@@ -393,24 +393,116 @@ Vector3 ClosestBoxPointToSegment(const BoundingBox& box, const Segment& segment)
 // All collision possibilities !
 // Every Col_ function is responsible for adding points to the shape if applicable
 // BOX, RAY, PLANE, SPHERE, CAPSULE
-void Col_BoxBox(Collisions::Shape& box, Collisions::Shape& ray) {}
-void Col_BoxRay(Collisions::Shape& box, Collisions::Shape& ray) {}
-void Col_BoxPlane(Collisions::Shape& box, Collisions::Shape& ray) {}
-void Col_BoxSphere(Collisions::Shape& box, Collisions::Shape& ray) {}
-void Col_BoxCapsule(Collisions::Shape& box, Collisions::Shape& ray) {}
 
-void Col_WrongOrder(Collisions::Shape& box, Collisions::Shape& ray) {}
-void Col_Todo(Collisions::Shape& box, Collisions::Shape& ray) {}
+bool Col_RayRay(Shape&, Shape&, CollisionPoint*, CollisionPoint*) {
+	return false;
+}
 
-typedef void (*Col_Function)(Collisions::Shape&, Collisions::Shape&);
+bool Col_RayPlane(Shape& ray, Shape& plane, CollisionPoint* col1, CollisionPoint* col2) {
+	Segment raysegment = { ray.ray.position , ray.ray.position + ray.ray.direction };
 
-Col_Function Col_FunctionMatrix[5][5] = {
-	Col_BoxBox,		Col_BoxRay,		Col_BoxPlane,	Col_BoxSphere,	Col_BoxCapsule,
-	Col_WrongOrder,	Col_Todo,		Col_Todo,		Col_Todo,		Col_Todo,
-	Col_WrongOrder,	Col_WrongOrder,	Col_Todo,		Col_Todo,		Col_Todo,
+	float distA = DistanceToPlaneSigned(raysegment.pointA, plane.plane);
+	float distB = DistanceToPlaneSigned(raysegment.pointB, plane.plane);
+
+	float t = distA / (distA - distB);
+	if (t >= 0.0f) {
+		Vector3 colpoint = raysegment.Lerp(t);
+		if (col1) {
+			col1->position = colpoint;
+		}
+		if (col2) {
+			col2->position = colpoint;
+		}
+		return true;
+	}
+	return false;
+}
+
+bool Col_PlaneCapsule(Shape& plane, Shape& capsule, CollisionPoint* col1, CollisionPoint* col2) {
+	Segment capsuleSegment{ capsule.capsule.base, capsule.capsule.GetTip() };
+	Vector3 planepoint = ClosestPlanePointToSegment(plane.plane, capsuleSegment);
+	Vector3 segmentpoint = ProjectPointToSegment(planepoint, capsuleSegment);
+
+	if (Vector3LengthSqr(planepoint - segmentpoint) <= capsule.capsule.radiussqr()) {
+		if (col1) {
+			col1->position = segmentpoint; // adjust to capsule surface?
+		}
+		if (col2) {
+			col2->position = planepoint;
+		}
+		return true;
+	}
+	return false;
+}
+bool Col_BoxCapsule(Shape& box, Shape& capsule, CollisionPoint* col1, CollisionPoint* col2) {
+	Segment capsuleSegment{ capsule.capsule.base, capsule.capsule.GetTip() };
+	Vector3 boxpoint = ClosestBoxPointToSegment(box.box, capsuleSegment);
+	Vector3 segmentpoint = ProjectPointToSegment(boxpoint, capsuleSegment);
+
+	Vector3 colnormal = segmentpoint - boxpoint;
+	float normallen = Vector3LengthSqr(colnormal);
+	if (normallen <= capsule.capsule.radiussqr()) {
+		/*if (col1 || col2) {
+			if (normallen < 0.0000001f) {
+				normallen = 0.0f;
+				colnormal = Vector3Normalize(capsule.capsule.offset); // maybe there is a better choice
+			}
+			else {
+				normallen = std::sqrtf(normallen);
+				colnormal *= 1.0f / normallen;
+			}
+
+			const float penetration = capsule.capsule.radius - normallen;
+			if (col1) {
+				col1->position = boxpoint;
+				col1->normal = -colnormal;
+				col2->penetration = penetration;
+			}
+			if (col2) {
+				col2->position = segmentpoint - colnormal * capsule.capsule.radius;
+				col2->normal = colnormal;
+				col2->penetration = penetration;
+			}
+		}*/
+		if (col1) {
+			col1->position = segmentpoint; // adjust to capsule surface?
+		}
+		if (col2) {
+			col2->position = boxpoint;
+		}
+		return true;
+	}
+	return false;
+}
+
+bool Col_WrongOrder(Shape& box, Shape& ray, CollisionPoint* col1, CollisionPoint* col2) { return false; }
+bool Col_Todo(Shape& box, Shape& ray, CollisionPoint* col1, CollisionPoint* col2) { return false; }
+
+typedef bool (*Col_Function)(Shape&, Shape&, CollisionPoint*, CollisionPoint*);
+
+Col_Function Col_FunctionMatrix[Shape::Type::SHAPEAMOUNT][Shape::Type::SHAPEAMOUNT] = {
+	Col_RayRay,		Col_RayPlane,	Col_Todo,		Col_Todo,		Col_Todo,
+	Col_WrongOrder,	Col_Todo,		Col_Todo,		Col_Todo,		Col_PlaneCapsule,
+	Col_WrongOrder,	Col_WrongOrder,	Col_Todo,		Col_Todo,		Col_BoxCapsule,
 	Col_WrongOrder,	Col_WrongOrder,	Col_WrongOrder,	Col_Todo,		Col_Todo,
 	Col_WrongOrder,	Col_WrongOrder,	Col_WrongOrder,	Col_WrongOrder,	Col_Todo
 };
+
+ShapeLocation Collisions::AddShape(Shape& shape)
+{
+	shapes.push_back(&shape);
+	ShapeLocation end = shapes.end();
+	--end;
+	return end;
+}
+
+void Collisions::RemoveShape(ShapeLocation& loc)
+{
+	if (IsLocationValid(loc)) {
+		shapes.erase(loc);
+		loc = shapes.end();
+	}
+}
 
 Collisions::Collisions()
 {
@@ -420,9 +512,44 @@ void Collisions::Update()
 {
 	// first clear all previous collisions
 	for (auto& shape : shapes) {
-		shape.points.clear();
+		shape->points.clear();
 	}
 
 	// now perform all collisions
 	// BRUTE FORCE FOR NOW
+	CollisionPoint cp1;
+	CollisionPoint cp2;
+	for (auto it1 = shapes.begin(); it1 != shapes.end(); ++it1) {
+		auto it2 = it1;
+		for (++it2; it2 != shapes.end(); ++it2) {
+			Shape* leftShape = *it1;
+			Shape* rightShape = *it2;
+
+			if (leftShape->type > rightShape->type) {
+				std::swap(leftShape, rightShape);
+			}
+
+			CollisionPoint* wantcp1 = nullptr;
+			CollisionPoint* wantcp2 = nullptr;
+			if (leftShape->wantedMask | rightShape->mask) {
+				wantcp1 = &cp1;
+			}
+			if (rightShape->wantedMask | leftShape->mask) {
+				wantcp2 = &cp2;
+			}
+
+			if (wantcp1 || wantcp2) {
+				if (Col_FunctionMatrix[leftShape->type][rightShape->type](*leftShape, *rightShape, wantcp1, wantcp2)) {
+					if (wantcp1) {
+						cp1.shape = rightShape;
+						leftShape->points.push_back(cp1);
+					}
+					if (wantcp2) {
+						cp2.shape = leftShape;
+						rightShape->points.push_back(cp2);
+					}
+				}
+			}
+		}
+	}
 }

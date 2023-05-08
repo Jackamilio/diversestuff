@@ -1,5 +1,6 @@
 #include "Enemy.h"
 
+/*
 enum {
     PATROL = 0,
     PURSUE,
@@ -182,4 +183,4 @@ void Enemy::CircleTarget(const Vector3& tgt, float distance, float speed)
         velocity.z = targettome.z;
     }
 }
-
+*/

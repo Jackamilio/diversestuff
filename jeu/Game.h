@@ -3,6 +3,7 @@
 #include <vector>
 #include "raylib.h"
 #include "Settings.h"
+#include "collision.h"
 
 class IUpdateTask {
 public:
@@ -12,6 +13,11 @@ public:
 class IDrawTask {
 public:
 	virtual void Draw() = 0;
+};
+
+class ICollisionChecker {
+public:
+	virtual void CheckCollision() = 0;
 };
 
 typedef enum {
@@ -54,11 +60,15 @@ class Game
 {
 private:
 	std::multimap<int, IUpdateTask&> update; // user is responsible for inserting and removing
+	std::multimap<int, ICollisionChecker&> collisioncheckers;
 	std::multimap<int, IDrawTask&> draw; // is emptied each frame
 	ShadowCasters shadowcasters; // free to add yourself here, lights will handle it, also emptied each frame
 public:
 	inline void AddUpdateTask(IUpdateTask& task, int priority) {
 		update.insert({ priority, task });
+	}
+	inline void AddCollisionChecker(ICollisionChecker& check, int priority) {
+		collisioncheckers.insert({ priority, check });
 	}
 	inline void AddDrawTask(IDrawTask& task, int priority) {
 		draw.insert({ priority, task });
@@ -71,7 +81,9 @@ public:
 	}
 
 	void RemoveUpdateTask(IUpdateTask& task, int priority);
+	void RemoveCollisionChecker(ICollisionChecker& check, int priority);
 
+	Collisions collisions;
 	Camera camera;
 	Shader mainshader;
 	Settings settings;
@@ -92,6 +104,15 @@ private:
 public:
 	UpdateTask(int prio);
 	~UpdateTask();
+};
+
+class CollisionChecker : public ICollisionChecker {
+private:
+	int priority;
+
+public:
+	CollisionChecker(int prio);
+	~CollisionChecker();
 };
 
 class DrawTask : public UpdateTask, public IDrawTask {

@@ -2,16 +2,21 @@
 
 #include "Voxel.h"
 
-class MovingEntity {
+class MovingEntity : CollisionChecker {
 public:
     const VoxelMap& voxels;
-    Vector3& position;
+    //Vector3& position;
     Vector3 velocity;
     bool grounded;
-    float capsuleradius;
-    Vector3 capsuletip;
+    //float capsuleradius;
+    //Vector3 capsuletip;
 
-    MovingEntity(const VoxelMap& v, Vector3& position);
+    Shape& shape;
+
+    MovingEntity(const VoxelMap& v, Shape& shape);
+
+    void CheckCollision();
+    virtual void PostCollision() = 0;
 
     void ApplyGravity();
     void ApplyVelocity();

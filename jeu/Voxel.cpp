@@ -2,11 +2,15 @@
 #include "imgui.h"
 #include "json.hpp"
 #include <fstream>
+#include "CollisionMask.h"
 
 using nlohmann::json;
 
 VoxelManager::VoxelManager() : UpdateTask(PRIO_NORMAL), collision{ 0 } {
-    voxels[{0, 0, 0}].color = RandomColor();
+    Voxel::Position pos{ 0, 0, 0 };
+    Voxel& vox = voxels[pos];
+    vox.color = RandomColor();
+    vox.Init(pos);
 }
 
 void VoxelManager::Do() {
@@ -21,7 +25,10 @@ void VoxelManager::Do() {
     if (collision.hit) {
         if (game.input.placeblock.IsPressed()) {
             Vector3 pos = collision.point + collision.normal * 0.1f;
-            voxels[Voxel::Position::FromVector3(pos)].color = RandomColor();
+            Voxel::Position vpos = Voxel::Position::FromVector3(pos);
+            Voxel& vox = voxels[vpos];
+            vox.Init(vpos);
+            vox.color = RandomColor();
         }
         if (game.input.removeblock.IsPressed()) {
             Vector3 pos = collision.point - collision.normal * 0.1f;
@@ -39,6 +46,9 @@ void VoxelManager::Do() {
     if (ImGui::Button("Load")) {
         std::ifstream in(filename);
         voxels = nlohmann::json::parse(in);
+        for (auto& voxel : voxels) {
+            voxel.second.Init(voxel.first);
+        }
     }
     ImGui::SameLine();
     if (ImGui::Button("Save")) {
@@ -69,4 +79,23 @@ RayCollision GetRayCollisionVoxelMap(const Ray& ray, const VoxelMap& voxels)
     }
 
     return collision;
+}
+
+void Voxel::Init(const Position& p)
+{
+    if (!game.collisions.IsLocationValid(shapeloc)) {
+        shape.type = Shape::BOX;
+        shape.box = p.ToBoundingBox();
+        shapeloc = game.collisions.AddShape(shape);
+    }
+}
+
+Voxel::Voxel() : shapeloc(game.collisions.InvalidLocation())
+{
+    shape.mask = CollisionMask::SOLID;
+}
+
+Voxel::~Voxel()
+{
+    game.collisions.RemoveShape(shapeloc);
 }
