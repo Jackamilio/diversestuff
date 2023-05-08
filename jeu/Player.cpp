@@ -72,7 +72,6 @@ Player::Player(const VoxelMap& v) :
 
     capsule.type = Shape::CAPSULE;
     capsule.capsule = { game.camera.target, { 0.0f, 1.0f, 0.0f }, 0.5f };
-
     capsule.wantedMask = CollisionMask::SOLID;
     shapeloc = game.collisions.AddShape(capsule);
 }

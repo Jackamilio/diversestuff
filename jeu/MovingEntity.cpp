@@ -69,7 +69,7 @@ void MovingEntity::ApplyVelocity() {
     shape.position += velocity * game.deltaTime;
 }
 
-void MovingEntity::AdjustToCollisions() {
+/*void MovingEntity::AdjustToCollisions() {
     Vector3& position = shape.position;
     Vector3 capsuleB = shape.capsule.GetTip();
     Vector3 capsulecenter = shape.capsule.GetCenter();
@@ -114,4 +114,4 @@ void MovingEntity::AdjustToCollisions() {
             capsuleB = capsuleB + movement;
         }
     }
-}
+}*/

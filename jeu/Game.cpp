@@ -3,6 +3,7 @@
 #include "rlImGui.h"
 #include "rlgl.h"
 #include <fstream>
+#include <list>
 
 using nlohmann::json;
 
@@ -75,10 +76,21 @@ void Game::Init()
 
 extern void ImGui::ShowDemoWindow(bool* p_open);
 
+struct PerformanceMetrics {
+    double logic;
+    double collisions;
+    double graphics;
+    double frame;
+};
+
 void Game::Loop()
 {
+    PerformanceMetrics thisFrameMetrics;
     while (!WindowShouldClose())
     {
+        double frameStartTime = GetTime();
+        double lastMetric = frameStartTime;
+
         // F keys and edit options
         if (IsKeyPressed(KEY_F1)) {
             rlImGuiEnable(!rlImGuiIsEnabled());
@@ -126,12 +138,20 @@ void Game::Loop()
             up.second.Do();
         }
 
+        double newMetric = GetTime();
+        thisFrameMetrics.logic = newMetric - lastMetric;
+        lastMetric = newMetric;
+
         // resolve collisions
         collisions.Update();
 
         for (auto& col : collisioncheckers) {
             col.second.CheckCollision();
         }
+
+        newMetric = GetTime();
+        thisFrameMetrics.collisions = newMetric - lastMetric;
+        lastMetric = newMetric;
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -169,6 +189,42 @@ void Game::Loop()
 
         draw.clear();
         shadowcasters.clear();
+
+        newMetric = GetTime();
+        thisFrameMetrics.graphics = newMetric - lastMetric;
+        lastMetric = newMetric;
+        thisFrameMetrics.frame = newMetric - frameStartTime;
+
+        static std::list<PerformanceMetrics> perfs;
+        perfs.push_back(thisFrameMetrics);
+        while (perfs.size() > 30) {
+            perfs.pop_front();
+        }
+
+        static bool guiPerfs = false;
+        if (IsKeyPressed(KEY_F4)) {
+            guiPerfs = !guiPerfs;
+        }
+        if (guiPerfs && ImGui::Begin("Perfomances frame times", &guiPerfs)) {
+            PerformanceMetrics averagePerfs{ 0.0, 0.0, 0.0, 0.0 };
+            for (auto& p : perfs) {
+                averagePerfs.logic += p.logic;
+                averagePerfs.collisions += p.collisions;
+                averagePerfs.graphics += p.graphics;
+                averagePerfs.frame += p.frame;
+            }
+            double div = 1.0 / perfs.size();
+            averagePerfs.logic *= div;
+            averagePerfs.collisions *= div;
+            averagePerfs.graphics *= div;
+            averagePerfs.frame *= div;
+
+            ImGui::LabelText("Logic", "%f", averagePerfs.logic);
+            ImGui::LabelText("Collisions", "%f", averagePerfs.collisions);
+            ImGui::LabelText("Graphics", "%f", averagePerfs.graphics);
+            ImGui::LabelText("Frame", "%f", averagePerfs.frame);
+            ImGui::End();
+        }
 
         rlImGuiEnd();
         EndDrawing();

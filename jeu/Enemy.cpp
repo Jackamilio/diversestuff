@@ -1,6 +1,6 @@
 #include "Enemy.h"
+#include "CollisionMask.h"
 
-/*
 enum {
     PATROL = 0,
     PURSUE,
@@ -23,15 +23,26 @@ const char* strStates[] = {
 
 Enemy::Enemy(const VoxelMap& v, Vector3 spawnposition, const Vector3& target, const SlashTest& slash) :
     UpdateTask(PRIO_NORMAL),
-    MovingEntity(v, position),
-    position{ spawnposition },
-    patrolCenter{ position },
+    MovingEntity(v, capsule),
+    patrolCenter{ spawnposition },
     target(target),
     slash(slash),
     statetimer(0.0f),
     state(PATROL)
 {
-    //capsuletip = Vector3Zero();
+    capsule.type = Shape::CAPSULE;
+    capsule.capsule = { spawnposition, { 0.0f, 1.0f, 0.0f }, 0.5f };
+    capsule.wantedMask = CollisionMask::SOLID;
+    shapeloc = game.collisions.AddShape(capsule);
+}
+
+Enemy::~Enemy()
+{
+    game.collisions.RemoveShape(shapeloc);
+}
+
+void Enemy::PostCollision()
+{
 }
 
 void Enemy::Do() {
@@ -83,8 +94,8 @@ void Enemy::Do() {
     }
 
     // hit test
-    float dist = capsuleradius + 1.0f;
-    if (state != HIT && slash.IsSlashing() && Vector3DistanceSqr(position, slash.GetPosition()) < dist * dist) {
+    float dist = capsule.capsule.radius + 1.0f;
+    if (state != HIT && slash.IsSlashing() && Vector3DistanceSqr(capsule.position, slash.GetPosition()) < dist * dist) {
         statetimer = 0.33f;
         velocity.y += 3.0f;
         state = HIT;
@@ -92,7 +103,6 @@ void Enemy::Do() {
 
     ApplyGravity();
     ApplyVelocity();
-    AdjustToCollisions();
 
     game.AddDrawTask(*this, DRAW_3D_SHADER);
     game.AddShadowCaster(*this);
@@ -115,15 +125,15 @@ void Enemy::Draw() {
         c = RED;
         break;
     }
-    DrawSphere(position, capsuleradius, c);
+    DrawSphere(capsule.position, capsule.capsule.radius, c);
 }
 
 bool Enemy::IsSeeingPlayer() const
 {
     const float sd = game.settings.critter.sightDistance;
-    const float disttoplayersqr = Vector3DistanceSqr(position, target);
+    const float disttoplayersqr = Vector3DistanceSqr(capsule.position, target);
     if (disttoplayersqr < sd * sd) {
-        Ray metoplayer{ position, Vector3Normalize(target - position) };
+        Ray metoplayer{ capsule.position, Vector3Normalize(target - capsule.position) };
         RayCollision col = GetRayCollisionVoxelMap(metoplayer, voxels);
         return !col.hit || disttoplayersqr < col.distance * col.distance;
     }
@@ -132,7 +142,7 @@ bool Enemy::IsSeeingPlayer() const
 
 void Enemy::MoveTowardsPlayer(float distance)
 {
-    Vector3 targeting = target - position;
+    Vector3 targeting = target - capsule.position;
     targeting.y = 0.0f;
     targeting = Vector3Normalize(targeting) * distance;
 
@@ -153,7 +163,7 @@ bool Enemy::TimerBasedNextState(int newState, float newTimer)
 
 void Enemy::CircleTarget(const Vector3& tgt, float distance, float speed)
 {
-    Vector3 targettome = position - tgt;
+    Vector3 targettome = capsule.position - tgt;
     targettome.y = 0.0f;
     const float targetdistance = Vector3Length(targettome);
     // if we're at spawn point, move away
@@ -170,8 +180,8 @@ void Enemy::CircleTarget(const Vector3& tgt, float distance, float speed)
         targettome.x = cosf(newangle) * targetdistance;
         targettome.z = sinf(newangle) * targetdistance;
         Vector3 newpos = tgt + targettome;
-        velocity.x = (newpos.x - position.x) / game.deltaTime;
-        velocity.z = (newpos.z - position.z) / game.deltaTime;
+        velocity.x = (newpos.x - capsule.position.x) / game.deltaTime;
+        velocity.z = (newpos.z - capsule.position.z) / game.deltaTime;
     }
     // other wise go to the circle
     else {
@@ -183,4 +193,3 @@ void Enemy::CircleTarget(const Vector3& tgt, float distance, float speed)
         velocity.z = targettome.z;
     }
 }
-*/

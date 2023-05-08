@@ -244,12 +244,12 @@ Vector3 ClosestSegmentPointToSegment(const Segment& segmentA, const Segment& seg
 	return segmentA.Lerp(std::clamp(projscalar, 0.0f, 1.0f));
 }
 
-Vector3 ClosestBoxPointToSegment(const BoundingBox& box, const Segment& segment)
+Vector3 ClosestBoxPointToSegment(const Box& box, const Segment& segment)
 {
 	const Vector3& A = segment.pointA;
 	const Vector3& B = segment.pointB;
-	const Vector3& min = box.min;
-	const Vector3& max = box.max;
+	const Vector3& min = box.position - box.halfSizes;
+	const Vector3& max = box.position + box.halfSizes;
 
 	Vector3 AB = B - A;
 
@@ -488,17 +488,58 @@ Col_Function Col_FunctionMatrix[Shape::Type::SHAPEAMOUNT][Shape::Type::SHAPEAMOU
 	Col_WrongOrder,	Col_WrongOrder,	Col_WrongOrder,	Col_WrongOrder,	Col_Todo
 };
 
+void InfiniteHalfSizes(Shape& shape) {
+	shape.boundingBoxHalfSizes.x = FLT_MAX;
+	shape.boundingBoxHalfSizes.y = FLT_MAX;
+	shape.boundingBoxHalfSizes.z = FLT_MAX;
+}
+void CalculateSphereHalfSizes(Shape& shape) {
+	Box b = shape.sphere.GetBoundingBox();
+	shape.boundingBoxHalfSizes = b.halfSizes;
+}
+void CalculateBoxHalfSizes(Shape& shape) {
+	shape.boundingBoxHalfSizes = shape.box.halfSizes;
+}
+void CalculateCapsuleHalfSizes(Shape& shape) {
+	Box b = shape.capsule.GetBoundingBox();
+	shape.boundingBoxHalfSizes = b.halfSizes;
+}
+
+typedef void (*CalculateHalfSizeFunc)(Shape&);
+CalculateHalfSizeFunc CalculateHalfSizeTable[Shape::Type::SHAPEAMOUNT] = {
+	InfiniteHalfSizes, InfiniteHalfSizes, CalculateSphereHalfSizes, CalculateBoxHalfSizes, CalculateCapsuleHalfSizes
+};
+
+void Collisions::ShapePositionUpdated(ShapeLocation& loc)
+{
+	// todo BVH
+}
+
+void Collisions::ShapeVolumeUpdated(ShapeLocation& loc)
+{
+	Shape& s = **loc;
+	CalculateHalfSizeTable[s.type](s);
+}
+
 ShapeLocation Collisions::AddShape(Shape& shape)
 {
+	if (shape.wantedMask) {
+		seekers.push_back(&shape);
+	}
 	shapes.push_back(&shape);
 	ShapeLocation end = shapes.end();
 	--end;
+	ShapeVolumeUpdated(end);
 	return end;
 }
 
 void Collisions::RemoveShape(ShapeLocation& loc)
 {
 	if (IsLocationValid(loc)) {
+		Shape* s = *loc;
+		if (s->wantedMask) {
+			seekers.remove(s);
+		}
 		shapes.erase(loc);
 		loc = shapes.end();
 	}
@@ -519,34 +560,39 @@ void Collisions::Update()
 	// BRUTE FORCE FOR NOW
 	CollisionPoint cp1;
 	CollisionPoint cp2;
-	for (auto it1 = shapes.begin(); it1 != shapes.end(); ++it1) {
-		auto it2 = it1;
-		for (++it2; it2 != shapes.end(); ++it2) {
-			Shape* leftShape = *it1;
-			Shape* rightShape = *it2;
-
-			if (leftShape->type > rightShape->type) {
-				std::swap(leftShape, rightShape);
-			}
-
-			CollisionPoint* wantcp1 = nullptr;
-			CollisionPoint* wantcp2 = nullptr;
-			if (leftShape->wantedMask | rightShape->mask) {
-				wantcp1 = &cp1;
-			}
-			if (rightShape->wantedMask | leftShape->mask) {
-				wantcp2 = &cp2;
-			}
-
-			if (wantcp1 || wantcp2) {
-				if (Col_FunctionMatrix[leftShape->type][rightShape->type](*leftShape, *rightShape, wantcp1, wantcp2)) {
-					if (wantcp1) {
-						cp1.shape = rightShape;
-						leftShape->points.push_back(cp1);
+	for (auto& leftShape : seekers) {
+		for (auto& rightShape : shapes ) {
+			if (leftShape != rightShape) {
+				Box lb{ leftShape->position, leftShape->boundingBoxHalfSizes };
+				Box rb{ rightShape->position, rightShape->boundingBoxHalfSizes };
+				// small optimisation before implementing BVH
+				if (lb.Intersects(rb)) {
+					Shape* ls = leftShape;
+					Shape* rs = rightShape;
+					if (ls->type > rs->type) {
+						std::swap(ls, rs);
 					}
-					if (wantcp2) {
-						cp2.shape = leftShape;
-						rightShape->points.push_back(cp2);
+
+					CollisionPoint* wantcp1 = nullptr;
+					CollisionPoint* wantcp2 = nullptr;
+					if (ls->wantedMask | rs->mask) {
+						wantcp1 = &cp1;
+					}
+					if (rs->wantedMask | ls->mask) {
+						wantcp2 = &cp2;
+					}
+
+					if (wantcp1 || wantcp2) {
+						if (Col_FunctionMatrix[ls->type][rs->type](*ls, *rs, wantcp1, wantcp2)) {
+							if (wantcp1) {
+								cp1.shape = rs;
+								ls->points.push_back(cp1);
+							}
+							if (wantcp2) {
+								cp2.shape = ls;
+								rs->points.push_back(cp2);
+							}
+						}
 					}
 				}
 			}

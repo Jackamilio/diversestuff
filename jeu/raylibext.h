@@ -155,12 +155,46 @@ void UnloadRenderTextureDepthTex(RenderTexture2D target);
 float GetRandomValue(); // 0.0f - 1.0f range
 float GetRandomValue(float min, float max);
 
+typedef struct Box {
+    Vector3 position;
+    union {
+        Vector3 halfSizes;
+        struct {
+            float halfWidth;
+            float halfHeight;
+            float halfDepth;
+        };
+    };
+
+    inline void EnsurePositiveSizes() {
+        halfWidth = fmaxf(-halfWidth, halfWidth);
+        halfHeight = fmaxf(-halfHeight, halfHeight);
+        halfDepth = fmaxf(-halfDepth, halfDepth);
+    }
+
+    bool Intersects(const Box& other) const {
+        const Vector3 tmin = position - halfSizes;
+        const Vector3 tmax = position + halfSizes;
+        const Vector3 omin = other.position - other.halfSizes;
+        const Vector3 omax = other.position + other.halfSizes;
+
+        return tmin.x <= omax.x && tmax.x >= omin.x
+            && tmin.y <= omax.y && tmax.y >= omin.y
+            && tmin.z <= omax.z && tmax.z >= omin.z;
+    }
+} Box;
+
 typedef struct Segment {
     Vector3 pointA;
     Vector3 pointB;
 
-    inline BoundingBox GetBoundingBox() const {
-        return FixBoundingBox({ pointA, pointB });
+    //inline BoundingBox GetBoundingBox() const {
+    //    return FixBoundingBox({ pointA, pointB });
+    //}
+    inline Box GetBoundingBox() const {
+        Box b{ (pointA + pointB) * 0.5f, (pointA - pointB) * 0.5f };
+        b.EnsurePositiveSizes();
+        return b;
     }
     inline Vector3 Lerp(float t) const {
         return pointA + (pointB - pointA) * t;
@@ -170,8 +204,11 @@ typedef struct Segment {
 typedef struct Sphere {
     Vector3 center;
     float radius;
-    inline BoundingBox GetBoundingBox() const {
-        return {Vector3SubtractValue(center, radius), Vector3AddValue(center, radius)};
+    //inline BoundingBox GetBoundingBox() const {
+    //    return {Vector3SubtractValue(center, radius), Vector3AddValue(center, radius)};
+    //}
+    inline Box GetBoundingBox() const {
+        return { center, {radius, radius, radius} };
     }
 }Sphere;
 
@@ -179,10 +216,16 @@ typedef struct Capsule {
     Vector3 base; // base position in world
     Vector3 offset; // second extremity relative to base
     float radius;
-    inline BoundingBox GetBoundingBox() const {
-        BoundingBox segmentbb = FixBoundingBox({ base, GetTip() });
-        segmentbb.min -= radius;
-        segmentbb.max += radius;
+    //inline BoundingBox GetBoundingBox() const {
+    //    BoundingBox segmentbb = FixBoundingBox({ base, GetTip() });
+    //    segmentbb.min -= radius;
+    //    segmentbb.max += radius;
+    //}
+    inline Box GetBoundingBox() const {
+        Box b{ base, offset };
+        b.EnsurePositiveSizes();
+        b.halfSizes += radius;
+        return b;
     }
     inline Vector3 GetCenter() const {
         return base + offset * 0.5f;

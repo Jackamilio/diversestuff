@@ -20,5 +20,5 @@ public:
 
     void ApplyGravity();
     void ApplyVelocity();
-    void AdjustToCollisions();
+    //void AdjustToCollisions();
 };

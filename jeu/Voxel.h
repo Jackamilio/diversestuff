@@ -30,6 +30,10 @@ struct Voxel {
             return { {(float)x, (float)y, (float)z},  {(float)(x + 1), (float)(y + 1), (float)(z + 1)} };
         }
 
+        inline Box ToBox() const {
+            return { {(float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f}, { 0.5f, 0.5f, 0.5f} };
+        }
+
         static Position FromVector3(const Vector3& vec) {
             return { (int)std::floor(vec.x), (int)std::floor(vec.y), (int)std::floor(vec.z) };
         }

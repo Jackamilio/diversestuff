@@ -5,7 +5,8 @@
 
 class Enemy : public UpdateTask, public IDrawTask, public MovingEntity {
 public:
-    Vector3 position;
+    Shape capsule;
+    ShapeLocation shapeloc;
     Vector3 patrolCenter;
     const Vector3& target;
     const SlashTest& slash;
@@ -13,6 +14,9 @@ public:
     int state;
 
     Enemy(const VoxelMap& v, Vector3 spawnposition, const Vector3& target, const SlashTest& slash);
+    ~Enemy();
+
+    void PostCollision();
 
     void Do();
 

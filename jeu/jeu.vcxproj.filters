@@ -39,7 +39,7 @@
     <ClCompile Include="rlImGui.cpp">
       <Filter>Fichiers sources\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="collision.cpp">
+    <ClCompile Include="Collision.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="raylibext.cpp">
@@ -103,7 +103,7 @@
     <ClInclude Include="Game.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="collision.h">
+    <ClInclude Include="Collision.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="raylibext.h">

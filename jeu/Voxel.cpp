@@ -85,7 +85,7 @@ void Voxel::Init(const Position& p)
 {
     if (!game.collisions.IsLocationValid(shapeloc)) {
         shape.type = Shape::BOX;
-        shape.box = p.ToBoundingBox();
+        shape.box = p.ToBox();
         shapeloc = game.collisions.AddShape(shape);
     }
 }
