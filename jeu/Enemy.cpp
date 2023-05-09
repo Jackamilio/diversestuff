@@ -104,6 +104,8 @@ void Enemy::Do() {
     ApplyGravity();
     ApplyVelocity();
 
+    game.collisions.ShapePositionUpdated(shapeloc);
+
     game.AddDrawTask(*this, DRAW_3D_SHADER);
     game.AddShadowCaster(*this);
 

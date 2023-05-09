@@ -166,6 +166,10 @@ typedef struct Box {
         };
     };
 
+    inline BoundingBox GetBoundingBox() const{
+        return { {position - halfSizes}, {position + halfSizes} };
+    }
+
     inline void EnsurePositiveSizes() {
         halfWidth = fmaxf(-halfWidth, halfWidth);
         halfHeight = fmaxf(-halfHeight, halfHeight);
@@ -188,14 +192,14 @@ typedef struct Segment {
     Vector3 pointA;
     Vector3 pointB;
 
-    //inline BoundingBox GetBoundingBox() const {
-    //    return FixBoundingBox({ pointA, pointB });
-    //}
-    inline Box GetBoundingBox() const {
-        Box b{ (pointA + pointB) * 0.5f, (pointA - pointB) * 0.5f };
-        b.EnsurePositiveSizes();
-        return b;
+    inline BoundingBox GetBoundingBox() const {
+        return FixBoundingBox({ pointA, pointB });
     }
+    //inline Box GetBoundingBox() const {
+    //    Box b{ (pointA + pointB) * 0.5f, (pointA - pointB) * 0.5f };
+    //    b.EnsurePositiveSizes();
+    //    return b;
+    //}
     inline Vector3 Lerp(float t) const {
         return pointA + (pointB - pointA) * t;
     }
@@ -204,29 +208,30 @@ typedef struct Segment {
 typedef struct Sphere {
     Vector3 center;
     float radius;
-    //inline BoundingBox GetBoundingBox() const {
-    //    return {Vector3SubtractValue(center, radius), Vector3AddValue(center, radius)};
-    //}
-    inline Box GetBoundingBox() const {
-        return { center, {radius, radius, radius} };
+    inline BoundingBox GetBoundingBox() const {
+        return {Vector3SubtractValue(center, radius), Vector3AddValue(center, radius)};
     }
+    //inline Box GetBoundingBox() const {
+    //    return { center, {radius, radius, radius} };
+    //}
 }Sphere;
 
 typedef struct Capsule {
     Vector3 base; // base position in world
     Vector3 offset; // second extremity relative to base
     float radius;
-    //inline BoundingBox GetBoundingBox() const {
-    //    BoundingBox segmentbb = FixBoundingBox({ base, GetTip() });
-    //    segmentbb.min -= radius;
-    //    segmentbb.max += radius;
-    //}
-    inline Box GetBoundingBox() const {
-        Box b{ base, offset };
-        b.EnsurePositiveSizes();
-        b.halfSizes += radius;
-        return b;
+    inline BoundingBox GetBoundingBox() const {
+        BoundingBox segmentbb = FixBoundingBox({ base, GetTip() });
+        segmentbb.min -= radius;
+        segmentbb.max += radius;
+        return segmentbb;
     }
+    //inline Box GetBoundingBox() const {
+    //    Box b{ base, offset };
+    //    b.EnsurePositiveSizes();
+    //    b.halfSizes += radius;
+    //    return b;
+    //}
     inline Vector3 GetCenter() const {
         return base + offset * 0.5f;
     }

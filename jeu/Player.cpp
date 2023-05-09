@@ -118,6 +118,8 @@ void Player::Do() {
         slash.Launch(slashpos, direction, (float)GetRandomValue(-45, 45));
     }
 
+    game.collisions.ShapePositionUpdated(shapeloc);
+
     game.AddDrawTask(*this, DRAW_3D_SHADER);
     game.AddShadowCaster(*this);
 }

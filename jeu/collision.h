@@ -30,14 +30,14 @@ struct Shape {
 	enum Type { RAY = 0, PLANE, BOX, SPHERE, CAPSULE, SHAPEAMOUNT };
 	union {
 		Vector3 position; // all other shapes MUST have their first component represent the position
-		Box box;
 		Ray ray;
 		Vector4 plane;
+		Box box;
 		Sphere sphere;
 		Capsule capsule;
 		Matrix matrix; // here for the 16 float size
 	};
-	Vector3 boundingBoxHalfSizes;
+	BoundingBox boundingBox;
 	Type type;
 	unsigned int mask;
 	unsigned int wantedMask;

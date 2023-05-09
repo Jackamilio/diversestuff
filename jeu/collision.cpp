@@ -488,37 +488,55 @@ Col_Function Col_FunctionMatrix[Shape::Type::SHAPEAMOUNT][Shape::Type::SHAPEAMOU
 	Col_WrongOrder,	Col_WrongOrder,	Col_WrongOrder,	Col_WrongOrder,	Col_Todo
 };
 
-void InfiniteHalfSizes(Shape& shape) {
-	shape.boundingBoxHalfSizes.x = FLT_MAX;
-	shape.boundingBoxHalfSizes.y = FLT_MAX;
-	shape.boundingBoxHalfSizes.z = FLT_MAX;
+//void InfiniteHalfSizes(Shape& shape) {
+//	shape.boundingBoxHalfSizes.x = FLT_MAX;
+//	shape.boundingBoxHalfSizes.y = FLT_MAX;
+//	shape.boundingBoxHalfSizes.z = FLT_MAX;
+//}
+//void CalculateBoxHalfSizes(Shape& shape) {
+//	shape.boundingBoxHalfSizes = shape.box.halfSizes;
+//}
+//void CalculateSphereHalfSizes(Shape& shape) {
+//	Box b = shape.sphere.GetBoundingBox();
+//	shape.boundingBoxHalfSizes = b.halfSizes;
+//}
+//void CalculateCapsuleHalfSizes(Shape& shape) {
+//	Box b = shape.capsule.GetBoundingBox();
+//	shape.boundingBoxHalfSizes = b.halfSizes;
+//}
+//typedef void (*CalculateHalfSizeFunc)(Shape&);
+//CalculateHalfSizeFunc CalculateHalfSizeTable[Shape::Type::SHAPEAMOUNT] = {
+//	InfiniteHalfSizes, InfiniteHalfSizes, CalculateBoxHalfSizes, CalculateSphereHalfSizes, CalculateCapsuleHalfSizes
+//};
+void UpdateInfiniteBoundingBox(Shape& shape) {
+	shape.boundingBox = { {-FLT_MAX,-FLT_MAX,-FLT_MAX}, {FLT_MAX,FLT_MAX,FLT_MAX} };
 }
-void CalculateSphereHalfSizes(Shape& shape) {
-	Box b = shape.sphere.GetBoundingBox();
-	shape.boundingBoxHalfSizes = b.halfSizes;
+void UpdateBoxBoundingBox(Shape& shape) {
+	shape.box.EnsurePositiveSizes();
+	shape.boundingBox = shape.box.GetBoundingBox();
 }
-void CalculateBoxHalfSizes(Shape& shape) {
-	shape.boundingBoxHalfSizes = shape.box.halfSizes;
+void UpdateSphereBoundingBox(Shape& shape) {
+	shape.boundingBox = shape.sphere.GetBoundingBox();
 }
-void CalculateCapsuleHalfSizes(Shape& shape) {
-	Box b = shape.capsule.GetBoundingBox();
-	shape.boundingBoxHalfSizes = b.halfSizes;
+void UpdateCapsuleBoundingBox(Shape& shape) {
+	shape.boundingBox = shape.capsule.GetBoundingBox();
 }
 
-typedef void (*CalculateHalfSizeFunc)(Shape&);
-CalculateHalfSizeFunc CalculateHalfSizeTable[Shape::Type::SHAPEAMOUNT] = {
-	InfiniteHalfSizes, InfiniteHalfSizes, CalculateSphereHalfSizes, CalculateBoxHalfSizes, CalculateCapsuleHalfSizes
+typedef void (*UpdateCorrectBoundingBoxFunc)(Shape&);
+UpdateCorrectBoundingBoxFunc UpdateCorrectBoundingBoxTable[Shape::Type::SHAPEAMOUNT] = {
+	UpdateInfiniteBoundingBox,UpdateInfiniteBoundingBox,UpdateBoxBoundingBox,UpdateSphereBoundingBox,UpdateCapsuleBoundingBox
 };
 
 void Collisions::ShapePositionUpdated(ShapeLocation& loc)
 {
+	ShapeVolumeUpdated(loc);
 	// todo BVH
 }
 
 void Collisions::ShapeVolumeUpdated(ShapeLocation& loc)
 {
 	Shape& s = **loc;
-	CalculateHalfSizeTable[s.type](s);
+	UpdateCorrectBoundingBoxTable[s.type](s);
 }
 
 ShapeLocation Collisions::AddShape(Shape& shape)
@@ -549,6 +567,17 @@ Collisions::Collisions()
 {
 }
 
+bool CheckCollisionBoxes2(BoundingBox& box1, BoundingBox& box2) {
+	const Vector3 tmin = box1.min;
+	const Vector3 tmax = box1.max;
+	const Vector3 omin = box2.min;
+	const Vector3 omax = box2.max;
+
+	return tmin.x <= omax.x && tmax.x >= omin.x
+		&& tmin.y <= omax.y && tmax.y >= omin.y
+		&& tmin.z <= omax.z && tmax.z >= omin.z;
+}
+
 void Collisions::Update()
 {
 	// first clear all previous collisions
@@ -562,36 +591,31 @@ void Collisions::Update()
 	CollisionPoint cp2;
 	for (auto& leftShape : seekers) {
 		for (auto& rightShape : shapes ) {
-			if (leftShape != rightShape) {
-				Box lb{ leftShape->position, leftShape->boundingBoxHalfSizes };
-				Box rb{ rightShape->position, rightShape->boundingBoxHalfSizes };
-				// small optimisation before implementing BVH
-				if (lb.Intersects(rb)) {
-					Shape* ls = leftShape;
-					Shape* rs = rightShape;
-					if (ls->type > rs->type) {
-						std::swap(ls, rs);
-					}
+			if (leftShape != rightShape && CheckCollisionBoxes2(leftShape->boundingBox, rightShape->boundingBox)) {
+				Shape* ls = leftShape;
+				Shape* rs = rightShape;
+				if (ls->type > rs->type) {
+					std::swap(ls, rs);
+				}
 
-					CollisionPoint* wantcp1 = nullptr;
-					CollisionPoint* wantcp2 = nullptr;
-					if (ls->wantedMask | rs->mask) {
-						wantcp1 = &cp1;
-					}
-					if (rs->wantedMask | ls->mask) {
-						wantcp2 = &cp2;
-					}
+				CollisionPoint* wantcp1 = nullptr;
+				CollisionPoint* wantcp2 = nullptr;
+				if (ls->wantedMask | rs->mask) {
+					wantcp1 = &cp1;
+				}
+				if (rs->wantedMask | ls->mask) {
+					wantcp2 = &cp2;
+				}
 
-					if (wantcp1 || wantcp2) {
-						if (Col_FunctionMatrix[ls->type][rs->type](*ls, *rs, wantcp1, wantcp2)) {
-							if (wantcp1) {
-								cp1.shape = rs;
-								ls->points.push_back(cp1);
-							}
-							if (wantcp2) {
-								cp2.shape = ls;
-								rs->points.push_back(cp2);
-							}
+				if (wantcp1 || wantcp2) {
+					if (Col_FunctionMatrix[ls->type][rs->type](*ls, *rs, wantcp1, wantcp2)) {
+						if (wantcp1) {
+							cp1.shape = rs;
+							ls->points.push_back(cp1);
+						}
+						if (wantcp2) {
+							cp2.shape = ls;
+							rs->points.push_back(cp2);
 						}
 					}
 				}
