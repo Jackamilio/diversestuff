@@ -4,16 +4,16 @@
 
 class MovingEntity : CollisionChecker {
 public:
-    const VoxelMap& voxels;
+    //const VoxelMap& voxels;
     //Vector3& position;
     Vector3 velocity;
     bool grounded;
     //float capsuleradius;
     //Vector3 capsuletip;
 
-    Shape& shape;
+    ShapeLocation shapeloc;
 
-    MovingEntity(const VoxelMap& v, Shape& shape);
+    MovingEntity();
 
     void CheckCollision();
     virtual void PostCollision() = 0;

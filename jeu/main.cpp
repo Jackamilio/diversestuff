@@ -10,16 +10,11 @@
 
 class GamePlane : public DrawTask {
 public:
-    Shape shape{};
     ShapeLocation shapeloc;
 
     GamePlane() : DrawTask(DRAW_3D_SHADER)
     {
-        shape.type = Shape::PLANE;
-        shape.plane = { 0.0f, 1.0f, 0.0f, 0.0f };
-        shape.mask = CollisionMask::SOLID;
-
-        shapeloc = game.collisions.AddShape(shape);
+        shapeloc = game.collisions.AddPlane({ 0.0f, 1.0f, 0.0f, 0.0f }, CollisionMask::SOLID, 0);
     }
     ~GamePlane() {
         game.collisions.RemoveShape(shapeloc);
@@ -37,7 +32,7 @@ int main(void)
     GamePlane gp;
     VoxelManager vm;
     Player p(vm.GetVoxels());
-    Enemy e(vm.GetVoxels(), Vector3{-10.0f, 2.0f, -10.0f}, p.shape.position, p.slash);
+    Enemy e(vm.GetVoxels(), Vector3{-10.0f, 2.0f, -10.0f}, p.shapeloc->position, p.slash);
     PointLight pl;
 
     game.Loop();

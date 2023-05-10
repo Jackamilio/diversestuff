@@ -527,39 +527,81 @@ UpdateCorrectBoundingBoxFunc UpdateCorrectBoundingBoxTable[Shape::Type::SHAPEAMO
 	UpdateInfiniteBoundingBox,UpdateInfiniteBoundingBox,UpdateBoxBoundingBox,UpdateSphereBoundingBox,UpdateCapsuleBoundingBox
 };
 
-void Collisions::ShapePositionUpdated(ShapeLocation& loc)
+void Collisions::UpdateShapePosition(const Vector3& newposition, ShapeLocation& loc)
 {
-	ShapeVolumeUpdated(loc);
-	// todo BVH
+	Shape& shape = AccessShape(loc);
+	shape.position = newposition;
+	updatedshapes.insert(&shape);
 }
 
-void Collisions::ShapeVolumeUpdated(ShapeLocation& loc)
+void Collisions::UpdateShapeVolume(Shape& shape)
 {
-	Shape& s = **loc;
-	UpdateCorrectBoundingBoxTable[s.type](s);
+	UpdateCorrectBoundingBoxTable[shape.type](shape);
 }
 
-ShapeLocation Collisions::AddShape(Shape& shape)
+ShapeLocation Collisions::AddShape(Shape& shape, unsigned int mask, unsigned int wantedMask)
 {
-	if (shape.wantedMask) {
-		seekers.push_back(&shape);
-	}
-	shapes.push_back(&shape);
-	ShapeLocation end = shapes.end();
+	shape.mask = mask;
+	shape.wantedMask = wantedMask;
+	UpdateShapeVolume(shape);
+	shapes.push_back(shape);
+	ShapeLocation end = shapes.cend();
 	--end;
-	ShapeVolumeUpdated(end);
+	if (shape.wantedMask) {
+		seekers.insert(&AccessShape(end));
+	}
 	return end;
+}
+
+ShapeLocation Collisions::AddRay(const Ray& ray, unsigned int mask, unsigned int wantedMask)
+{
+	Shape newshape{};
+	newshape.ray = ray;
+	newshape.type = Shape::RAY;
+	return AddShape(newshape, mask, wantedMask);
+}
+
+ShapeLocation Collisions::AddPlane(const Vector4& plane, unsigned int mask, unsigned int wantedMask)
+{
+	Shape newshape{};
+	newshape.plane = plane;
+	newshape.type = Shape::PLANE;
+	return AddShape(newshape, mask, wantedMask);
+}
+
+ShapeLocation Collisions::AddBox(const Box& box, unsigned int mask, unsigned int wantedMask)
+{
+	Shape newshape{};
+	newshape.box = box;
+	newshape.type = Shape::BOX;
+	return AddShape(newshape, mask, wantedMask);
+}
+
+ShapeLocation Collisions::AddSphere(const Sphere& sphere, unsigned int mask, unsigned int wantedMask)
+{
+	Shape newshape{};
+	newshape.sphere = sphere;
+	newshape.type = Shape::SPHERE;
+	return AddShape(newshape, mask, wantedMask);
+}
+
+ShapeLocation Collisions::AddCapsule(const Capsule& capsule, unsigned int mask, unsigned int wantedMask)
+{
+	Shape newshape{};
+	newshape.capsule = capsule;
+	newshape.type = Shape::CAPSULE;
+	return AddShape(newshape, mask, wantedMask);
 }
 
 void Collisions::RemoveShape(ShapeLocation& loc)
 {
 	if (IsLocationValid(loc)) {
-		Shape* s = *loc;
-		if (s->wantedMask) {
-			seekers.remove(s);
+		const Shape& s = *loc;
+		if (s.wantedMask) {
+			seekers.erase(seekers.find(&AccessShape(loc)));
 		}
 		shapes.erase(loc);
-		loc = shapes.end();
+		loc = shapes.cend();
 	}
 }
 
@@ -567,7 +609,7 @@ Collisions::Collisions()
 {
 }
 
-bool CheckCollisionBoxes2(BoundingBox& box1, BoundingBox& box2) {
+bool CheckCollisionBoxes2(const BoundingBox& box1, const BoundingBox& box2) {
 	const Vector3 tmin = box1.min;
 	const Vector3 tmax = box1.max;
 	const Vector3 omin = box2.min;
@@ -578,46 +620,67 @@ bool CheckCollisionBoxes2(BoundingBox& box1, BoundingBox& box2) {
 		&& tmin.z <= omax.z && tmax.z >= omin.z;
 }
 
+// https://stackoverflow.com/questions/15160889/how-can-i-make-an-unordered-set-of-pairs-of-integers-in-c
+typedef std::pair<Shape*, Shape*> ShapePtrPair;
+struct pair_hash {
+	inline std::size_t operator()(const ShapePtrPair& v) const {
+		std::hash<Shape*> ptr_hasher;
+		return ptr_hasher(v.first) ^ ptr_hasher(v.second);
+	}
+};
+
 void Collisions::Update()
 {
 	// first clear all previous collisions
 	for (auto& shape : shapes) {
-		shape->points.clear();
+		shape.points.clear();
 	}
+
+	// clean all previously updated shapes
+	for (auto& updated : updatedshapes) {
+		UpdateShapeVolume(*updated);
+	}
+	updatedshapes.clear();
 
 	// now perform all collisions
 	// BRUTE FORCE FOR NOW
+	// a set to avoid checking collision twice on the same pair
+	std::unordered_set<ShapePtrPair, pair_hash> broadphase;
+	for (auto& seeker : seekers) {
+		for (auto& tested_ : shapes) {
+			Shape* tested = &tested_;
+			if (seeker != tested
+				&& tested->mask // a seeker always has a wantedmask, but a tested doesn't necessarily have a want mask
+				&& CheckCollisionBoxes2(seeker->boundingBox, tested->boundingBox)) {
+				// insert the shape with the type of lowest value first (see Col_FunctionMatrix)
+				broadphase.insert(seeker->type < tested->type ? ShapePtrPair(seeker, tested) : ShapePtrPair(tested, seeker));
+			}
+		}
+	}
+
 	CollisionPoint cp1;
 	CollisionPoint cp2;
-	for (auto& leftShape : seekers) {
-		for (auto& rightShape : shapes ) {
-			if (leftShape != rightShape && CheckCollisionBoxes2(leftShape->boundingBox, rightShape->boundingBox)) {
-				Shape* ls = leftShape;
-				Shape* rs = rightShape;
-				if (ls->type > rs->type) {
-					std::swap(ls, rs);
-				}
+	for (auto& pair : broadphase) {
+		Shape* shape1 = pair.first;
+		Shape* shape2 = pair.second;
+		CollisionPoint* wantcp1 = nullptr;
+		CollisionPoint* wantcp2 = nullptr;
+		if (shape1->wantedMask | shape2->mask) {
+			wantcp1 = &cp1;
+		}
+		if (shape2->wantedMask | shape1->mask) {
+			wantcp2 = &cp2;
+		}
 
-				CollisionPoint* wantcp1 = nullptr;
-				CollisionPoint* wantcp2 = nullptr;
-				if (ls->wantedMask | rs->mask) {
-					wantcp1 = &cp1;
+		if (wantcp1 || wantcp2) {
+			if (Col_FunctionMatrix[shape1->type][shape2->type](*shape1, *shape2, wantcp1, wantcp2)) {
+				if (wantcp1) {
+					cp1.shape = shape2;
+					shape1->points.push_back(cp1);
 				}
-				if (rs->wantedMask | ls->mask) {
-					wantcp2 = &cp2;
-				}
-
-				if (wantcp1 || wantcp2) {
-					if (Col_FunctionMatrix[ls->type][rs->type](*ls, *rs, wantcp1, wantcp2)) {
-						if (wantcp1) {
-							cp1.shape = rs;
-							ls->points.push_back(cp1);
-						}
-						if (wantcp2) {
-							cp2.shape = ls;
-							rs->points.push_back(cp2);
-						}
-					}
+				if (wantcp2) {
+					cp2.shape = shape1;
+					shape2->points.push_back(cp2);
 				}
 			}
 		}

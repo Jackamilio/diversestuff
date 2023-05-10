@@ -5,8 +5,6 @@
 
 class Enemy : public UpdateTask, public IDrawTask, public MovingEntity {
 public:
-    Shape capsule;
-    ShapeLocation shapeloc;
     Vector3 patrolCenter;
     const Vector3& target;
     const SlashTest& slash;

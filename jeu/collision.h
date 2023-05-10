@@ -4,6 +4,7 @@
 #include "raylibext.h"
 #include <vector>
 #include <list>
+#include <unordered_set>
 
 Vector3 ProjectPointToLine(const Vector3& point, const Vector3& lineA, const Vector3& lineB);
 Vector3 ProjectPointToSegment(const Vector3& point, const Segment& segment);
@@ -41,24 +42,45 @@ struct Shape {
 	Type type;
 	unsigned int mask;
 	unsigned int wantedMask;
-	void* user;
+	//void* user;
 	std::vector<CollisionPoint> points;
 	// bvh address
 };
 
-typedef std::list<Shape*> ShapeList;
-typedef ShapeList::iterator ShapeLocation;
+typedef std::list<Shape> ShapeList;
+typedef ShapeList::const_iterator ShapeLocation;
 
 class Collisions {
 private:
 	ShapeList shapes;
-	ShapeList seekers;
+	std::unordered_set<Shape*> seekers;
+	std::unordered_set<Shape*> updatedshapes;
 
+	// https://stackoverflow.com/questions/765148/how-to-remove-constness-of-const-iterator
+	inline Shape& AccessShape(ShapeLocation loc) {
+		return *shapes.erase(loc, loc);
+	}
+
+	ShapeLocation AddShape(Shape& shape, unsigned int mask, unsigned int wantedMask);
+	void UpdateShapeVolume(Shape& shape);
 public:
-	ShapeLocation AddShape(Shape& shape); // must be called after the shape was properly initialized
+	ShapeLocation AddRay(const Ray& ray, unsigned int mask, unsigned int wantedMask);
+	ShapeLocation AddPlane(const Vector4& plane, unsigned int mask, unsigned int wantedMask);
+	ShapeLocation AddBox(const Box& box, unsigned int mask, unsigned int wantedMask);
+	ShapeLocation AddSphere(const Sphere& sphere, unsigned int mask, unsigned int wantedMask);
+	ShapeLocation AddCapsule(const Capsule& capsule, unsigned int mask, unsigned int wantedMask);
+
 	void RemoveShape(ShapeLocation& loc);
-	void ShapePositionUpdated(ShapeLocation& loc);
-	void ShapeVolumeUpdated(ShapeLocation& loc);
+
+	void UpdateShapePosition(const Vector3& newposition, ShapeLocation& loc);
+
+	//void ShapePositionUpdated(ShapeLocation& loc);
+	void UpdateRay(const Ray& ray, ShapeLocation& loc);
+	void UpdatePlane(const Vector4& ray, ShapeLocation& loc);
+	void UpdateBox(const Box& ray, ShapeLocation& loc);
+	void UpdateSphere(const Sphere& ray, ShapeLocation& loc);
+	void UpdateCapsule(const Capsule& ray, ShapeLocation& loc);
+
 	inline bool IsLocationValid(const ShapeLocation& loc) const {
 		return loc != shapes.end();
 	}

@@ -27,8 +27,6 @@ class Player : public UpdateTask, public IDrawTask, public MovingEntity {
 public:
     float direction;
     SlashTest slash;
-    Shape capsule;
-    ShapeLocation shapeloc;
 
     Player(const VoxelMap& v);
     ~Player();

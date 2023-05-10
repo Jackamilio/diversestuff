@@ -84,10 +84,7 @@ RayCollision GetRayCollisionVoxelMap(const Ray& ray, const VoxelMap& voxels)
 void Voxel::Init(const Position& p)
 {
     if (!game.collisions.IsLocationValid(shapeloc)) {
-        shape.type = Shape::BOX;
-        shape.mask = CollisionMask::SOLID;
-        shape.box = p.ToBox();
-        shapeloc = game.collisions.AddShape(shape);
+        shapeloc = game.collisions.AddBox(p.ToBox(), CollisionMask::SOLID, 0);
     }
 }
 

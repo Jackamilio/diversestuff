@@ -1,13 +1,12 @@
 #include "MovingEntity.h"
 #include "collision.h"
 
-MovingEntity::MovingEntity(const VoxelMap& v, Shape& shape) :
+MovingEntity::MovingEntity() :
     CollisionChecker(0),
-    voxels(v),
+    //voxels(v),
     //position(position),
     grounded(false),
-    velocity{ 0.0f },
-    shape(shape)
+    velocity{ 0.0f }
     //capsuleradius(0.5f),
     //capsuletip({ 0.0f, 1.0f, 0.0f })
 {
@@ -17,6 +16,8 @@ MovingEntity::MovingEntity(const VoxelMap& v, Shape& shape) :
 void MovingEntity::CheckCollision()
 {
     grounded = false;
+
+    const Shape& shape = *shapeloc;
 
     if (shape.points.empty()) return;
 
@@ -50,7 +51,7 @@ void MovingEntity::CheckCollision()
                 velocity.y = 0.0f;
             }
 
-            shape.position += colnormal * (shape.capsule.radius - coldist);
+            game.collisions.UpdateShapePosition(shape.position + colnormal * (shape.capsule.radius - coldist), shapeloc);
         }
     }
 
@@ -66,7 +67,7 @@ void MovingEntity::ApplyGravity() {
 }
 
 void MovingEntity::ApplyVelocity() {
-    shape.position += velocity * game.deltaTime;
+    game.collisions.UpdateShapePosition(shapeloc->position + velocity * game.deltaTime, shapeloc);
 }
 
 /*void MovingEntity::AdjustToCollisions() {

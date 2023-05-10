@@ -60,9 +60,7 @@ void SlashTest::Launch(const Vector3& from, float direction, float tilt) {
 
 Player::Player(const VoxelMap& v) :
     UpdateTask(PRIO_NORMAL),
-    MovingEntity(v, capsule),
-    direction(0.0f),
-    capsule{}
+    direction(0.0f)
 {
     game.camera.position = { 0.0f, 2.0f, 4.0f };    // Camera position
     game.camera.target = { 0.0f, 1.0f, 0.0f };      // Camera looking at point
@@ -70,10 +68,8 @@ Player::Player(const VoxelMap& v) :
     game.camera.fovy = 60.0f;                       // Camera field-of-view Y
     game.camera.projection = CAMERA_PERSPECTIVE;    // Camera projection type
 
-    capsule.type = Shape::CAPSULE;
-    capsule.capsule = { game.camera.target, { 0.0f, 1.0f, 0.0f }, 0.5f };
-    capsule.wantedMask = CollisionMask::SOLID;
-    shapeloc = game.collisions.AddShape(capsule);
+    Capsule capsule = { game.camera.target, { 0.0f, 1.0f, 0.0f }, 0.5f };
+    shapeloc = game.collisions.AddCapsule(capsule, 0, CollisionMask::SOLID);
 }
 
 Player::~Player()
@@ -84,7 +80,9 @@ Player::~Player()
 void Player::Do() {
     const float gravity = 0.005f;
 
-    Vector3 prevpos = capsule.position;
+    const Vector3& position = shapeloc->position;
+
+    Vector3 prevpos = position;
     game.camera.target = prevpos;
 
     Vector2 movement = game.input.movement * (game.settings.playerSpeed * game.deltaTime);
@@ -98,7 +96,7 @@ void Player::Do() {
 
     if (prevpos != newpos) {
         Vector3 dirvec = newpos - prevpos;
-        capsule.position = newpos;
+        game.collisions.UpdateShapePosition(newpos, shapeloc);
         direction = atan2f(-dirvec.z, dirvec.x) * RAD2DEG;
     }
 
@@ -109,16 +107,14 @@ void Player::Do() {
     ApplyVelocity();
     //AdjustToCollisions();
 
-    game.camera.target += capsule.position - newpos;
-    game.camera.position += capsule.position - newpos;
+    game.camera.target += position - newpos;
+    game.camera.position += position - newpos;
 
     if (game.input.attack.IsPressed()) {
-        Vector3 slashpos = capsule.position;
+        Vector3 slashpos = position;
         slashpos.y += 0.7f;
         slash.Launch(slashpos, direction, (float)GetRandomValue(-45, 45));
     }
-
-    game.collisions.ShapePositionUpdated(shapeloc);
 
     game.AddDrawTask(*this, DRAW_3D_SHADER);
     game.AddShadowCaster(*this);
@@ -126,15 +122,15 @@ void Player::Do() {
 
 void Player::PostCollision()
 {
-    Vector3 displacement = capsule.position - game.camera.target;
+    Vector3 displacement = shapeloc->position - game.camera.target;
 
     game.camera.target += displacement;
     game.camera.position += displacement;
 }
 
 void Player::Draw() {
-    Vector3 tip = capsule.capsule.GetTip();
-    DrawCapsuleWires(capsule.position, tip, capsule.capsule.radius, 16, 16, DARKBLUE);
+    Vector3 tip = shapeloc->capsule.GetTip();
+    DrawCapsuleWires(shapeloc->position, tip, shapeloc->capsule.radius, 16, 16, DARKBLUE);
 
     DrawLine3D(tip, tip + Vector3Transform(Vector3{ 1.0f, 0.0f, 0.0f }, MatrixRotateY(direction * DEG2RAD)), RED);
 }
