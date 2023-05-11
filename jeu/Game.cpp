@@ -86,8 +86,7 @@ struct PerformanceMetrics {
 void Game::Loop()
 {
     PerformanceMetrics thisFrameMetrics;
-    while (!WindowShouldClose())
-    {
+    while (!WindowShouldClose()) {
         double frameStartTime = GetTime();
         double lastMetric = frameStartTime;
 

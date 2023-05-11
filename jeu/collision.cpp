@@ -2,6 +2,7 @@
 #include "raylibext.h"
 #include <algorithm>
 #include <cmath>
+#include "Game.h"
 
 // projection of vector A onto B
 inline Vector3 ProjectVector(const Vector3& A, const Vector3& B) {
@@ -685,4 +686,61 @@ void Collisions::Update()
 			}
 		}
 	}
+}
+
+bool IsBoundingBoxFullyContained(const BoundingBox& inside, const BoundingBox& outside) {
+	const Vector3 imin = inside.min;
+	const Vector3 imax = inside.max;
+	const Vector3 omin = outside.min;
+	const Vector3 omax = outside.max;
+
+	return omin.x <= imin.x && imax.x <= omax.x
+		&& omin.y <= imin.y && imax.y <= omax.y
+		&& omin.z <= imin.z && imax.z <= omax.z;
+}
+
+Collisions::BoundaryVolumeHierarchy::BoundaryVolumeHierarchy()
+{
+}
+
+void Collisions::BoundaryVolumeHierarchy::Insert(ShapeLocation loc)
+{
+	if (root.IsLeafLess()) {
+		root.boundingBox = loc->boundingBox;
+		root.nodes[0] = new Node(loc);
+		return;
+	}
+
+	InsertNodeRecursive(root, loc);
+}
+
+bool Collisions::BoundaryVolumeHierarchy::InsertNodeRecursive(Node& currentNode, ShapeLocation loc)
+{
+	assert(!currentNode.IsLeafLess() && "Only the root can be leafless when the BVH is empty");
+
+	//IsBoundingBoxFullyContained(loc->boundingBox, currentNode.boundingBox)
+	Node* occupiedNode = currentNode.nodes[1];
+	if (occupiedNode) {
+
+	}
+	else {
+
+	}
+	
+	return false;
+}
+
+Collisions::BoundaryVolumeHierarchy::Node::Node() :
+	shapeloc(game.collisions.InvalidLocation()),
+	parent(nullptr),
+	nodes{nullptr, nullptr}
+{
+}
+
+Collisions::BoundaryVolumeHierarchy::Node::Node(ShapeLocation loc) :
+	boundingBox(loc->boundingBox),
+	shapeloc(loc),
+	parent(nullptr),
+	nodes{nullptr,nullptr}
+{
 }

@@ -52,6 +52,40 @@ typedef ShapeList::const_iterator ShapeLocation;
 
 class Collisions {
 private:
+	class BoundaryVolumeHierarchy {
+	public:
+		struct Node {
+			BoundingBox boundingBox;
+			ShapeLocation shapeloc;
+			Node* parent;
+			Node* nodes[2];
+
+			inline bool IsLeafLess() {
+				return !nodes[0] && !nodes[1];
+			}
+
+			inline bool IsRoot() {
+				return !parent;
+			}
+
+			inline bool IsLeaf() {
+				return game.collisions.IsLocationValid(shapeloc);
+			}
+
+			Node();
+			Node(ShapeLocation loc);
+		};
+
+	private:
+		Node root;
+
+		bool InsertNodeRecursive(Node& currentNode, ShapeLocation loc);
+	public:
+		BoundaryVolumeHierarchy();
+
+		void Insert(ShapeLocation loc);
+	};
+
 	ShapeList shapes;
 	std::unordered_set<Shape*> seekers;
 	std::unordered_set<Shape*> updatedshapes;
